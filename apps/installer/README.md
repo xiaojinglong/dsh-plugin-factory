@@ -8,6 +8,10 @@
 # accept 后安装到工厂根（默认 smoke：health + 401/200）
 node apps/installer/plugin-install.cjs install --source <stagingPluginDir> --root D:\www\dsh-plugin-factory
 
+# 预检/干跑（零写入，提前发现冲突）
+node apps/installer/plugin-install.cjs check --source <dir> --root <root>
+node apps/installer/plugin-install.cjs install --source <dir> --root <root> --dry-run
+
 # 覆盖安装（旧目录/manifest 备份）
 node apps/installer/plugin-install.cjs install --source <dir> --root <root> --force
 

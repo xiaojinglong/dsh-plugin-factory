@@ -8,7 +8,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { generate } = require('../../apps/generator/generator.cjs');
-const { install, upgrade, uninstall, listInstalled, verify, validateSource } = require('../../apps/installer/plugin-install.cjs');
+const { install, upgrade, uninstall, listInstalled, verify, preflight, validateSource } = require('../../apps/installer/plugin-install.cjs');
 
 async function makeSource(id = 'install-demo') {
   const t = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-a-inst-src-'));
@@ -52,7 +52,7 @@ test('install：默认拒绝覆盖；--force 备份，uninstall 恢复旧目录'
   const source = await makeSource();
   const root = makeRoot();
   await install({ source, root, smoke: false });
-  await assert.rejects(() => install({ source, root, smoke: false }), /已存在/);
+  await assert.rejects(() => install({ source, root, smoke: false }), /存在冲突|已存在/);
   await install({ source, root, smoke: false, force: true });
   const backups = fs.readdirSync(path.join(root, 'plugins')).filter((n) => n.startsWith('install-demo.bak-'));
   assert.ok(backups.length >= 1, 'force 应保留旧目录备份');
@@ -105,4 +105,22 @@ test('install：--render 调用工厂 render（仅在显式开启时）', async 
   assert.equal(r.ok, true);
   assert.equal(r.render.ok, true);
   assert.ok(fs.existsSync(path.join(factoryDir, 'rendered.txt')));
+});
+
+test('preflight/--dry-run：零写入，冲突可提前发现', async () => {
+  const source = await makeSource();
+  const root = makeRoot();
+  const pre = preflight({ source, root });
+  assert.equal(pre.ok, true);
+  assert.equal(pre.conflicts.length, 0);
+  const dry = await install({ source, root, smoke: false, dryRun: true });
+  assert.equal(dry.dryRun, true);
+  assert.ok(!fs.existsSync(path.join(root, 'plugins', 'install-demo')), 'dry-run 不应写文件');
+
+  await install({ source, root, smoke: false });
+  const pre2 = preflight({ source, root });
+  assert.equal(pre2.ok, false);
+  assert.ok(pre2.conflicts.length >= 3);
+  const dry2 = await install({ source, root, smoke: false, dryRun: true });
+  assert.equal(dry2.ok, false);
 });

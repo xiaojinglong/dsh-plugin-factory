@@ -80,6 +80,28 @@ function smoke(serviceDir, token, factoryRoot) {
   });
 }
 
+function preflight(opts = {}) {
+  if (!opts.source) fail('preflight 需要 --source');
+  const source = path.resolve(opts.source);
+  const root = path.resolve(opts.root || ROOT);
+  const manifestsDir = path.resolve(opts.manifests || path.join(root, 'platform', 'manifests'));
+  const pluginsDir = path.resolve(opts.plugins || path.join(root, 'plugins'));
+  const deploymentDir = path.resolve(opts.deployment || path.join(root, 'deployment'));
+  const { spec, manifest } = validateSource(source);
+  const id = spec.id;
+  const planned = {
+    plugin: path.join(pluginsDir, id),
+    tool: path.join(deploymentDir, 'tools', `${id}-mcp`),
+    skill: path.join(deploymentDir, 'skills', id),
+    manifest: path.join(manifestsDir, `${id}.json`),
+  };
+  const conflicts = Object.entries(planned).filter(([, p]) => fs.existsSync(p)).map(([k, p]) => ({ kind: k, path: p }));
+  return {
+    ok: !!opts.force || conflicts.length === 0,
+    id, source, root, version: spec.version, port: manifest.port, conflicts, planned, force: !!opts.force,
+  };
+}
+
 async function install(opts) {
   const source = path.resolve(opts.source || '');
   if (!opts.source) fail('install 需要 --source');
@@ -87,6 +109,9 @@ async function install(opts) {
   const manifestsDir = path.resolve(opts.manifests || path.join(root, 'platform', 'manifests'));
   const pluginsDir = path.resolve(opts.plugins || path.join(root, 'plugins'));
   const deploymentDir = path.resolve(opts.deployment || path.join(root, 'deployment'));
+  const pre = preflight({ ...opts, root });
+  if (opts.dryRun) return { ...pre, dryRun: true };
+  if (!pre.ok) fail(`存在冲突：${pre.conflicts.map((c) => c.kind).join('/')}（如需覆盖加 --force）`);
   const { spec, manifest } = validateSource(source);
   const id = spec.id;
   const dest = path.join(pluginsDir, id);
@@ -264,7 +289,8 @@ async function main() {
   }
   const cmd = args._ || process.argv[2];
   try {
-    if (cmd === 'install') console.log(JSON.stringify(await install({ ...args, source: args.source, force: args.force === 'true', smoke: args['no-smoke'] !== 'true', render: args.render === 'true' }), null, 2));
+    if (cmd === 'install') console.log(JSON.stringify(await install({ ...args, source: args.source, force: args.force === 'true', smoke: args['no-smoke'] !== 'true', render: args.render === 'true', dryRun: args['dry-run'] === 'true' }), null, 2));
+    else if (cmd === 'check') console.log(JSON.stringify(preflight(args), null, 2));
     else if (cmd === 'upgrade') console.log(JSON.stringify(await upgrade({ ...args, source: args.source, force: args.force === 'true', smoke: args['no-smoke'] !== 'true', render: args.render === 'true' }), null, 2));
     else if (cmd === 'uninstall' || cmd === 'rollback') console.log(JSON.stringify(uninstall(args), null, 2));
     else if (cmd === 'list') console.log(JSON.stringify(listInstalled(args), null, 2));
@@ -277,4 +303,4 @@ async function main() {
 }
 
 if (require.main === module) main();
-module.exports = { install, upgrade, uninstall, listInstalled, verify, compareVersion, validateSource, smoke };
+module.exports = { install, upgrade, uninstall, listInstalled, verify, preflight, compareVersion, validateSource, smoke };

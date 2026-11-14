@@ -23,11 +23,12 @@
 - M3 生成流水线：`packages/sdk`（zod 契约 + runner 静态校验）、`templates/plugin`、`apps/generator`（probe HTTP/浏览器+iframe、write_runner 桥、业务 runner 注入、generate/validate/staging、报告 staging、Node 权限沙箱、控制面 pipeline、金标、evidence）。
 - `factory-control` 新增 `write_runner` 工具（DSH Agent 提交业务 runner → 控制面静态校验/落盘/更新 params）。
 - probe 登录检测（登录跳转/密码框）与 pipeline 失败建议 `failure.json`（step/error/suggestion）。
-- M4 验收/安装：`POST /requests/:id/accept`（staging + acceptedBy 门禁）、`apps/installer/plugin-install.cjs`（install/uninstall/rollback/smoke/备份/upgrade/list/verify/render）。
+- M4 验收/安装：`POST /requests/:id/accept`（staging + acceptedBy 门禁）、`apps/installer/plugin-install.cjs`（install/uninstall/rollback/smoke/备份/upgrade/list/verify/render/preflight/--dry-run）。
+- M5 发布包：`scripts/package-release.cjs`（npm tarball + SHA-256 + release.json，敏感路径拦截）。
 - 文档同步：HANDOFF/README 更新到 12 插件/v3.2；`QUALITY-GATES-A.md`、`DECISIONS-A.md`、`STATUS-A.md`。
 
 ### 验证
-- 干净克隆（M0/M1/M2/M3/M4 分支）分别 22/28/44/58/**64** 测试全绿；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP；`npm audit` 0。
+- 干净克隆（M0/M1/M2/M3/M4 分支）分别 22/28/44/58/**66** 测试全绿；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP；`npm audit` 0。
 - 已知未完成：M1 依赖/真实机器、M2 真实 DSH UAT、M3 真实 probe/业务实现/编排、M4–M6；许可证与开源脱敏待 owner 确认；legacy 迁移脚本仍含旧绝对路径（不在产品路径）。
 
 

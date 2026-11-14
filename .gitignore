@@ -40,3 +40,5 @@ experiments/
 Thumbs.db
 .vscode/
 .idea/
+
+dist/

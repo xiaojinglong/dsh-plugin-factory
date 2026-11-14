@@ -18,7 +18,8 @@
     "factory-control-mcp": "node apps/factory-control-mcp/index.cjs",
     "generate:staging": "node apps/generator/generator.cjs staging",
     "pipeline": "node apps/generator/pipeline.cjs",
-    "install:plugin": "node apps/installer/plugin-install.cjs"
+    "install:plugin": "node apps/installer/plugin-install.cjs",
+    "release:package": "node scripts/package-release.cjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",
