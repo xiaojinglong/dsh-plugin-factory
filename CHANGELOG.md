@@ -17,8 +17,8 @@
 - 根 `package.json` + `package-lock.json` + `.nvmrc`（Node 24）+ GitHub Actions CI（Windows/Linux）。
 - `packages/config` 统一路径解析；manifest 迁移为**仓库相对路径**（12 个）；report 生成器改为基于脚本位置解析。
 - `scripts/check-syntax.mjs`（160 文件语法门禁）、`scripts/migrate-manifests.mjs`（可复跑迁移）。
-- 安装器核心 `apps/installer`（check/install/uninstall/rollback/dry-run + setup.ps1 + 6 测试；M1 部分完成，未合并 main）。
-- 本地控制面 `apps/control-plane`（8780；SQLite migration/WAL、token、需求单状态机、审计、指标、备份 + 14 集成测试；M2 部分完成）。
+- 安装器核心 `apps/installer`（check/install/uninstall/rollback/dry-run + setup.ps1 + 6 测试；M1 部分完成，未合并 main）；M2 收尾：安装器注入 `factory-control` MCP（managed block + token，自动备份/回滚），新增"安装器→patch→MCP→控制面"全链路测试。
+- 本地控制面 `apps/control-plane`（8780；SQLite migration/WAL、token、需求单状态机、审计、指标、备份 + 14 集成测试；M2 代码完成）。
 - `apps/factory-control-mcp`（7 个 MCP 工具 + SDK Client over stdio 端到端测试）+ `skills/factory-agent`（DSH 技能，已热加载可见）。
 - 文档同步：HANDOFF/README 更新到 12 插件/v3.2；`QUALITY-GATES-A.md`、`DECISIONS-A.md`、`STATUS-A.md`。
 

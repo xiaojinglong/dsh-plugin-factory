@@ -53,7 +53,12 @@ test('install：注入 patch/registry、建立 dshskills 链接、幂等', () =>
   const patch1 = fs.readFileSync(p.patch, 'utf8');
   assert.match(patch1, /# original patch/);
   assert.match(patch1, /- id: mcp-bulk-sync/);
-  assert.equal((patch1.match(/- id: mcp-/g) || []).length, 11, '应注入 11 个非 legacy 条目');
+  assert.equal((patch1.match(/- id: mcp-/g) || []).length, 12, '应注入 11 个业务条目 + 1 个 factory-control');
+  assert.match(patch1, /- id: mcp-factory-control/);
+  assert.match(patch1, /serverName: factory-control/);
+  const cpToken = fs.readFileSync(path.join(p.dataRoot, 'control-plane', 'token'), 'utf8').trim();
+  assert.ok(cpToken.length >= 32);
+  assert.ok(patch1.includes(`CONTROL_PLANE_TOKEN: "${cpToken}"`), 'patch 应携带控制面 token');
   assert.ok(fs.existsSync(p.registry), 'registry 应生成');
   assert.ok(fs.existsSync(path.join(p.dataRoot, 'installer', 'state.json')), 'state 应生成');
   assert.ok(fs.lstatSync(path.join(p.dshRoot, 'tools')).isSymbolicLink(), 'tools 应为链接');
@@ -63,7 +68,8 @@ test('install：注入 patch/registry、建立 dshskills 链接、幂等', () =>
   const r2 = run(['install', '--dsh-root', p.dshRoot, '--patch', p.patch, '--data-root', p.dataRoot]);
   assert.equal(r2.status, 0, r2.stdout + r2.stderr);
   const patch2 = fs.readFileSync(p.patch, 'utf8');
-  assert.equal((patch2.match(/- id: mcp-/g) || []).length, 11, '重复安装不应重复条目');
+  assert.equal((patch2.match(/- id: mcp-/g) || []).length, 12, '重复安装不应重复条目');
+  assert.equal((patch2.match(/managed by apps\/installer/g) || []).length, 1, 'managed block 不应重复');
 
   // uninstall：恢复原始 patch、清理链接与状态
   const r3 = run(['uninstall', '--dsh-root', p.dshRoot, '--patch', p.patch, '--data-root', p.dataRoot]);
@@ -92,6 +98,7 @@ test('dry-run：不写 patch、不写 state', () => {
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.equal(fs.readFileSync(p.patch, 'utf8'), '# original patch\n');
   assert.ok(!fs.existsSync(path.join(p.dataRoot, 'installer', 'state.json')));
+  assert.ok(!fs.existsSync(path.join(p.dataRoot, 'control-plane', 'token')), 'dry-run 不应生成 token');
 });
 
 test('rollback：从首次安装备份恢复 patch', () => {

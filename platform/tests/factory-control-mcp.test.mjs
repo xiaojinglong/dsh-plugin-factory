@@ -5,14 +5,16 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
+import { spawnSync } from 'node:child_process';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 const require = createRequire(import.meta.url);
 const config = require('../../packages/config');
-const { createControlPlane } = require('../../apps/control-plane/server.cjs');
+const { createControlPlane, ensureToken } = require('../../apps/control-plane/server.cjs');
 const ROOT = config.FACTORY_ROOT;
 const MCP = path.join(ROOT, 'apps', 'factory-control-mcp', 'index.cjs');
+const INSTALLER = path.join(ROOT, 'apps', 'installer', 'installer.cjs');
 const TOKEN = 'mcp-test-token';
 
 function parseTool(res) {
@@ -60,6 +62,55 @@ test('factory-control MCP：工具列表 + 创建/推进/查询需求单', async
     assert.ok(metrics.requests.total >= 1);
   } finally {
     try { await client.close(); } catch { /* ignore */ }
+    await cp.stop();
+  }
+});
+
+test('安装器 → patch → MCP → 控制面 全链路（临时 profile）', async () => {
+  const t = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-a-iac-'));
+  const dataRoot = path.join(t, 'data');
+  const dshRoot = path.join(t, 'dsh');
+  const patch = path.join(t, 'profile', 'cordis.patch.yml');
+  fs.mkdirSync(dshRoot, { recursive: true });
+  fs.mkdirSync(path.dirname(patch), { recursive: true });
+  fs.writeFileSync(patch, '# original patch\n', 'utf8');
+
+  const token = ensureToken(dataRoot);
+  const cp = createControlPlane({ dataRoot, token });
+  const { port } = await cp.start({ port: 0 });
+  const url = `http://127.0.0.1:${port}`;
+  let client = null;
+  try {
+    const install = spawnSync(process.execPath, [INSTALLER, 'install',
+      '--dsh-root', dshRoot, '--patch', patch, '--data-root', dataRoot, '--control-plane-url', url,
+    ], { encoding: 'utf8', cwd: ROOT, timeout: 120000 });
+    assert.equal(install.status, 0, install.stdout + install.stderr);
+
+    const text = fs.readFileSync(patch, 'utf8');
+    const tokenInPatch = (text.match(/CONTROL_PLANE_TOKEN: "([^"]+)"/) || [])[1];
+    const urlInPatch = (text.match(/CONTROL_PLANE_URL: "([^"]+)"/) || [])[1];
+    assert.equal(tokenInPatch, token);
+    assert.equal(urlInPatch, url);
+    assert.match(text, /- id: mcp-factory-control/);
+    assert.match(text, /args: \[".*apps\/factory-control-mcp\/index\.cjs"\]/);
+
+    const transport = new StdioClientTransport({
+      command: process.execPath, args: [MCP], cwd: ROOT,
+      env: { ...process.env, CONTROL_PLANE_URL: urlInPatch, CONTROL_PLANE_TOKEN: tokenInPatch },
+    });
+    client = new Client({ name: 'install-chain', version: '0.0.0' });
+    await client.connect(transport);
+    const created = parseTool(await client.callTool({ name: 'create_request', arguments: { brief: '安装链路 E2E' } }));
+    assert.equal(created.ok, true);
+    assert.match(created.request.id, /^req_/);
+
+    const uninstall = spawnSync(process.execPath, [INSTALLER, 'uninstall',
+      '--dsh-root', dshRoot, '--patch', patch, '--data-root', dataRoot,
+    ], { encoding: 'utf8', cwd: ROOT, timeout: 120000 });
+    assert.equal(uninstall.status, 0, uninstall.stdout + uninstall.stderr);
+    assert.equal(fs.readFileSync(patch, 'utf8'), '# original patch\n');
+  } finally {
+    if (client) { try { await client.close(); } catch { /* ignore */ } }
     await cp.stop();
   }
 });

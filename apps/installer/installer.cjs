@@ -20,6 +20,7 @@ const os = require('node:os');
 const net = require('node:net');
 const { spawnSync } = require('node:child_process');
 const config = require('../../packages/config');
+const { ensureToken: ensureControlPlaneToken } = require('../control-plane/server.cjs');
 
 const ROOT = config.FACTORY_ROOT;
 const DEPLOY = path.join(ROOT, 'deployment');
@@ -44,8 +45,9 @@ function options(args) {
   const dshRoot = path.resolve(args['dsh-root'] || process.env.FACTORY_DSH_ROOT || path.resolve(ROOT, '..', 'dshskills'));
   const profile = String(args.profile || process.env.FACTORY_DSH_PROFILE || 'desktop');
   const patch = path.resolve(args.patch || process.env.FACTORY_DSH_PATCH || path.join(os.homedir(), '.dsh', 'profiles', profile, 'cordis.patch.yml'));
+  const controlPlaneUrl = String(args['control-plane-url'] || process.env.CONTROL_PLANE_URL || 'http://127.0.0.1:8780').replace(/\/+$/, '');
   return {
-    dataRoot, dshRoot, profile, patch,
+    dataRoot, dshRoot, profile, patch, controlPlaneUrl,
     tools: path.join(dshRoot, 'tools'),
     skills: path.join(dshRoot, 'skills'),
     registry: path.join(dshRoot, 'registry.md'),
@@ -66,6 +68,43 @@ function readManifests() {
     .map((f) => JSON.parse(fs.readFileSync(path.join(MANIFEST_DIR, f), 'utf8')));
 }
 function nonLegacy() { return readManifests().filter((m) => !m.legacy); }
+
+/* -------------------- factory-control MCP 注入（managed block） -------------------- */
+const FC_START = '# >>> factory-control (managed by apps/installer) >>>';
+const FC_END = '# <<< factory-control <<<';
+function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function stripFactoryControl(text) {
+  const re = new RegExp(`${escapeRe(FC_START)}[\\s\\S]*?${escapeRe(FC_END)}\\n?`, 'g');
+  return text.replace(re, '');
+}
+function factoryControlBlock(token, url = 'http://127.0.0.1:8780') {
+  const rootPosix = ROOT.replace(/\\/g, '/');
+  return `${FC_START}
+- insert:
+    - id: mcp-factory-control
+      name: "@deepseek-ai/dsh-mcp-client"
+      config:
+        serverName: factory-control
+        transport: stdio
+        command: node
+        toolCallTimeoutMs: 30000
+        args: ["${rootPosix}/apps/factory-control-mcp/index.cjs"]
+        cwd: "${rootPosix}/apps/factory-control-mcp"
+        env:
+          CONTROL_PLANE_URL: "${url}"
+          CONTROL_PLANE_TOKEN: "${token}"
+${FC_END}`;
+}
+function injectFactoryControl(patchFile, { token, url }) {
+  const text = stripFactoryControl(fs.readFileSync(patchFile, 'utf8')).replace(/\s+$/, '');
+  fs.writeFileSync(patchFile, `${text}\n\n${factoryControlBlock(token, url)}\n`, 'utf8');
+}
+function verifyFactoryControl(patchFile, token) {
+  const text = fs.readFileSync(patchFile, 'utf8');
+  if (!text.includes('- id: mcp-factory-control')) throw new Error('patch 缺少 mcp-factory-control 条目');
+  if (!text.includes('CONTROL_PLANE_TOKEN:')) throw new Error('patch 缺少 CONTROL_PLANE_TOKEN');
+  if (!text.includes(token)) throw new Error('patch 中 CONTROL_PLANE_TOKEN 与数据根 token 不一致');
+}
 
 function checkPort(port) {
   return new Promise((resolve) => {
@@ -106,6 +145,9 @@ async function check(opts) {
   // MCP 依赖（共享 node_modules）
   const sharedMcpModules = path.join(DEPLOY, 'tools', 'ads-list-mcp', 'node_modules');
   add('MCP node_modules', 'warn', fs.existsSync(sharedMcpModules), sharedMcpModules);
+
+  add('factory-control MCP', 'error', fs.existsSync(path.join(ROOT, 'apps', 'factory-control-mcp', 'index.cjs')), path.join(ROOT, 'apps', 'factory-control-mcp', 'index.cjs'));
+  add('control-plane token', 'warn', fs.existsSync(path.join(opts.dataRoot, 'control-plane', 'token')), '安装时会生成');
 
   // 端口：被占用不视为错误（可能已安装运行中），仅提示
   const busy = [];
@@ -199,6 +241,25 @@ async function install(opts, dryRun) {
     const r = spawnSync(process.execPath, [CLI, 'render'], { cwd: ROOT, env, encoding: 'utf8' });
     if (r.status !== 0) throw new Error(`render 失败：${(r.stderr || r.stdout || '').slice(0, 500)}`);
     verifyPatch(opts.patch, manifests);
+    let cpToken;
+    try {
+      cpToken = ensureControlPlaneToken(opts.dataRoot);
+      injectFactoryControl(opts.patch, { token: cpToken, url: opts.controlPlaneUrl });
+      verifyFactoryControl(opts.patch, cpToken);
+    } catch (err) {
+      // 注入失败：回滚 patch/registry 与本次创建的链接，避免半安装状态
+      const bakPatch = path.join(state.backupDir, 'cordis.patch.yml');
+      if (fs.existsSync(bakPatch)) fs.copyFileSync(bakPatch, opts.patch);
+      else if (fs.existsSync(opts.patch)) fs.unlinkSync(opts.patch);
+      if (state.hadRegistry) {
+        const bakReg = path.join(state.backupDir, 'registry.md');
+        if (fs.existsSync(bakReg)) fs.copyFileSync(bakReg, opts.registry);
+      } else if (fs.existsSync(opts.registry)) fs.unlinkSync(opts.registry);
+      for (const [flag, p] of [['tools', opts.tools], ['skills', opts.skills], ['dshRoot', opts.dshRoot]]) {
+        if (state.created[flag] && isSymlink(p)) { try { fs.unlinkSync(p); } catch { /* ignore */ } }
+      }
+      throw err;
+    }
     fs.mkdirSync(path.dirname(opts.stateFile), { recursive: true });
     fs.writeFileSync(opts.stateFile, JSON.stringify(state, null, 2) + '\n', 'utf8');
   }
