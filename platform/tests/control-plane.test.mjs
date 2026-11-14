@@ -300,6 +300,25 @@ test('prune：默认 dry-run，确认后删除旧审计并记一条 prune 审计
   });
 });
 
+test('prune-requests：只清理终态旧请求并级联 steps/审计', async () => {
+  await withApp(async ({ base }) => {
+    const id = (await post(base, '/requests', { brief: '待清理' })).body.request.id;
+    await post(base, `/requests/${id}/steps`, { step: 'probe', status: 'running' });
+    await post(base, `/requests/${id}/steps`, { step: 'probe', status: 'failed', error: '测试失败' });
+    const dry = await post(base, '/admin/prune-requests', { olderThanDays: 0, dryRun: true });
+    assert.equal(dry.status, 200);
+    assert.ok(dry.body.candidates >= 1);
+    assert.equal(dry.body.deleted, 0);
+    const real = await post(base, '/admin/prune-requests', { olderThanDays: 0, dryRun: false });
+    assert.equal(real.status, 200);
+    assert.ok(real.body.deleted >= 1);
+    assert.equal((await get(base, `/requests/${id}`)).status, 404);
+    const audit = await get(base, '/audit?limit=20');
+    assert.ok(audit.body.audit.some((a) => a.action === 'request.prune'));
+    assert.equal((await post(base, '/admin/prune-requests', { olderThanDays: -1 })).status, 400);
+  });
+});
+
 test('restore：备份恢复到新数据根，需求单可读；非法备份拒绝', async () => {
   const dataRootA = tmp();
   const cpA = createControlPlane({ dataRoot: dataRootA, token: TOKEN });

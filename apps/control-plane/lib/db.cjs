@@ -249,6 +249,27 @@ class ControlPlaneStore {
     return { cutoff, olderThanDays: days, deleted: dryRun ? 0 : count, candidates: count, dryRun: !!dryRun };
   }
 
+  pruneRequests({ olderThanDays = 30, dryRun = true, states = ['failed', 'installed'], actor = 'system', ip = '' } = {}) {
+    const days = Math.max(0, Math.min(3650, Number(olderThanDays)));
+    const cutoff = new Date(Date.now() - days * 86400000).toISOString();
+    const list = (states || []).filter((s) => ['failed', 'installed', 'accept'].includes(s));
+    const useStates = list.length ? list : ['failed', 'installed'];
+    const placeholders = useStates.map(() => '?').join(',');
+    const rows = this.db.prepare(`SELECT id FROM requests WHERE state IN (${placeholders}) AND updated_at < ?`).all(...useStates, cutoff);
+    if (!dryRun && rows.length) {
+      this.transaction(() => {
+        for (const { id } of rows) {
+          this.db.prepare('DELETE FROM steps WHERE request_id = ?').run(id);
+          this.db.prepare('DELETE FROM idempotency WHERE request_id = ?').run(id);
+          this.db.prepare('DELETE FROM audit WHERE object = ?').run(`request:${id}`);
+          this.db.prepare('DELETE FROM requests WHERE id = ?').run(id);
+        }
+        this._audit({ actor, action: 'request.prune', object: 'requests', after: { cutoff, deleted: rows.length, ids: rows.map((r) => r.id) }, ip });
+      });
+    }
+    return { cutoff, olderThanDays: days, states: useStates, candidates: rows.length, deleted: dryRun ? 0 : rows.length, ids: rows.map((r) => r.id), dryRun: !!dryRun };
+  }
+
   metrics() {
     const byState = {};
     for (const r of this.db.prepare('SELECT state, COUNT(*) c FROM requests GROUP BY state').all()) byState[r.state] = r.c;

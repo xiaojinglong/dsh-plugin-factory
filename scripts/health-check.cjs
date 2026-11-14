@@ -51,7 +51,21 @@ async function checkHealth(opts = {}) {
     const failed = Number(metrics.requests?.byState?.failed || 0);
     checks.push({ name: 'failed-requests', ok: failed <= thresholds.maxFailed, detail: `${failed} <= ${thresholds.maxFailed}` });
   }
-  return { ok: checks.every((c) => c.ok), url, thresholds, checks, health, metrics };
+  const result = { ok: checks.every((c) => c.ok), url, thresholds, checks, health, metrics };
+  const webhook = opts.webhook || process.env.FACTORY_ALERT_WEBHOOK || '';
+  if (!result.ok && webhook) {
+    try {
+      const r = await fetch(webhook, {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ text: `control-plane 巡检失败：${url}`, url, failed: checks.filter((c) => !c.ok), at: new Date().toISOString() }),
+        signal: AbortSignal.timeout(5000),
+      });
+      result.alert = { ok: r.ok, status: r.status };
+    } catch (err) {
+      result.alert = { ok: false, error: String(err.message).slice(0, 200) };
+    }
+  }
+  return result;
 }
 
 async function main() {
@@ -67,7 +81,7 @@ async function main() {
   if (args['max-db-bytes'] !== undefined) thresholds.maxDbBytes = Number(args['max-db-bytes']);
   if (args['max-failed'] !== undefined) thresholds.maxFailed = Number(args['max-failed']);
   try {
-    const r = await checkHealth({ url: args.url, token: args.token, tokenFile: args['token-file'], thresholds });
+    const r = await checkHealth({ url: args.url, token: args.token, tokenFile: args['token-file'], webhook: args.webhook, thresholds });
     console.log(JSON.stringify(r, null, 2));
     process.exit(r.ok ? 0 : 1);
   } catch (err) {

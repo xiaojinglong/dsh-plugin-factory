@@ -127,6 +127,16 @@ function createControlPlane(opts = {}) {
     return { ok: true, service: 'control-plane', version: VERSION, uptimeSec: Math.round(process.uptime()), dbSizeBytes, rateLimit, ...store.metrics() };
   });
 
+  app.post('/admin/prune-requests', { preHandler: [auth] }, async (req, reply) => {
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const olderThanDays = body.olderThanDays === undefined ? 30 : Number(body.olderThanDays);
+    if (!Number.isFinite(olderThanDays) || olderThanDays < 0 || olderThanDays > 3650) {
+      return fail(req.id, reply, 400, 'INVALID_DAYS', 'olderThanDays 必须为 0–3650');
+    }
+    const states = Array.isArray(body.states) ? body.states.map(String) : undefined;
+    return { ok: true, ...store.pruneRequests({ olderThanDays, states, dryRun: body.dryRun !== false, actor: actorOf(req), ip: req.ip }) };
+  });
+
   app.post('/admin/prune', { preHandler: [auth] }, async (req, reply) => {
     const body = req.body && typeof req.body === 'object' ? req.body : {};
     const olderThanDays = body.olderThanDays === undefined ? 30 : Number(body.olderThanDays);

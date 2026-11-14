@@ -25,11 +25,11 @@
 - probe 登录检测（登录跳转/密码框）与 pipeline 失败建议 `failure.json`（step/error/suggestion）。
 - M4 验收/安装：`POST /requests/:id/accept`（staging + acceptedBy 门禁）、`apps/installer/plugin-install.cjs`（install/uninstall/rollback/smoke/备份/upgrade/list/verify/render/preflight/--dry-run）。
 - M5 发布包：`scripts/package-release.cjs` + `scripts/verify-release.cjs`（npm tarball + SHA-256 + release.json，敏感路径拦截）；`release.yml` CI；`docs/26-M5分发与升级.md`；安装器 runtimeRange 兼容性检查。
-- M6 硬化：控制面 POST 限流（429 + Retry-After）、`/health` 就绪检查（`checks.db`）、`restore.cjs` 备份恢复、`/admin/prune` 审计保留、`scripts/health-check.cjs` 健康/容量巡检；`docs/27-M6硬化与试点.md`、`docs/28-owner-UAT清单.md`。
-- 验证：**71/71** 测试。
+- M6 硬化：控制面 POST 限流（429 + Retry-After）、`/health` 就绪检查（`checks.db`）、`restore.cjs` 备份恢复、`/admin/prune` 审计保留、`/admin/prune-requests` 终态请求清理、`health-check` 巡检 + webhook 告警；`docs/27-M6硬化与试点.md`、`docs/28-owner-UAT清单.md`。
+- 验证：**73/73** 测试。
 
 ### 验证
-- 干净克隆（M0/M1/M2/M3/M4 分支）分别 22/28/44/58/**71** 测试全绿；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP；`npm audit` 0。
+- 干净克隆（M0/M1/M2/M3/M4 分支）分别 22/28/44/58/**73** 测试全绿；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP；`npm audit` 0。
 - 已知未完成：M1 依赖/真实机器、M2 真实 DSH UAT、M3 真实 probe/业务实现/编排、M4–M6；许可证与开源脱敏待 owner 确认；legacy 迁移脚本仍含旧绝对路径（不在产品路径）。
 
 

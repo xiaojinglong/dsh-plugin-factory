@@ -4,6 +4,7 @@ import assert from 'node:assert';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import http from 'node:http';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -29,6 +30,22 @@ test('health-check：健康/容量阈值可判定', async () => {
     const bad = await checkHealth({ url, token, thresholds: { maxAudit: 0 } });
     assert.equal(bad.ok, false);
     assert.ok(bad.checks.some((c) => c.name === 'audit-count' && !c.ok));
+
+    let alertBody = null;
+    const hook = http.createServer((req, res) => {
+      let data = '';
+      req.on('data', (c) => { data += c; });
+      req.on('end', () => { alertBody = JSON.parse(data); res.writeHead(200, { 'content-type': 'application/json' }); res.end('{"ok":true}'); });
+    });
+    await new Promise((r) => hook.listen(0, '127.0.0.1', r));
+    try {
+      const alerted = await checkHealth({ url, token, thresholds: { maxAudit: 0 }, webhook: `http://127.0.0.1:${hook.address().port}/hook` });
+      assert.equal(alerted.ok, false);
+      assert.equal(alerted.alert.ok, true);
+      assert.match(alertBody.text, /巡检失败/);
+    } finally {
+      await new Promise((r) => hook.close(r));
+    }
   } finally {
     await cp.stop();
   }

@@ -38,6 +38,7 @@ Token 文件：`<data-root>/control-plane/token`（默认 `<repo>/data/control-p
 | GET | `/audit?limit=` | 全局审计 |
 | POST | `/admin/backup` | `{fileName?}` → `VACUUM INTO` 备份到 `control-plane/backups/` |
 | POST | `/admin/prune` | `{olderThanDays?, dryRun}` 审计保留清理（默认 dry-run） |
+| POST | `/admin/prune-requests` | `{olderThanDays?, dryRun, states?}` 清理终态旧请求并级联 steps/audit |
 
 错误统一：`{ error: { code, message, requestId } }`；401/403/404/409/400。
 POST 默认限流 120 次/分钟/IP（`CONTROL_PLANE_RATE_LIMIT` 可调），超限 429 + `Retry-After`。
