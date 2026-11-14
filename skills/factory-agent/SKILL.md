@@ -33,6 +33,7 @@ description: 插件工厂 Agent（A 单机版）：在 DSH 会话里把业务描
 | `list_requests` | 列表 |
 | `run_step` | 记录 running/succeeded/failed/note |
 | `write_runner` | 提交业务 runner 源码（静态检查 + 更新 params.runnerFile） |
+| `accept_request` | staging 验收（acceptedBy 必填，进 accept 状态） |
 | `list_plugins` | 查看已有插件，优先复用 |
 | `get_metrics` | 控制面健康/统计 |
 | `backup_state` | 备份控制面状态 |
@@ -49,8 +50,8 @@ submitted → probe → generate → validate → staging → accept → install
 3. **建单**：`create_request({brief, params})`；得到 requestId 后向用户复述。
 4. **probe**：`run_step(step=probe, status=running)` → 执行勘探 → `succeeded` + evidence（probe 输出路径/摘要）；失败则 `failed` + error。
 5. **generate / validate / staging**：先用 `write_runner` 提交你编写的业务 runner（静态检查通过），再运行 `node apps/generator/pipeline.cjs --request <id>`；流水线在 Node 沙箱内执行。每步必须带 evidence。
-6. **accept**：展示样例报告与口径，业务确认后用 `note` 或 `accept` 记录确认人/时间；不要代替业务确认。
-7. **install**：仅在安装器与 MCP 注入完成后执行；否则停在此处并说明。
+6. **accept**：展示样例报告与口径，业务确认后用 `accept_request({acceptedBy, note})` 记录；不要代替业务确认。
+7. **install**：accept 后用 `node apps/installer/plugin-install.cjs install --source <stagingDir> --root <factoryRoot>` 安装（默认 smoke，失败回滚）；真实 DSH profile 安装仍走 M1 安装器。
 8. 交付：报告路径、数据路径、插件清单、限制与未决。
 
 ## 5. 门禁（硬性）

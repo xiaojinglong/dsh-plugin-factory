@@ -47,13 +47,13 @@ D:\www\dsh-plugin-factory\
 │   ├── factory\bootstrap.js   插件启动入口（env + DPAPI 注入）
 │   ├── manifests\<id>.json    12 个插件的单一事实源（仓库相对路径）
 │   ├── secrets\<id>.enc       DPAPI 加密凭证
-│   └── tests\                 58 个测试（契约 + runtime + 复杂场景 + 安装器 + 控制面 + MCP 全链路 + SDK/生成器/pipeline/沙箱/浏览器/业务 runner/write_runner/登录/失败建议）
+│   └── tests\                 62 个测试（契约 + runtime + 复杂场景 + 安装器 + 控制面 + MCP 全链路 + SDK/生成器/pipeline/沙箱/浏览器/业务 runner/write_runner/登录/失败建议 + 生成插件安装/accept）
 │
 ├── packages\config\           ★ 统一路径/环境解析（FACTORY_ROOT / FACTORY_DSH_*）
 ├── packages\sdk\              ★ 生成插件契约（zod PluginSpecSchema）
-├── apps\installer\            ★ 安装器（check/install/uninstall/rollback + factory-control 注入；M1 部分完成）
-├── apps\control-plane\        ★ 本地控制面（8780；需求单/步骤/审计/指标/备份；M2 代码完成）
-├── apps\factory-control-mcp\  ★ factory-control MCP（stdio 薄壳，7 工具）
+├── apps\installer\            ★ 安装器（check/install/uninstall/rollback + factory-control 注入 + M4 plugin-install）
+├── apps\control-plane\        ★ 本地控制面（8780；需求单/步骤/审计/指标/备份/accept；M2/M4 代码完成）
+├── apps\factory-control-mcp\  ★ factory-control MCP（stdio 薄壳，8 工具）
 ├── apps\generator\            ★ M3 生成流水线（probe HTTP/浏览器、业务 runner 注入、staging/沙箱/编排）
 ├── skills\factory-agent\      ★ DSH 工厂 Agent 技能（已复制到 deployment/skills）
 ├── templates\plugin\          ★ 插件脚手架模板（M3 fixture 垂直切片）

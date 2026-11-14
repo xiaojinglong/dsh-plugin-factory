@@ -150,6 +150,30 @@ function createControlPlane(opts = {}) {
     return { ok: true, audit: store.auditFor(`request:${req.params.id}`, limit) };
   });
 
+  app.post('/requests/:id/accept', { preHandler: [auth] }, async (req, reply) => {
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const acceptedBy = asString(body.acceptedBy, 128);
+    if (!acceptedBy) return fail(req.id, reply, 400, 'MISSING_ACCEPTOR', 'accept 需要 acceptedBy（业务验收人）');
+    const request = store.getRequest(req.params.id);
+    if (!request) return fail(req.id, reply, 404, 'REQUEST_NOT_FOUND', `需求单不存在：${req.params.id}`);
+    if (request.state !== 'staging') {
+      return fail(req.id, reply, 409, 'INVALID_STATE', `只有 staging 状态可验收（当前 ${request.state}）`);
+    }
+    const note = asString(body.note, 1000);
+    const evidence = JSON.stringify({ acceptedBy, note, acceptedAt: new Date().toISOString() });
+    try {
+      store.addStep({ requestId: req.params.id, step: 'accept', status: 'running', actor: acceptedBy, ip: req.ip });
+      const updated = store.addStep({
+        requestId: req.params.id, step: 'accept', status: 'succeeded', evidence,
+        actor: acceptedBy, ip: req.ip,
+      });
+      return { ok: true, request: updated };
+    } catch (err) {
+      if (err.statusCode) return fail(req.id, reply, err.statusCode, err.code || 'ERROR', err.message);
+      throw err;
+    }
+  });
+
   app.post('/requests/:id/runner', { preHandler: [auth] }, async (req, reply) => {
     const body = req.body && typeof req.body === 'object' ? req.body : {};
     const source = typeof body.source === 'string' ? body.source : '';

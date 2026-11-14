@@ -242,3 +242,23 @@ test('write_runner：静态校验、落盘、更新 params.runnerFile；状态/�
     assert.equal((await post(base, `/requests/${id}/runner`, { source: 'x'.repeat(200 * 1024 + 1) })).status, 400);
   });
 });
+
+test('accept 门禁：仅 staging 可验收，必须 acceptedBy，验收后进 accepted', async () => {
+  await withApp(async ({ base }) => {
+    const id = (await post(base, '/requests', { brief: '验收门禁' })).body.request.id;
+    for (const step of ['probe', 'generate', 'validate', 'staging']) {
+      assert.equal((await post(base, `/requests/${id}/steps`, { step, status: 'running' })).status, 200);
+      assert.equal((await post(base, `/requests/${id}/steps`, { step, status: 'succeeded', evidence: `${step}.json` })).status, 200);
+    }
+    assert.equal((await get(base, `/requests/${id}`)).body.request.state, 'staging');
+    assert.equal((await post(base, `/requests/${id}/accept`, { note: '缺验收人' })).status, 400);
+    const ok = await post(base, `/requests/${id}/accept`, { acceptedBy: '业务-张三', note: '报告口径确认' });
+    assert.equal(ok.status, 200, JSON.stringify(ok.body));
+    assert.equal(ok.body.request.state, 'accept');
+    const acceptSteps = ok.body.request.steps.filter((s) => s.step === 'accept');
+    const acceptStep = acceptSteps.find((s) => s.status === 'succeeded');
+    assert.ok(acceptStep, 'accept 应有 succeeded 记录');
+    assert.match(acceptStep.evidence, /业务-张三/);
+    assert.equal((await post(base, `/requests/${id}/accept`, { acceptedBy: '业务-李四' })).status, 409);
+  });
+});

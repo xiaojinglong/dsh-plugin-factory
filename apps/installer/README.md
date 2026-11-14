@@ -1,5 +1,27 @@
 # A 单机版安装器（apps/installer）
 
+> 状态：M1 部分完成（DSH profile/patch 安装），M4 新增生成插件安装器（plugin-install）。
+
+## 生成插件安装（M4）
+
+```powershell
+# accept 后安装到工厂根（默认 smoke：health + 401/200）
+node apps/installer/plugin-install.cjs install --source <stagingPluginDir> --root D:\www\dsh-plugin-factory
+
+# 覆盖安装（旧目录/manifest 备份）
+node apps/installer/plugin-install.cjs install --source <dir> --root <root> --force
+
+# 卸载/回滚（恢复备份）
+node apps/installer/plugin-install.cjs uninstall --id <pluginId> --root <root>
+node apps/installer/plugin-install.cjs rollback  --id <pluginId> --root <root>
+```
+
+- 前置：需求单已 `accept`；staging 目录通过 validate。
+- 安装内容：`plugins/<id>`、`deployment/tools/<id>-mcp`、`deployment/skills/<id>`、`platform/manifests/<id>.json`（相对路径）、安装状态。
+- 测试/演练请用临时 root（`--root <temp>`，可加 `--no-smoke`），不要直接覆盖真实插件。
+
+## DSH 安装（M1）
+
 > 状态：M1 **部分完成**（核心实现 + 自动测试通过；真实 DSH/干净机/依赖自动准备尚未闭合）。
 
 ## 用法

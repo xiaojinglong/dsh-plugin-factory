@@ -38,7 +38,7 @@ test('factory-control MCP：工具列表 + 创建/推进/查询需求单', async
     await client.connect(transport);
     const listed = await client.listTools();
     const names = listed.tools.map((t) => t.name).sort();
-    for (const n of ['backup_state', 'create_request', 'get_metrics', 'get_request', 'list_plugins', 'list_requests', 'run_step', 'write_runner']) {
+    for (const n of ['backup_state', 'create_request', 'get_metrics', 'get_request', 'list_plugins', 'list_requests', 'run_step', 'write_runner', 'accept_request']) {
       assert.ok(names.includes(n), `缺少工具 ${n}`);
     }
 

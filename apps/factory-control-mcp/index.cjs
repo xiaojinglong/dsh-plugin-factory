@@ -70,6 +70,16 @@ server.registerTool('list_requests', {
   return toText(await call('GET', `/requests${qs.toString() ? `?${qs}` : ''}`));
 });
 
+server.registerTool('accept_request', {
+  title: '业务验收需求单',
+  description: '仅 staging 状态可验收；记录 acceptedBy/note 并进入 accept 状态（安装前置门禁）',
+  inputSchema: {
+    requestId: z.string(),
+    acceptedBy: z.string().describe('业务验收人（必填）'),
+    note: z.string().optional().describe('验收备注/口径确认（≤1000）'),
+  },
+}, async ({ requestId, acceptedBy, note }) => toText(await call('POST', `/requests/${encodeURIComponent(requestId)}/accept`, { acceptedBy, note })));
+
 server.registerTool('write_runner', {
   title: '提交业务 runner',
   description: '提交 service/runner.js 源码（≤200KB）；控制面做静态禁止项检查并写入需求单 params.runnerFile',
