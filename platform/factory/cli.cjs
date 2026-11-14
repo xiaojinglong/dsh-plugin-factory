@@ -14,13 +14,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawn, execFileSync } = require('node:child_process');
 const net = require('node:net');
+const config = require('../../packages/config');
 
-const ROOT = 'D:/www/dsh-plugin-factory';
-const PLUGIN_DIR = path.join(ROOT, 'platform', 'manifests');
-const RUN_DIR = path.join(ROOT, 'platform', 'run');
-const PATCH = path.join(process.env.USERPROFILE, '.dsh', 'profiles', 'desktop', 'cordis.patch.yml');
-const DSH_TOOLS = 'D:/www/dshskills/tools';
-const DSH_SKILLS = 'D:/www/dshskills/skills';
+const ROOT = config.FACTORY_ROOT;
+const PLUGIN_DIR = config.MANIFEST_DIR;
+const RUN_DIR = config.RUN_DIR;
+const PATCH = config.DSH_PATCH;
+const DSH_TOOLS = config.DSH_TOOLS;
+const DSH_SKILLS = config.DSH_SKILLS;
 
 const C = { reset: '\x1b[0m', red: '\x1b[31m', green: '\x1b[32m', yellow: '\x1b[33m', cyan: '\x1b[36m', dim: '\x1b[2m' };
 let fails = 0;
@@ -31,10 +32,15 @@ const warn = (m) => { warns += 1; console.log(`${C.yellow}[WARN]${C.reset} ${m}`
 const info = (m) => console.log(`${C.cyan}${m}${C.reset}`);
 
 /* ------------------------------ manifests ------------------------------ */
-function manifests() {
+/** 读取原始 manifest（保持仓库相对路径，用于写回/生成 patch/registry） */
+function rawManifests() {
   if (!fs.existsSync(PLUGIN_DIR)) return [];
   return fs.readdirSync(PLUGIN_DIR).filter((f) => f.endsWith('.json')).sort()
     .map((f) => ({ file: path.join(PLUGIN_DIR, f), ...JSON.parse(fs.readFileSync(path.join(PLUGIN_DIR, f), 'utf8')) }));
+}
+/** 读取并解析为绝对路径（用于运行/校验，不修改磁盘） */
+function manifests() {
+  return rawManifests().map((m) => config.resolveManifest(m));
 }
 function writeRegistry(list) {
   const rows = list.sort((a, b) => a.port - b.port);
@@ -50,7 +56,8 @@ function writeRegistry(list) {
   lines.push('', '## 端口分配', '', '| 端口 | 占用插件 |', '|---|---|');
   for (const m of rows) lines.push(`| ${m.port} | ${m.id} |`);
   lines.push('', '## 复用约定（v3）', '', '1. 共享 runtime：plugin/service/server.js 只调用 `platform/factory/bootstrap`；运行时/任务引擎/鉴权/写操作治理/指标/日志只有一份。', '2. 单一事实源：`platform/manifests/<id>.json` → 本表与 patch 由 CLI 生成。', '3. 凭证：DPAPI 加密存于 `platform/secrets/<id>.enc`，服务启动时注入 env。', '4. 报告统一用 `factory-kit/report-kit.mjs`。');
-  fs.writeFileSync('D:/www/dshskills/registry.md', lines.join('\n') + '\n', 'utf8');
+  fs.mkdirSync(path.dirname(config.DSH_REGISTRY), { recursive: true });
+  fs.writeFileSync(config.DSH_REGISTRY, lines.join('\n') + '\n', 'utf8');
 }
 
 function saveManifest(m) {
@@ -125,7 +132,7 @@ function stripMcpBlocks(text) {
   return kept.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
 }
 function renderPatch() {
-  const list = manifests().filter((m) => !m.legacy);
+  const list = rawManifests().filter((m) => !m.legacy);
   let text = fs.existsSync(PATCH) ? fs.readFileSync(PATCH, 'utf8') : '';
   text = stripMcpBlocks(text);
   const blocks = list.sort((a, b) => a.port - b.port).map((m) => `# ${m.id}（${m.type === 'api' ? 'API' : m.type === 'browser' ? '浏览器' : m.type}${m.runtime?.write ? '·写操作' : ''}，v${m.version}）

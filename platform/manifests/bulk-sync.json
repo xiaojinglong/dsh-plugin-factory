@@ -7,11 +7,16 @@
   "taskType": "bulk_sync",
   "serverName": "bulk-sync",
   "service": {
-    "dir": "D:/www/dsh-plugin-factory/plugins/bulk-sync/service",
+    "dir": "plugins/bulk-sync/service",
     "entry": "server.js",
     "runner": "fetcher.js",
-    "dataDir": "D:/www/dsh-plugin-factory/plugins/bulk-sync/service/data",
-    "startCmd": ["node", ["server.js"]]
+    "dataDir": "plugins/bulk-sync/service/data",
+    "startCmd": [
+      "node",
+      [
+        "server.js"
+      ]
+    ]
   },
   "runtime": {
     "write": false,
@@ -20,11 +25,15 @@
     "toolTimeoutMs": 120000,
     "serviceToken": "2b100d9c0a8e8db532eed56ee1111632"
   },
-  "mcp": { "dir": "D:/www/dshskills/tools/bulk-sync-mcp" },
-  "skill": { "dir": "D:/www/dshskills/skills/bulk-sync" },
+  "mcp": {
+    "dir": "deployment/tools/bulk-sync-mcp"
+  },
+  "skill": {
+    "dir": "deployment/skills/bulk-sync"
+  },
   "report": {
-    "generator": "D:/www/dsh-plugin-factory/plugins/bulk-sync/gen-report-bulk.mjs",
-    "output": "D:/www/dsh-plugin-factory/plugins/bulk-sync/report/bulk-sync-report.html"
+    "generator": "plugins/bulk-sync/gen-report-bulk.mjs",
+    "output": "plugins/bulk-sync/report/bulk-sync-report.html"
   },
   "secrets": [],
   "legacy": false

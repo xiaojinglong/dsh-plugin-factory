@@ -1,15 +1,16 @@
 # 插件平台 v3（Platform / Shared Runtime）
 
-> 版本 3.0.0 · 2026-11-14
+> 版本 3.2.0 · 2026-11-15
 > 目标：把"能生成插件"升级为"能长期运维、可批量、可审计"的平台：
 > **单一共享 runtime + 单一事实源 manifest + 一条 CLI + 加密凭证 + 测试门禁 + 可观测性**。
+> 路径解析统一使用 `packages/config`（`FACTORY_ROOT` / `FACTORY_DATA_ROOT` / `FACTORY_DSH_*`）；manifest 已迁移为仓库相对路径。
 
 ---
 
 ## 一、目录
 
 ```
-D:\www\dshspirder\platform\
+D:\www\dsh-plugin-factory\platform\
 ├── runtime\                    ← 共享运行时（唯一一份）
 │   ├── index.js                HTTP 契约 / 任务状态机 / 鉴权 / 写操作治理 / 指标
 │   ├── store.js                持久化任务存储（node:sqlite，重启恢复/清理/幂等）
@@ -35,7 +36,7 @@ D:\www\dshspirder\platform\
 ## 二、常用命令
 
 ```powershell
-cd D:\www\dshspirder\platform\factory
+cd D:\www\dsh-plugin-factory\platform\factory
 
 node cli.cjs list                 # 列出插件
 node cli.cjs doctor --health      # 自检：manifest/路径/语法/配置/patch/端口/健康/报告

@@ -1,7 +1,7 @@
 # DSH Plugin Factory
 
 > 插件工厂：业务人员描述业务流程 → AI 生成可运行插件（服务 + MCP + Skill + 报告）。
-> 版本 **v3.1** · 2026-11-14 · 项目根：`D:\www\dsh-plugin-factory`
+> 版本 **v3.2** · 2026-11-15 · 项目根：`D:\www\dsh-plugin-factory`（A 单机版）
 
 ---
 
@@ -19,7 +19,8 @@
 报告（plugins/<id>/report/*.html）
 ```
 
-工厂同时管理 **8 个已上线插件**（端口 8790–8797），覆盖 API / 浏览器 / 写操作 / 视频四类场景。
+工厂同时管理 **12 个已上线插件**（端口 8790–8801），覆盖 API / 浏览器 / 文件系统 / 写操作四类场景。
+A 单机版目标：**下载即用**，在 DSH 会话里完成"描述 → 生成 → 测试 → 安装 → 报告"；完整路线见 `PLAN-A.md`。
 
 ---
 
@@ -44,10 +45,13 @@ D:\www\dsh-plugin-factory\
 │   ├── runtime\               任务引擎(SQLite)/鉴权/写操作治理/指标/日志/API runner
 │   ├── factory\cli.cjs        ★ 统一命令入口
 │   ├── factory\bootstrap.js   插件启动入口（env + DPAPI 注入）
-│   ├── manifests\<id>.json    8 个插件的单一事实源
-│   ├── secrets\<id>.enc       8 份 DPAPI 加密凭证
-│   ├── tests\                12 个测试（契约 + runtime 集成）
-│   └── README.md             平台架构与命令详解
+│   ├── manifests\<id>.json    12 个插件的单一事实源（仓库相对路径）
+│   ├── secrets\<id>.enc       DPAPI 加密凭证
+│   └── tests\                 22 个测试（契约 + runtime + 复杂场景）
+│
+├── packages\config\           ★ 统一路径/环境解析（FACTORY_ROOT / FACTORY_DSH_*）
+├── templates\                 插件脚手架（M1 起）
+├── PLAN-A.md / PROMPT-A.md    A 单机版路线 / 生产级冲刺指令
 │
 ├── plugins\                   ← 8 个插件项目（每个 = service / mcp / report / gen-report）
 │   ├── concise-analysis\   8790（legacy 爬虫）
@@ -110,8 +114,9 @@ node cli.cjs secret <id> set K=V  # 凭证加密保存（DPAPI）
 
 | 项 | 状态 |
 |---|---|
-| 插件 | 8 个（8790–8797），全部健康 |
-| MCP/Skill | 8 套，DSH 已加载（`registry.md` 自动生成） |
-| 测试 | 12/12 通过 |
+| 插件 | 12 个（8790–8801），全部健康 |
+| MCP/Skill | 12 套，DSH 已加载（`registry.md` 自动生成） |
+| 测试 | 22/22 通过（契约 + runtime + 复杂场景 + manifest 可移植性） |
 | 自检 | `doctor --health` 全部通过（仅 legacy 1 条 warn） |
-| 迁移 | 旧 `D:\www\dshspirder` 中的工厂资产已全部迁入本目录；旧工作区仅保留无关文件 |
+| 鉴权 | v3 服务 no-token=401 / manifest token=200 |
+| 迁移 | 旧 `D:\www\dshspirder` 中的工厂资产已全部迁入本目录；路径已配置化 |

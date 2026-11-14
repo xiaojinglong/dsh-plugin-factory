@@ -7,10 +7,10 @@
   "taskType": "listing_list",
   "serverName": "listing-list",
   "service": {
-    "dir": "D:/www/dsh-plugin-factory/plugins/listing-list/service",
+    "dir": "plugins/listing-list/service",
     "entry": "server.js",
     "runner": "fetcher.js",
-    "dataDir": "D:/www/dsh-plugin-factory/plugins/listing-list/service/data",
+    "dataDir": "plugins/listing-list/service/data",
     "startCmd": [
       "node",
       [
@@ -26,14 +26,14 @@
     "serviceToken": "ac3719cf00fc978a5c015faf6774f3d7"
   },
   "mcp": {
-    "dir": "D:/www/dshskills/tools/listing-list-mcp"
+    "dir": "deployment/tools/listing-list-mcp"
   },
   "skill": {
-    "dir": "D:/www/dshskills/skills/listing-list"
+    "dir": "deployment/skills/listing-list"
   },
   "report": {
-    "generator": "D:/www/dsh-plugin-factory/plugins/listing-list/gen-report.mjs",
-    "output": "D:/www/dsh-plugin-factory/plugins/listing-list/report/listing-list-report.html"
+    "generator": "plugins/listing-list/gen-report.mjs",
+    "output": "plugins/listing-list/report/listing-list-report.html"
   },
   "secrets": [
     "LISTING_API_KEY"

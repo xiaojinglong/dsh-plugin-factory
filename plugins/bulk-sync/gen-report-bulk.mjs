@@ -2,10 +2,11 @@
 // 用法：node gen-report-bulk.mjs [dataset.json]
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { shell, table, distTable, top, pct, esc, n, sum } from '../../factory-kit/report-kit.mjs';
 import { resolveDataset, rowsOf } from '../../factory-kit/dataset.mjs';
 
-const PLUGIN_DIR = 'D:/www/dsh-plugin-factory/plugins/bulk-sync';
+const PLUGIN_DIR = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(PLUGIN_DIR, 'report', 'bulk-sync-report.html');
 const { ds, jobId = '', source } = await resolveDataset(PLUGIN_DIR);
 const rows = rowsOf(ds);

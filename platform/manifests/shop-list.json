@@ -7,10 +7,10 @@
   "taskType": "shop_list",
   "serverName": "shop-list",
   "service": {
-    "dir": "D:/www/dsh-plugin-factory/plugins/shop-list/service",
+    "dir": "plugins/shop-list/service",
     "entry": "server.js",
     "runner": "fetcher.js",
-    "dataDir": "D:/www/dsh-plugin-factory/plugins/shop-list/service/data",
+    "dataDir": "plugins/shop-list/service/data",
     "startCmd": [
       "node",
       [
@@ -26,14 +26,14 @@
     "serviceToken": "61159f12ebc792765fdd0374b63d990c"
   },
   "mcp": {
-    "dir": "D:/www/dshskills/tools/shop-list-mcp"
+    "dir": "deployment/tools/shop-list-mcp"
   },
   "skill": {
-    "dir": "D:/www/dshskills/skills/shop-list"
+    "dir": "deployment/skills/shop-list"
   },
   "report": {
-    "generator": "D:/www/dsh-plugin-factory/plugins/shop-list/gen-report-shop.mjs",
-    "output": "D:/www/dsh-plugin-factory/plugins/shop-list/report/shop-list-report.html"
+    "generator": "plugins/shop-list/gen-report-shop.mjs",
+    "output": "plugins/shop-list/report/shop-list-report.html"
   },
   "secrets": [
     "LISTING_API_KEY"

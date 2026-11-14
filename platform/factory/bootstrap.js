@@ -5,6 +5,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const { createService } = require('../runtime');
 const { hydrate } = require('../runtime/secrets');
+const { resolveManifest } = require('../../packages/config');
 
 /** 极简 .env 加载（仅非敏感配置；敏感项走 DPAPI secrets） */
 function loadEnvFile(dir) {
@@ -25,11 +26,13 @@ function loadEnvFile(dir) {
 }
 
 /**
- * @param {object} manifest  plugin.json 内容
+ * @param {object} manifestRaw  manifest 原始内容（允许仓库相对路径）
  * @param {function} runJob  (job, ctx) => Promise
  */
-function boot(manifest, runJob, cleanup) {
+function boot(manifestRaw, runJob, cleanup) {
+  const manifest = resolveManifest(manifestRaw);
   const serviceDir = manifest.service.dir;
+  const dataDir = manifest.service.dataDir || path.join(serviceDir, 'data');
   loadEnvFile(serviceDir);
   hydrate(manifest.id, manifest.secrets || []);
   const svc = createService({
@@ -37,7 +40,7 @@ function boot(manifest, runJob, cleanup) {
     port: Number(process.env.PORT || manifest.port),
     taskType: manifest.taskType,
     version: manifest.version,
-    dataDir: path.join(serviceDir, 'data'),
+    dataDir,
     runJob,
     write: !!(manifest.runtime && manifest.runtime.write),
     // 鉴权：env 优先（运维覆盖），否则回退到 manifest 的 serviceToken（单一事实源）

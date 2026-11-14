@@ -2,10 +2,11 @@
 // 用法：node gen-report-page.mjs [dataset.json]
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { shell, table, distTable, top, pct, esc, n } from '../../factory-kit/report-kit.mjs';
 import { resolveDataset, rowsOf } from '../../factory-kit/dataset.mjs';
 
-const PLUGIN_DIR = 'D:/www/dsh-plugin-factory/plugins/page-audit';
+const PLUGIN_DIR = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(PLUGIN_DIR, 'report', 'page-audit-report.html');
 const { ds, jobId = '', source } = await resolveDataset(PLUGIN_DIR);
 const rows = rowsOf(ds);

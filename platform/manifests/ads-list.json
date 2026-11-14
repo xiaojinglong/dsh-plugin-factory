@@ -7,10 +7,10 @@
   "taskType": "ads_list",
   "serverName": "ads-list",
   "service": {
-    "dir": "D:/www/dsh-plugin-factory/plugins/ads-list/service",
+    "dir": "plugins/ads-list/service",
     "entry": "server.js",
     "runner": "fetcher.js",
-    "dataDir": "D:/www/dsh-plugin-factory/plugins/ads-list/service/data",
+    "dataDir": "plugins/ads-list/service/data",
     "startCmd": [
       "node",
       [
@@ -26,14 +26,14 @@
     "serviceToken": "3b6f8e803cd49aec36eff5fae74b63a3"
   },
   "mcp": {
-    "dir": "D:/www/dshskills/tools/ads-list-mcp"
+    "dir": "deployment/tools/ads-list-mcp"
   },
   "skill": {
-    "dir": "D:/www/dshskills/skills/ads-list"
+    "dir": "deployment/skills/ads-list"
   },
   "report": {
-    "generator": "D:/www/dsh-plugin-factory/plugins/ads-list/gen-report-ads.mjs",
-    "output": "D:/www/dsh-plugin-factory/plugins/ads-list/report/ads-list-report.html"
+    "generator": "plugins/ads-list/gen-report-ads.mjs",
+    "output": "plugins/ads-list/report/ads-list-report.html"
   },
   "secrets": [
     "LISTING_API_KEY"

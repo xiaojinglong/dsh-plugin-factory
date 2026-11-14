@@ -1,10 +1,11 @@
 // gen-report-shop.mjs —— 店铺盘点报告（场景2）
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { esc, n, pct, sum, cnt, uniq, top, table, distTable, shell } from '../../factory-kit/report-kit.mjs';
 import { resolveDataset } from '../../factory-kit/dataset.mjs';
 
-const PLUGIN_DIR = 'D:/www/dsh-plugin-factory/plugins/shop-list';
+const PLUGIN_DIR = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(PLUGIN_DIR, 'report', 'shop-list-report.html');
 const { ds, jobId = '', source } = await resolveDataset(PLUGIN_DIR);
 const rows = (ds.pages || []).flatMap((p) => p.rows || []);

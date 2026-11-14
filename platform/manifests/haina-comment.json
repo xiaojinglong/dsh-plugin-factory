@@ -7,10 +7,10 @@
   "taskType": "haina_comment",
   "serverName": "haina-comment",
   "service": {
-    "dir": "D:/www/dsh-plugin-factory/plugins/haina-comment/service",
+    "dir": "plugins/haina-comment/service",
     "entry": "server.js",
     "runner": "crawler.js",
-    "dataDir": "D:/www/dsh-plugin-factory/plugins/haina-comment/service/data",
+    "dataDir": "plugins/haina-comment/service/data",
     "startCmd": [
       "node",
       [
@@ -26,10 +26,10 @@
     "serviceToken": "8560a6c3b5dc1d98b171c870178c2588"
   },
   "mcp": {
-    "dir": "D:/www/dshskills/tools/haina-comment-mcp"
+    "dir": "deployment/tools/haina-comment-mcp"
   },
   "skill": {
-    "dir": "D:/www/dshskills/skills/haina-comment"
+    "dir": "deployment/skills/haina-comment"
   },
   "report": null,
   "secrets": [

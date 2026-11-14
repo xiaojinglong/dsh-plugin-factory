@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## v3.2 — 2026-11-15（A 单机版生产化基线：12 插件 + 可靠性修复 + 路径可移植）
+
+### 新增
+- 4 个复杂场景插件：`bulk-sync`（API 分页/重试/取消/空数据）、`coupon-push`（写操作四闸/额度/幂等/审计）、`page-audit`（浏览器登录态/多页巡检/截图）、`fs-ledger`（文件系统只读扫描/缺失项）。
+- `platform/tests/complex-scenarios.test.mjs`（9 例）+ manifest 可移植性测试；测试总数 12 → **22**。
+- `A+B` 架构与生产化文档：`docs/23`、`docs/24`、`docs/25`、`PLAN-A.md`、`PROMPT-A.md`。
+
+### 修复（可靠性）
+- 鉴权 token 由 manifest 注入（此前实际未鉴权）；`doctor --health` 增加 401/200 实检。
+- `dry_run` 幂等键不再触发唯一索引 500；预演不占写额度（新增 `dry_run` 列 + 旧库迁移）。
+- 幂等优先于额度；`GET /jobs` 未鉴权返回 401（此前 200）。
+- `factory render` 清理历史重复注释，幂等；`doctor` 增加 patch token 一致性、报告生成器存在性检查。
+
+### 工程化
+- 根 `package.json` + `package-lock.json` + `.nvmrc`（Node 24）+ GitHub Actions CI（Windows/Linux）。
+- `packages/config` 统一路径解析；manifest 迁移为**仓库相对路径**（12 个）；report 生成器改为基于脚本位置解析。
+- `scripts/check-syntax.mjs`（158 文件语法门禁）、`scripts/migrate-manifests.mjs`（可复跑迁移）。
+- 文档同步：HANDOFF/README 更新到 12 插件/v3.2；`QUALITY-GATES-A.md`、`DECISIONS-A.md`、`STATUS-A.md`。
+
+### 验证
+- `npm ci && npm test`（干净克隆）22/22；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP。
+- 已知未完成：安装器/控制面/factory-agent（PLAN-A M1–M3）；许可证与开源脱敏待 owner 确认；legacy 迁移脚本仍含旧绝对路径（不在产品路径）。
+
+
 ## v3.1 — 2026-11-14（项目整合：迁移至 D:\www\dsh-plugin-factory）
 
 ### 结构

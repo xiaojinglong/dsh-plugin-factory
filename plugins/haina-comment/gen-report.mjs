@@ -1,10 +1,11 @@
 // gen-report.mjs —— haina-comment 评论汇总报告
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { shell, table, distTable, bar, top, esc } from '../../factory-kit/report-kit.mjs';
 import { resolveDataset, rowsOf } from '../../factory-kit/dataset.mjs';
 
-const PLUGIN_DIR = 'D:/www/dsh-plugin-factory/plugins/haina-comment';
+const PLUGIN_DIR = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(PLUGIN_DIR, 'report', 'haina-comment-report.html');
 const { ds, jobId = '', source } = await resolveDataset(PLUGIN_DIR);
 const rows = rowsOf(ds);

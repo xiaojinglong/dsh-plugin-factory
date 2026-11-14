@@ -7,10 +7,10 @@
   "taskType": "stock_alert",
   "serverName": "stock-alert",
   "service": {
-    "dir": "D:/www/dsh-plugin-factory/plugins/stock-alert/service",
+    "dir": "plugins/stock-alert/service",
     "entry": "server.js",
     "runner": "fetcher.js",
-    "dataDir": "D:/www/dsh-plugin-factory/plugins/stock-alert/service/data",
+    "dataDir": "plugins/stock-alert/service/data",
     "startCmd": [
       "node",
       [
@@ -26,14 +26,14 @@
     "serviceToken": "262e26e6c2949e5dfc17288e7c59681d"
   },
   "mcp": {
-    "dir": "D:/www/dshskills/tools/stock-alert-mcp"
+    "dir": "deployment/tools/stock-alert-mcp"
   },
   "skill": {
-    "dir": "D:/www/dshskills/skills/stock-alert"
+    "dir": "deployment/skills/stock-alert"
   },
   "report": {
-    "generator": "D:/www/dsh-plugin-factory/plugins/stock-alert/gen-report.mjs",
-    "output": "D:/www/dsh-plugin-factory/plugins/stock-alert/report/stock-alert-report.html"
+    "generator": "plugins/stock-alert/gen-report.mjs",
+    "output": "plugins/stock-alert/report/stock-alert-report.html"
   },
   "secrets": [
     "LISTING_API_KEY"

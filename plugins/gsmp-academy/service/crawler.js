@@ -8,6 +8,7 @@
  */
 
 const { chromium } = require('playwright');
+const path = require('node:path');
 
 const HOME = 'https://gsmp.giikin.com/home';
 const ACADEMY = 'https://manage.giikin.com/fe/shop/wbw/video-learning';
@@ -43,7 +44,7 @@ async function runJob(job, ctx) {
   const course = String(p.course || DEFAULT_COURSE);
   const speed = Math.max(1, Math.min(4, Number(p.speed) || 2));
   const seconds = Math.max(2, Math.min(60, Number(p.seconds_per_lesson) || 5));
-  const sessionFile = String(process.env.SESSION_FILE || 'D:/www/dsh-plugin-factory/data/sessions/default.json');
+  const sessionFile = String(process.env.SESSION_FILE || path.join(__dirname, '..', '..', '..', 'data', 'sessions', 'default.json'));
 
   const browser = await getBrowser();
   const context = await browser.newContext({ viewport: { width: 1600, height: 900 }, locale: 'zh-CN', storageState: sessionFile });

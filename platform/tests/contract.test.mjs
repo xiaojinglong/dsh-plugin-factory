@@ -3,12 +3,17 @@ import test from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 
-const ROOT = 'D:/www/dsh-plugin-factory';
-const MAN = path.join(ROOT, 'platform', 'manifests');
-const PATCH = path.join(process.env.USERPROFILE, '.dsh', 'profiles', 'desktop', 'cordis.patch.yml');
-const manifests = fs.readdirSync(MAN).filter((f) => f.endsWith('.json'))
+const require = createRequire(import.meta.url);
+const config = require('../../packages/config');
+
+const ROOT = config.FACTORY_ROOT;
+const MAN = config.MANIFEST_DIR;
+const PATCH = config.DSH_PATCH;
+const rawManifests = fs.readdirSync(MAN).filter((f) => f.endsWith('.json'))
   .map((f) => JSON.parse(fs.readFileSync(path.join(MAN, f), 'utf8')));
+const manifests = rawManifests.map((m) => config.resolveManifest(m));
 
 test('插件清单非空且字段齐全', () => {
   assert.ok(manifests.length >= 8);
@@ -17,6 +22,13 @@ test('插件清单非空且字段齐全', () => {
       assert.ok(k in m, `${m.id} 缺 ${k}`);
     }
     assert.match(m.id, /^[a-z0-9]+(-[a-z0-9]+)*$/);
+  }
+});
+
+test('manifest 路径可移植（禁止绝对路径）', () => {
+  for (const m of rawManifests) {
+    const text = JSON.stringify(m);
+    assert.ok(!/[A-Za-z]:[\\/]/.test(text), `${m.id} 含绝对路径，无法在其它路径克隆/CI 运行`);
   }
 });
 
@@ -47,7 +59,9 @@ test('MCP config 端口与 manifest 一致', () => {
   }
 });
 
-test('patch 包含全部非 legacy 插件条目', () => {
+test('patch 包含全部非 legacy 插件条目', {
+  skip: fs.existsSync(PATCH) ? false : `当前环境没有 DSH patch（${PATCH}），仅校验 manifest 契约`,
+}, () => {
   const text = fs.readFileSync(PATCH, 'utf8');
   for (const m of manifests.filter((x) => !x.legacy)) {
     assert.ok(text.includes(`- id: mcp-${m.id}`), `${m.id} 缺 patch 条目`);

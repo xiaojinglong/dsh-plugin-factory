@@ -1,9 +1,10 @@
 // gen-report.mjs —— 读 2 页 listing 数据，生成 HTML 版经营分析报告
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { resolveDataset } from '../../factory-kit/dataset.mjs';
 
-const PLUGIN_DIR = 'D:/www/dsh-plugin-factory/plugins/listing-list';
+const PLUGIN_DIR = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(PLUGIN_DIR, 'report', 'listing-list-report.html');
 const { ds: dataset, jobId = '', source } = await resolveDataset(PLUGIN_DIR);
 const pages = Array.isArray(dataset) ? dataset : (dataset.pages || []);

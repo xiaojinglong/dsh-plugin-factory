@@ -4,9 +4,11 @@
 // 用法：node gen-report-draft.mjs [datasetPath]
 //       缺省优先 data/dataset.json，其次取 service/data/jobs/<最新>/draft_cleanup_dataset.json
 import { readFile, writeFile, readdir } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { esc, n, f2, pct, sum, cnt, uniq, top, table, distTable, shell } from '../../factory-kit/report-kit.mjs';
 
-const ROOT = 'D:/www/dsh-plugin-factory/plugins/draft-cleanup';
+const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const OUT = `${ROOT}/report/draft-cleanup-report.html`;
 
 /** 数据集解析：显式入参 → data/dataset.json → 最新 job 产物 */

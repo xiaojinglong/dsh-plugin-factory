@@ -7,10 +7,10 @@
   "taskType": "gsmp_academy",
   "serverName": "gsmp-academy",
   "service": {
-    "dir": "D:/www/dsh-plugin-factory/plugins/gsmp-academy/service",
+    "dir": "plugins/gsmp-academy/service",
     "entry": "server.js",
     "runner": "crawler.js",
-    "dataDir": "D:/www/dsh-plugin-factory/plugins/gsmp-academy/service/data",
+    "dataDir": "plugins/gsmp-academy/service/data",
     "startCmd": [
       "node",
       [
@@ -26,10 +26,10 @@
     "serviceToken": "08c94aa2037cc580fa8b18b9db8a99c8"
   },
   "mcp": {
-    "dir": "D:/www/dshskills/tools/gsmp-academy-mcp"
+    "dir": "deployment/tools/gsmp-academy-mcp"
   },
   "skill": {
-    "dir": "D:/www/dshskills/skills/gsmp-academy"
+    "dir": "deployment/skills/gsmp-academy"
   },
   "report": null,
   "secrets": [

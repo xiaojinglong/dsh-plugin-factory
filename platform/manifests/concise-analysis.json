@@ -7,9 +7,9 @@
   "taskType": "jingying_analysis",
   "serverName": "concise-analysis",
   "service": {
-    "dir": "D:/www/dsh-plugin-factory/plugins/concise-analysis/service",
+    "dir": "plugins/concise-analysis/service",
     "entry": "server.js",
-    "dataDir": "D:/www/dsh-plugin-factory/plugins/concise-analysis/service/data",
+    "dataDir": "plugins/concise-analysis/service/data",
     "startCmd": [
       "node",
       [
@@ -24,10 +24,10 @@
     "toolTimeoutMs": 900001
   },
   "mcp": {
-    "dir": "D:/www/dshskills/tools/concise-analysis-mcp"
+    "dir": "deployment/tools/concise-analysis-mcp"
   },
   "skill": {
-    "dir": "D:/www/dshskills/skills/concise-analysis"
+    "dir": "deployment/skills/concise-analysis"
   },
   "report": null,
   "secrets": [],

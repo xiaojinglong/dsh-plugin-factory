@@ -1,10 +1,11 @@
 // gen-report.mjs —— AI学苑课程播放与标题汇总报告
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { shell, table, distTable, esc } from '../../factory-kit/report-kit.mjs';
 import { resolveDataset, rowsOf } from '../../factory-kit/dataset.mjs';
 
-const PLUGIN_DIR = 'D:/www/dsh-plugin-factory/plugins/gsmp-academy';
+const PLUGIN_DIR = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(PLUGIN_DIR, 'report', 'gsmp-academy-report.html');
 const { ds, jobId = '', source } = await resolveDataset(PLUGIN_DIR);
 const rows = rowsOf(ds);

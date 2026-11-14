@@ -1,0 +1,19 @@
+{
+  "name": "dsh-plugin-factory",
+  "version": "3.2.0",
+  "private": true,
+  "description": "DSH Plugin Factory A — single-machine plugin factory: business description → runnable DSH plugin (service + MCP + skill + report).",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "test": "node platform/factory/cli.cjs test",
+    "doctor": "node platform/factory/cli.cjs doctor",
+    "render": "node platform/factory/cli.cjs render",
+    "check": "node scripts/check-syntax.mjs"
+  },
+  "dependencies": {
+    "fastify": "5.12.8",
+    "playwright": "1.65.0"
+  }
+}
