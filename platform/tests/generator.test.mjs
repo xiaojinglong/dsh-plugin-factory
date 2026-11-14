@@ -9,9 +9,12 @@ import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 
 const require = createRequire(import.meta.url);
+const config = require('../../packages/config');
+const ROOT = config.FACTORY_ROOT;
 const { validatePluginSpec } = require('../../packages/sdk');
 const { generate, validateDir } = require('../../apps/generator/generator.cjs');
-const { probeFixture, probeHttp, isHostAllowed, isPrivateIp, assertUrlAllowed } = require('../../apps/generator/probe.cjs');
+const { probeFixture, probeHttp, probeBrowser, isHostAllowed, isPrivateIp, assertUrlAllowed } = require('../../apps/generator/probe.cjs');
+const { validateRunnerSource } = require('../../apps/generator/business.cjs');
 const sandbox = require('../../apps/generator/sandbox.cjs');
 const { runPipeline } = require('../../apps/generator/pipeline.cjs');
 const { createControlPlane } = require('../../apps/control-plane/server.cjs');
@@ -80,6 +83,18 @@ test('pipeline：需求单 → probe → generate → validate → staging → �
   const dataRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-a-pipe-'));
   const fixture = path.join(dataRoot, 'fixture.json');
   fs.writeFileSync(fixture, JSON.stringify({ rows: [{ k: 1, v: 'a' }, { k: 2, v: 'b' }, { k: 3, v: 'c' }] }), 'utf8');
+  const runnerFile = path.join(dataRoot, 'runner.js');
+  fs.writeFileSync(runnerFile, `'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+async function runJob(job, ctx) {
+  const p = ctx.params || {};
+  const data = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'data.json'), 'utf8'));
+  const rows = (data.rows || []).slice(0, Number(p.limit) || 2);
+  const sum = rows.reduce((s, r) => s + Number(r.k || 0), 0);
+  await ctx.saveFile({ kind: 'main', fileName: 'business_dataset.json', content: JSON.stringify({ task: 'pipe_demo', fetchedAt: new Date().toISOString(), params: { limit: rows.length }, extra: { source: 'business-runner', sum }, total: data.rows.length, totalPages: 1, pages: [{ page: 1, rows }] }, null, 2), encoding: 'utf8' });
+}
+module.exports = { runJob };`, 'utf8');
   const token = 'pipe-token';
   const cp = createControlPlane({ dataRoot, token });
   const { port } = await cp.start({ port: 0 });
@@ -88,7 +103,7 @@ test('pipeline：需求单 → probe → generate → validate → staging → �
   try {
     const created = await (await fetch(`${base}/requests`, {
       method: 'POST', headers: H,
-      body: JSON.stringify({ brief: '流水线生成', params: { pluginId: 'pipe-demo', name: '流水线演示', type: 'api', fixture } }),
+      body: JSON.stringify({ brief: '流水线生成', params: { pluginId: 'pipe-demo', name: '流水线演示', type: 'api', fixture, runnerFile } }),
     })).json();
     const requestId = created.request.id;
     const out = await runPipeline({ baseUrl: base, token, requestId, dataRoot });
@@ -103,6 +118,10 @@ test('pipeline：需求单 → probe → generate → validate → staging → �
     const report = path.join(out.pluginDir, 'report', 'pipe-demo-report.html');
     assert.ok(fs.existsSync(report), '报告应生成');
     assert.ok(fs.statSync(report).size > 0);
+    const evidence = JSON.parse(fs.readFileSync(path.join(out.pluginDir, 'evidence', 'validation.json'), 'utf8'));
+    const ds = JSON.parse(fs.readFileSync(evidence.datasetPath, 'utf8'));
+    assert.equal(ds.extra.source, 'business-runner', '应执行注入的业务 runner');
+    assert.equal(ds.extra.sum, 3);
     assert.ok(fs.existsSync(path.join(out.pluginDir, 'evidence', 'validation.json')));
     assert.ok(fs.existsSync(path.join(out.pluginDir, 'evidence', 'probe.json')) === false, 'probe 证据在 runDir');
     assert.ok(fs.existsSync(path.join(dataRoot, 'generator', 'runs', requestId, 'probe.json')));
@@ -195,4 +214,53 @@ test('sandbox：仅允许写 staging，拒绝写外部路径', () => {
   const r2 = spawnSync(process.execPath, argsOk, { encoding: 'utf8' });
   assert.equal(r2.status, 0, r2.stderr);
   assert.equal(fs.readFileSync(allowedFile, 'utf8'), 'ok');
+});
+
+test('probe 浏览器：本机站点标题/表格/截图', async () => {
+  const html = fs.readFileSync(path.join(ROOT, 'fixtures', 'probe-site', 'index.html'), 'utf8');
+  const srv = http.createServer((req, res) => { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(html); });
+  await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+  const port = srv.address().port;
+  const shot = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-a-bprobe-')), 'shot.png');
+  try {
+    const r = await probeBrowser(`http://127.0.0.1:${port}/`, { screenshotPath: shot });
+    assert.equal(r.kind, 'browser');
+    assert.equal(r.title, 'M3 Probe Fixture');
+    assert.equal(r.count, 3);
+    assert.deepEqual(r.fields, ['sku', 'stock', 'site']);
+    assert.ok(r.links >= 1);
+    assert.ok(fs.existsSync(shot) && fs.statSync(shot).size > 0, '截图应生成');
+  } finally {
+    await new Promise((r) => srv.close(r));
+  }
+});
+
+test('业务 runner：静态拒绝危险 API；自定义 runner 可注入并执行', async () => {
+  const dangerous = validateRunnerSource("const cp = require('child_process'); async function runJob(){} module.exports={runJob};");
+  assert.equal(dangerous.ok, false);
+  assert.ok(dangerous.errors.some((e) => e.includes('child_process')));
+
+  const t = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-a-biz-'));
+  const fixture = path.join(t, 'fixture.json');
+  fs.writeFileSync(fixture, JSON.stringify({ rows: [{ k: 1 }, { k: 2 }] }), 'utf8');
+  const source = `'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+async function runJob(job, ctx) {
+  const data = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'data.json'), 'utf8'));
+  const rows = data.rows.slice(0, 2);
+  const sum = rows.reduce((s, r) => s + Number(r.k || 0), 0);
+  await ctx.saveFile({ kind: 'main', fileName: 'business_dataset.json', content: JSON.stringify({ task: 'business_demo', fetchedAt: new Date().toISOString(), params: {}, extra: { source: 'business-runner', sum }, total: data.rows.length, totalPages: 1, pages: [{ page: 1, rows }] }, null, 2), encoding: 'utf8' });
+}
+module.exports = { runJob };`;
+  const out = path.join(t, 'plugin');
+  await generate({ id: 'business-demo', name: '业务 Runner 演示', type: 'api', fixture, out, runnerSource: source, port: 0 });
+  const gen = JSON.parse(fs.readFileSync(path.join(out, 'evidence', 'generation.json'), 'utf8'));
+  assert.equal(gen.runnerKind, 'custom');
+  const v = await validateDir(out);
+  assert.equal(v.ok, true, JSON.stringify(v.errors));
+  const evidence = JSON.parse(fs.readFileSync(path.join(out, 'evidence', 'validation.json'), 'utf8'));
+  const ds = JSON.parse(fs.readFileSync(evidence.datasetPath, 'utf8'));
+  assert.equal(ds.extra.source, 'business-runner');
+  assert.equal(ds.extra.sum, 3);
 });

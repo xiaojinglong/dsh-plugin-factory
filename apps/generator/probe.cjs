@@ -141,14 +141,53 @@ async function probeHttp(apiUrl, opts = {}) {
   throw new Error(`重定向超过 ${MAX_REDIRECTS} 次`);
 }
 
+async function probeBrowser(browserUrl, opts = {}) {
+  const allowlist = opts.allowlist || loadAllowlist();
+  await assertUrlAllowed(browserUrl, allowlist);
+  const { chromium } = require('playwright');
+  const browser = await chromium.launch({
+    headless: String(process.env.HEADLESS || 'true') !== 'false',
+    args: ['--no-sandbox', '--disable-gpu'],
+  });
+  try {
+    const storageState = opts.storageState && fs.existsSync(opts.storageState) ? opts.storageState : undefined;
+    const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, locale: 'zh-CN', ...(storageState ? { storageState } : {}) });
+    const page = await context.newPage();
+    await page.goto(browserUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+    const title = await page.title();
+    const tables = await page.$$eval('table', (ts) => ts.slice(0, 5).map((t) => ({
+      headers: [...t.querySelectorAll('thead th')].map((x) => (x.innerText || '').trim()),
+      rows: [...t.querySelectorAll('tbody tr')].map((tr) => [...tr.querySelectorAll('td')].map((td) => (td.innerText || '').trim())),
+    })));
+    const links = await page.$$eval('a[href]', (as) => as.length);
+    let screenshot = '';
+    if (opts.screenshotPath) {
+      fs.mkdirSync(path.dirname(path.resolve(opts.screenshotPath)), { recursive: true });
+      await page.screenshot({ path: opts.screenshotPath, fullPage: true });
+      screenshot = path.resolve(opts.screenshotPath);
+    }
+    const first = tables[0] || { headers: [], rows: [] };
+    return {
+      kind: 'browser', source: String(browserUrl), finalUrl: page.url(), title, links, screenshot,
+      tables: tables.map((t) => ({ headers: t.headers, count: t.rows.length, sample: t.rows.slice(0, 3) })),
+      fields: first.headers, sample: first.rows.slice(0, 3), count: first.rows.length,
+      storageState: storageState || '',
+    };
+  } finally {
+    await browser.close().catch(() => {});
+  }
+}
+
 async function probe(params = {}) {
   if (params.fixture) return probeFixture(params.fixture);
   if (params.apiUrl) return probeHttp(params.apiUrl, params);
-  throw new Error('缺少勘探参数：需要 params.fixture 或 params.apiUrl');
+  if (params.browserUrl) return probeBrowser(params.browserUrl, params);
+  throw new Error('缺少勘探参数：需要 params.fixture / params.apiUrl / params.browserUrl');
 }
 
 module.exports = {
-  probe, probeFixture, probeHttp, summarizeList,
+  probe, probeFixture, probeHttp, probeBrowser, summarizeList,
   loadAllowlist, isHostAllowed, isPrivateIp, assertUrlAllowed,
   MAX_BYTES, DEFAULT_ALLOWLIST,
 };

@@ -5,8 +5,8 @@ description: 插件工厂 Agent（A 单机版）：在 DSH 会话里把业务描
 
 # 插件工厂 Agent（factory-agent）Skill
 
-> 状态：**M2 控制面/MCP 可用；M3 fixture 流水线可用**。`apps/generator/pipeline.cjs` 支持需求单 → probe → generate → validate → staging（报告）。
-> 但 M3 仍是 **fixture/本机 HTTP** 范围：真实业务 API/浏览器勘探、AI 业务实现、沙箱尚未完成；**不得声称"任意业务插件已生成/已生产验证"**。
+> 状态：**M2 控制面/MCP 可用；M3 流水线可用（fixture/本机 HTTP/浏览器/业务 runner 注入）**。
+> M3 仍缺：DSH 侧自动编写业务 runner 的闭环、真实登录态/iframe、失败自修复；**不得声称"任意业务插件已生产验证"**。
 
 ## 1. 适用场景
 
@@ -47,7 +47,7 @@ submitted → probe → generate → validate → staging → accept → install
 2. **查重**：`list_plugins`，已有插件能覆盖就复用，不新建。
 3. **建单**：`create_request({brief, params})`；得到 requestId 后向用户复述。
 4. **probe**：`run_step(step=probe, status=running)` → 执行勘探 → `succeeded` + evidence（probe 输出路径/摘要）；失败则 `failed` + error。
-5. **generate / validate / staging**：可用 `node apps/generator/pipeline.cjs --request <id>` 驱动（需 `CONTROL_PLANE_TOKEN`）；每步必须带 evidence（文件路径/hash/命令输出摘要）。仅 fixture/本机 HTTP 范围可用。
+5. **generate / validate / staging**：可用 `node apps/generator/pipeline.cjs --request <id>` 驱动（需 `CONTROL_PLANE_TOKEN`）；业务代码由你（DSH Agent）写入 `runnerFile` 并放入 `request.params.runnerFile`，流水线静态检查后在 Node 沙箱内执行。每步必须带 evidence。
 6. **accept**：展示样例报告与口径，业务确认后用 `note` 或 `accept` 记录确认人/时间；不要代替业务确认。
 7. **install**：仅在安装器与 MCP 注入完成后执行；否则停在此处并说明。
 8. 交付：报告路径、数据路径、插件清单、限制与未决。

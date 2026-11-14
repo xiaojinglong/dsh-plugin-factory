@@ -21,6 +21,7 @@ const { spawn, spawnSync } = require('node:child_process');
 const sandbox = require('./sandbox.cjs');
 const config = require('../../packages/config');
 const { validatePluginSpec, slugRegex } = require('../../packages/sdk');
+const { applyBusinessRunner } = require('./business.cjs');
 
 const ROOT = config.FACTORY_ROOT;
 const TEMPLATE_DIR = path.join(ROOT, 'templates', 'plugin');
@@ -125,6 +126,16 @@ async function generate(opts) {
   const vars = { id, name: spec.name, taskType, port, version };
   writeTemplate('service/server.js.tmpl', path.join(out, 'service', 'server.js'), vars);
   writeTemplate('service/runner.js.tmpl', path.join(out, 'service', 'runner.js'), vars);
+  let runnerKind = 'fixture';
+  let runnerWarnings = [];
+  if (opts.runnerFile || opts.runnerSource) {
+    const source = opts.runnerFile
+      ? fs.readFileSync(path.resolve(opts.runnerFile), 'utf8')
+      : String(opts.runnerSource);
+    const applied = applyBusinessRunner(out, source);
+    runnerKind = 'custom';
+    runnerWarnings = applied.warnings;
+  }
   writeTemplate('service/.env.tmpl', path.join(out, 'service', '.env'), vars);
   writeTemplate('mcp/config.json.tmpl', path.join(out, 'mcp', 'config.json'), vars);
   writeTemplate('mcp/package.json.tmpl', path.join(out, 'mcp', 'package.json'), vars);
@@ -157,7 +168,7 @@ async function generate(opts) {
   checks.push({ name: 'schema:plugin.json', ok: true });
   fs.mkdirSync(path.join(out, 'evidence'), { recursive: true });
   fs.writeFileSync(path.join(out, 'evidence', 'generation.json'), JSON.stringify({
-    generatedAt: new Date().toISOString(), template: 'm3-fixture-v1', spec, manifest, checks,
+    generatedAt: new Date().toISOString(), template: 'm3-fixture-v1', runnerKind, runnerWarnings, spec, manifest, checks,
   }, null, 2) + '\n', 'utf8');
   log(`generated ${id} → ${out} (port ${port})`);
   return { out, spec, manifest, checks };

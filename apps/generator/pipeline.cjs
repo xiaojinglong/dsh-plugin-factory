@@ -68,7 +68,7 @@ async function runPipeline({ baseUrl = 'http://127.0.0.1:8780', token, requestId
 
   const gen = await step('generate', async () => {
     const out = path.join(runDir, pluginId);
-    const g = await generate({ id: pluginId, name, type: p.type, fixture: p.fixture, port: p.port, out });
+    const g = await generate({ id: pluginId, name, type: p.type, fixture: p.fixture, port: p.port, out, runnerFile: p.runnerFile, runnerSource: p.runnerSource });
     evidence.pluginDir = out;
     return path.relative(dataRoot, path.join(out, 'evidence', 'generation.json')).split(path.sep).join('/');
   });

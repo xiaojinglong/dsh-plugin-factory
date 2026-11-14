@@ -46,9 +46,17 @@ node -e "require('./apps/generator/probe.cjs').probe({fixture:'D:/tmp/f.json'}).
     └── validation.json   # 预演结果/dataset/report/检查项
 ```
 
+## 业务 runner 注入
+
+DSH Agent / 人工可提供 `service/runner.js` 实现，再让流水线校验：
+
+- CLI：`generate ... --runner <runner.js>`（或 `--runner-source` 由代码调用）。
+- Pipeline：`request.params.runnerFile = <path>`；generate 时注入并静态检查（禁止 child_process/eval/new Function/vm/process.exit），随后在 Node 沙箱内 staging 执行。
+- 未提供 runner 时使用 fixture 样板（明确标记 `runnerKind: "fixture"`，不得当业务实现）。
+
 ## 边界与未完成
 
-- `runner.js` 是 **fixture 数据源样板**，不是业务实现；业务逻辑需后续填充并重跑校验。
+- `runner.js` 默认是 **fixture 数据源样板**，不是业务实现；业务逻辑需由 DSH Agent/人工提供 runner 并重跑校验。
 - probe 支持 fixture 与本机 HTTP；外部主机需加入 allowlist（私网解析默认拒绝）。
 - AI 业务代码生成、真实浏览器勘探、失败自修复仍未完成。
 - 生成器会拒绝写入仓库根/受保护目录；默认输出到 `FACTORY_DATA_ROOT/generator/staging`。
