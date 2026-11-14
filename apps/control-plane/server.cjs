@@ -15,6 +15,7 @@ const Fastify = require('fastify');
 const { ControlPlaneStore, STEP_ORDER } = require('./lib/db.cjs');
 const { createLogger } = require('./lib/logger.cjs');
 const config = require('../../packages/config');
+const { validateRunnerSource } = require('../../packages/sdk/runner.cjs');
 
 const VERSION = '0.1.0';
 const DEFAULT_PORT = 8780;
@@ -147,6 +148,30 @@ function createControlPlane(opts = {}) {
     if (!store.getRequest(req.params.id)) return fail(req.id, reply, 404, 'REQUEST_NOT_FOUND', `需求单不存在：${req.params.id}`);
     const limit = Math.max(1, Math.min(500, Number(req.query.limit) || 200));
     return { ok: true, audit: store.auditFor(`request:${req.params.id}`, limit) };
+  });
+
+  app.post('/requests/:id/runner', { preHandler: [auth] }, async (req, reply) => {
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const source = typeof body.source === 'string' ? body.source : '';
+    if (!source || source.length > 200 * 1024) {
+      return fail(req.id, reply, 400, 'INVALID_RUNNER', 'source 必须为 1–200KB 字符串');
+    }
+    const v = validateRunnerSource(source);
+    if (!v.ok) return fail(req.id, reply, 400, 'INVALID_RUNNER', v.errors.join('; '));
+    const request = store.getRequest(req.params.id);
+    if (!request) return fail(req.id, reply, 404, 'REQUEST_NOT_FOUND', `需求单不存在：${req.params.id}`);
+    if (request.state !== 'submitted') {
+      return fail(req.id, reply, 409, 'INVALID_STATE', `只有 submitted 状态可写入 runner（当前 ${request.state}）`);
+    }
+    const dir = path.join(dataRoot, 'generator', 'runs', req.params.id);
+    fs.mkdirSync(dir, { recursive: true });
+    const runnerFile = path.join(dir, 'runner.js');
+    fs.writeFileSync(runnerFile, source, 'utf8');
+    const sha256 = crypto.createHash('sha256').update(source).digest('hex');
+    const updated = store.setRequestParams(req.params.id, { ...request.params, runnerFile }, { actor: actorOf(req), ip: req.ip });
+    return {
+      ok: true, request: updated, runnerFile, sha256, warnings: v.warnings,
+    };
   });
 
   app.post('/requests/:id/steps', { preHandler: [auth] }, async (req, reply) => {

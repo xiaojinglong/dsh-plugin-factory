@@ -19,12 +19,13 @@
 - `scripts/check-syntax.mjs`（160 文件语法门禁）、`scripts/migrate-manifests.mjs`（可复跑迁移）。
 - 安装器核心 `apps/installer`（check/install/uninstall/rollback/dry-run + setup.ps1 + 6 测试；M1 部分完成，未合并 main）；M2 收尾：安装器注入 `factory-control` MCP（managed block + token，自动备份/回滚），新增"安装器→patch→MCP→控制面"全链路测试。
 - 本地控制面 `apps/control-plane`（8780；SQLite migration/WAL、token、需求单状态机、审计、指标、备份 + 14 集成测试；M2 代码完成）。
-- `apps/factory-control-mcp`（7 个 MCP 工具 + SDK Client over stdio 端到端测试）+ `skills/factory-agent`（DSH 技能，已热加载可见）。
-- M3 生成流水线：`packages/sdk`（zod 契约）、`templates/plugin`、`apps/generator`（probe HTTP/浏览器 + allowlist/SSRF、业务 runner 注入+静态禁止项、generate/validate/staging、报告 staging、Node 权限沙箱、控制面 pipeline、金标用例、evidence）。
+- `apps/factory-control-mcp`（8 个 MCP 工具 + SDK Client over stdio 端到端测试）+ `skills/factory-agent`（DSH 技能，已热加载可见）。
+- M3 生成流水线：`packages/sdk`（zod 契约 + runner 静态校验）、`templates/plugin`、`apps/generator`（probe HTTP/浏览器+iframe、write_runner 桥、业务 runner 注入、generate/validate/staging、报告 staging、Node 权限沙箱、控制面 pipeline、金标、evidence）。
+- `factory-control` 新增 `write_runner` 工具（DSH Agent 提交业务 runner → 控制面静态校验/落盘/更新 params）。
 - 文档同步：HANDOFF/README 更新到 12 插件/v3.2；`QUALITY-GATES-A.md`、`DECISIONS-A.md`、`STATUS-A.md`。
 
 ### 验证
-- 干净克隆（M0/M1/M2/M3 分支）分别 22/28/44/**55** 测试全绿；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP；`npm audit` 0。
+- 干净克隆（M0/M1/M2/M3 分支）分别 22/28/44/**56** 测试全绿；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP；`npm audit` 0。
 - 已知未完成：M1 依赖/真实机器、M2 真实 DSH UAT、M3 真实 probe/业务实现/编排、M4–M6；许可证与开源脱敏待 owner 确认；legacy 迁移脚本仍含旧绝对路径（不在产品路径）。
 
 

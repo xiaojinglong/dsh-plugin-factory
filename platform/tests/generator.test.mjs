@@ -216,9 +216,13 @@ test('sandbox：仅允许写 staging，拒绝写外部路径', () => {
   assert.equal(fs.readFileSync(allowedFile, 'utf8'), 'ok');
 });
 
-test('probe 浏览器：本机站点标题/表格/截图', async () => {
+test('probe 浏览器：本机站点标题/表格/iframe/截图', async () => {
   const html = fs.readFileSync(path.join(ROOT, 'fixtures', 'probe-site', 'index.html'), 'utf8');
-  const srv = http.createServer((req, res) => { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(html); });
+  const iframeHtml = fs.readFileSync(path.join(ROOT, 'fixtures', 'probe-site', 'iframe.html'), 'utf8');
+  const srv = http.createServer((req, res) => {
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+    res.end(String(req.url).includes('iframe.html') ? iframeHtml : html);
+  });
   await new Promise((r) => srv.listen(0, '127.0.0.1', r));
   const port = srv.address().port;
   const shot = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-a-bprobe-')), 'shot.png');
@@ -228,6 +232,9 @@ test('probe 浏览器：本机站点标题/表格/截图', async () => {
     assert.equal(r.title, 'M3 Probe Fixture');
     assert.equal(r.count, 3);
     assert.deepEqual(r.fields, ['sku', 'stock', 'site']);
+    assert.ok(r.frames.length >= 2, `应包含 iframe，frames=${r.frames.length}`);
+    assert.ok(r.tables.length >= 2, '应采集主页面 + iframe 表格');
+    assert.ok(r.tables.some((t) => JSON.stringify(t.headers) === JSON.stringify(['item', 'qty'])), 'iframe 表格未采集');
     assert.ok(r.links >= 1);
     assert.ok(fs.existsSync(shot) && fs.statSync(shot).size > 0, '截图应生成');
   } finally {

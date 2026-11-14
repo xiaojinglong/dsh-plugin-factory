@@ -156,10 +156,18 @@ async function probeBrowser(browserUrl, opts = {}) {
     await page.goto(browserUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
     await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     const title = await page.title();
-    const tables = await page.$$eval('table', (ts) => ts.slice(0, 5).map((t) => ({
+    const readTables = (target) => target.$$eval('table', (ts) => ts.slice(0, 5).map((t) => ({
       headers: [...t.querySelectorAll('thead th')].map((x) => (x.innerText || '').trim()),
       rows: [...t.querySelectorAll('tbody tr')].map((tr) => [...tr.querySelectorAll('td')].map((td) => (td.innerText || '').trim())),
-    })));
+    }))).catch(() => []);
+    const mainTables = (await readTables(page)).map((t) => ({ ...t, frame: page.url() }));
+    const frameTables = [];
+    for (const frame of page.frames()) {
+      if (frame === page.mainFrame()) continue;
+      const ts = await readTables(frame);
+      for (const t of ts) frameTables.push({ ...t, frame: frame.url() });
+    }
+    const tables = [...mainTables, ...frameTables];
     const links = await page.$$eval('a[href]', (as) => as.length);
     let screenshot = '';
     if (opts.screenshotPath) {
@@ -170,7 +178,8 @@ async function probeBrowser(browserUrl, opts = {}) {
     const first = tables[0] || { headers: [], rows: [] };
     return {
       kind: 'browser', source: String(browserUrl), finalUrl: page.url(), title, links, screenshot,
-      tables: tables.map((t) => ({ headers: t.headers, count: t.rows.length, sample: t.rows.slice(0, 3) })),
+      frames: page.frames().map((f) => f.url()),
+      tables: tables.map((t) => ({ frame: t.frame, headers: t.headers, count: t.rows.length, sample: t.rows.slice(0, 3) })),
       fields: first.headers, sample: first.rows.slice(0, 3), count: first.rows.length,
       storageState: storageState || '',
     };

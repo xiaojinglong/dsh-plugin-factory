@@ -158,6 +158,18 @@ class ControlPlaneStore {
     };
   }
 
+  setRequestParams(id, params, { actor = 'local', ip = '' } = {}) {
+    return this.transaction(() => {
+      const row = this.db.prepare('SELECT state FROM requests WHERE id = ?').get(id);
+      if (!row) throw notFound(`需求单不存在：${id}`);
+      if (row.state !== 'submitted') throw conflict(`只有 submitted 状态可写入 runner（当前 ${row.state}）`);
+      this.db.prepare('UPDATE requests SET params = ?, updated_at = ? WHERE id = ?')
+        .run(JSON.stringify(params || {}), this.now(), id);
+      this._audit({ actor, action: 'request.params.update', object: `request:${id}`, after: { params }, ip });
+      return this.getRequest(id);
+    });
+  }
+
   steps(id, limit = 200) {
     return this.db.prepare('SELECT * FROM steps WHERE request_id = ? ORDER BY id LIMIT ?').all(id, limit).map((r) => ({
       id: r.id, step: r.step, status: r.status, evidence: r.evidence, error: r.error,

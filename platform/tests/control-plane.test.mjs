@@ -212,3 +212,33 @@ test('无效步骤/状态/证据长度被拒绝', async () => {
     assert.equal((await post(base, `/requests/${id}/steps`, { step: 'probe', status: 'running', evidence: 'x'.repeat(5000) })).status, 200);
   });
 });
+
+test('write_runner：静态校验、落盘、更新 params.runnerFile；状态/越权拒绝', async () => {
+  await withApp(async ({ base }) => {
+    const id = (await post(base, '/requests', { brief: 'runner 注入' })).body.request.id;
+    const source = "'use strict';\nasync function runJob(job, ctx) { await ctx.saveFile({ kind: 'main', fileName: 'x.json', content: '{}' }); }\nmodule.exports = { runJob };\n";
+    const ok = await post(base, `/requests/${id}/runner`, { source });
+    assert.equal(ok.status, 200, JSON.stringify(ok.body));
+    assert.ok(fs.existsSync(ok.body.runnerFile));
+    assert.match(ok.body.sha256, /^[a-f0-9]{64}$/);
+    const got = await get(base, `/requests/${id}`);
+    assert.equal(got.body.request.params.runnerFile, ok.body.runnerFile);
+
+    // 静态禁止项
+    const bad = await post(base, `/requests/${id}/runner`, { source: "require('child_process'); async function runJob(){}; module.exports={runJob};" });
+    assert.equal(bad.status, 400);
+
+    // 状态不允许
+    const id2 = (await post(base, '/requests', { brief: 'runner 状态' })).body.request.id;
+    await post(base, `/requests/${id2}/steps`, { step: 'probe', status: 'running' });
+    await post(base, `/requests/${id2}/steps`, { step: 'probe', status: 'succeeded' });
+    const late = await post(base, `/requests/${id2}/runner`, { source });
+    assert.equal(late.status, 409);
+
+    // 不存在
+    assert.equal((await post(base, '/requests/req_missing/runner', { source })).status, 404);
+    // 空/过大
+    assert.equal((await post(base, `/requests/${id}/runner`, {})).status, 400);
+    assert.equal((await post(base, `/requests/${id}/runner`, { source: 'x'.repeat(200 * 1024 + 1) })).status, 400);
+  });
+});

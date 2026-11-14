@@ -10,6 +10,7 @@ MCP 薄壳：把本地控制面（默认 `http://127.0.0.1:8780`）暴露给 DSH
 | `get_request` | 查询状态/步骤/证据 |
 | `list_requests` | 列表（state/limit） |
 | `run_step` | 记录 probe/generate/validate/staging/accept/install/note |
+| `write_runner` | 提交业务 runner 源码（静态校验 + 落盘 + 更新 params.runnerFile） |
 | `list_plugins` | 插件目录（不含 token） |
 | `get_metrics` | 控制面统计 |
 | `backup_state` | SQLite 备份 |

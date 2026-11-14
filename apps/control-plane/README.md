@@ -33,6 +33,7 @@ Token 文件：`<data-root>/control-plane/token`（默认 `<repo>/data/control-p
 | GET | `/requests?state=&limit=` | 列表 |
 | GET | `/requests/:id` | 详情（含步骤） |
 | GET | `/requests/:id/audit` | 该需求单审计 |
+| POST | `/requests/:id/runner` | `{source}`：静态校验业务 runner → 落盘 `<data-root>/generator/runs/<id>/runner.js` → 更新 `params.runnerFile`（仅 submitted） |
 | POST | `/requests/:id/steps` | `{step,status,evidence?,error?}`，step∈probe/generate/validate/staging/accept/install/note，status∈running/succeeded/failed |
 | GET | `/audit?limit=` | 全局审计 |
 | POST | `/admin/backup` | `{fileName?}` → `VACUUM INTO` 备份到 `control-plane/backups/` |

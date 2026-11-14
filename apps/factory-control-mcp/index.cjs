@@ -70,6 +70,15 @@ server.registerTool('list_requests', {
   return toText(await call('GET', `/requests${qs.toString() ? `?${qs}` : ''}`));
 });
 
+server.registerTool('write_runner', {
+  title: '提交业务 runner',
+  description: '提交 service/runner.js 源码（≤200KB）；控制面做静态禁止项检查并写入需求单 params.runnerFile',
+  inputSchema: {
+    requestId: z.string(),
+    source: z.string().describe('runner.js 源码（必须导出 runJob）'),
+  },
+}, async ({ requestId, source }) => toText(await call('POST', `/requests/${encodeURIComponent(requestId)}/runner`, { source })));
+
 server.registerTool('run_step', {
   title: '推进/记录需求步骤',
   description: '记录 probe/generate/validate/staging/accept/install 的 running/succeeded/failed，或 note 证据',

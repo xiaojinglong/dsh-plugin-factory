@@ -38,7 +38,7 @@ test('factory-control MCP：工具列表 + 创建/推进/查询需求单', async
     await client.connect(transport);
     const listed = await client.listTools();
     const names = listed.tools.map((t) => t.name).sort();
-    for (const n of ['backup_state', 'create_request', 'get_metrics', 'get_request', 'list_plugins', 'list_requests', 'run_step']) {
+    for (const n of ['backup_state', 'create_request', 'get_metrics', 'get_request', 'list_plugins', 'list_requests', 'run_step', 'write_runner']) {
       assert.ok(names.includes(n), `缺少工具 ${n}`);
     }
 
@@ -46,6 +46,10 @@ test('factory-control MCP：工具列表 + 创建/推进/查询需求单', async
     assert.equal(created.ok, true);
     const id = created.request.id;
     assert.match(id, /^req_/);
+
+    const wr = parseTool(await client.callTool({ name: 'write_runner', arguments: { requestId: id, source: "'use strict';\nasync function runJob(job, ctx) { await ctx.saveFile({ kind: 'main', fileName: 'x.json', content: '{}' }); }\nmodule.exports = { runJob };\n" } }));
+    assert.equal(wr.ok, true);
+    assert.ok(fs.existsSync(wr.runnerFile));
 
     const start = parseTool(await client.callTool({ name: 'run_step', arguments: { requestId: id, step: 'probe', status: 'running' } }));
     assert.equal(start.request.currentStep, 'probe');
