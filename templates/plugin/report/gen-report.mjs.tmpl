@@ -1,0 +1,51 @@
+// gen-report.mjs —— {{name}}（{{id}}）报告（M3 生成样板）
+// 用法：node gen-report.mjs [dataset.json]
+import { writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { shell, table, top, pct, esc, n } from '../../factory-kit/report-kit.mjs';
+import { resolveDataset, rowsOf } from '../../factory-kit/dataset.mjs';
+
+const DIR = path.dirname(fileURLToPath(import.meta.url));
+const OUT = path.join(DIR, 'report', '{{id}}-report.html');
+const { ds, jobId = '', source } = await resolveDataset(DIR);
+const rows = rowsOf(ds);
+if (!rows.length) {
+  console.error('[SKIP] 数据集为空（0 条）：不生成报告，保留旧报告。');
+  process.exit(2);
+}
+const total = Number(ds.total ?? rows.length);
+const fetchedAt = ds.fetchedAt || '';
+const jobLabel = jobId || path.basename(path.dirname(source || ''));
+const keys = Object.keys(rows[0] || {});
+const body = `
+<section><h2>一、结论摘要</h2><ul>
+  <li>样本 <b>${rows.length}</b> 行 / 全量 <b>${total}</b>，覆盖率 <b>${pct(rows.length, total)}%</b>。</li>
+  <li>本报告由 M3 生成样板产出，数据源为 fixture；业务结论需在真实实现后重跑。</li>
+</ul></section>
+<section><h2>二、数据口径</h2><table><tbody>
+  <tr><th>task</th><td><code>{{taskType}}</code></td></tr>
+  <tr><th>参数</th><td><code>${esc(JSON.stringify(ds.params || {}))}</code></td></tr>
+  <tr><th>来源</th><td><code>${esc(source)}</code></td></tr>
+</tbody></table></section>
+<section><h2>三、结构分布</h2>${table(['字段', '样例值'], keys.map((k) => `<tr><td>${esc(k)}</td><td>${esc(JSON.stringify(rows[0][k]))}</td></tr>`))}</section>
+<section><h2>四、风险与异常</h2><p>样板阶段无业务风险规则；真实实现需补空值/异常/口径校验。</p></section>
+<section><h2>五、优化建议</h2><ul><li>用真实数据源替换 fixture；补业务规则与测试。</li></ul></section>
+<section><h2>六、限制与未决</h2><ul><li>样本 ${rows.length}/${total}；fixture 数据不代表真实业务；报告模板未经真实数据验收。</li></ul></section>
+<section><h2>七、附录</h2><table><tbody>
+  <tr><th>任务</th><td><code>${esc(jobLabel)}</code> · 取数 ${esc(fetchedAt || '未记录')}</td></tr>
+</tbody></table>
+${table(keys, rows.map((r) => `<tr>${keys.map((k) => `<td>${esc(JSON.stringify(r[k]))}</td>`).join('')}</tr>`))}</section>
+<section><h2>八、生成信息</h2><p>插件 <code>{{id}}</code> · M3 生成样板 · 单文件 HTML。</p></section>`;
+
+await writeFile(OUT, shell({
+  title: '{{name}}报告',
+  meta: ['业务：{{id}}', `任务：${jobLabel}`, `取数时间：${fetchedAt || '未记录'}`],
+  kpis: [
+    { k: '样本行', v: rows.length, s: `全量 ${total}` },
+    { k: '覆盖率', v: `${pct(rows.length, total)}%`, s: '样本/全量' },
+  ],
+  body,
+  footer: `{{id}} · 任务 ${jobLabel}`,
+}), 'utf8');
+console.log('报告已生成:', OUT, '| rows:', rows.length, '| total:', total);

@@ -1,0 +1,8 @@
+{
+  "name": "@dsh-plugin-factory/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plugin contract schema and validation for generated plugins",
+  "main": "index.cjs",
+  "type": "commonjs"
+}

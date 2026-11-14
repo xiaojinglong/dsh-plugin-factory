@@ -1,8 +1,8 @@
 # STATUS-A — 生产级冲刺交付状态（A 单机版）
 
-> 更新时间：2026-11-15 01:1x（Asia/Shanghai）
-> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28 测试）；`feat/prod-a-m2` = M2 代码完成（44 测试，**未合并 main**）
-> 结论：**M0 100%；M1 ~60%；M2 代码/自动化 100%（真实 DSH UAT 待 owner 一键执行，标记 ~95%）；M3 已开始。** 未完成项不冒充完成。
+> 更新时间：2026-11-15 01:3x（Asia/Shanghai）
+> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 垂直切片（47，**未合并 main**）
+> 结论：**M0 100%；M1 ~60%；M2 ~95%（UAT 待 owner）；M3 ~40%（fixture 生成/校验/预演已通）；M4–M6 0%。** 未完成项不冒充完成。
 
 ## 1. 总体完成度（按 PLAN-A 里程碑）
 
@@ -10,8 +10,8 @@
 |---|---|---|
 | M0 工程基线 | **100%** | ✅ 已完成并通过门禁（main） |
 | M1 安装器与 DSH 自动配置 | **~60%** | 🟡 核心 + 测试；依赖自动准备/真实干净机验收未闭合 |
-| M2 控制面 + factory-agent | **~95%** | ✅ 代码/自动测试完成（安装器注入 + 全链路测试）；仅真实 DSH UAT 待 owner 执行 |
-| M3 生成流水线 | 进行中 | 🟡 本轮开始（SDK/模板/生成器垂直切片） |
+| M2 控制面 + factory-agent | **~95%** | ✅ 代码/自动测试完成；仅真实 DSH UAT 待 owner |
+| M3 生成流水线 | **~40%** | 🟡 fixture 模板：生成→结构/语法校验→起服务预演→证据；真实 probe/业务实现/编排未完成 |
 | M4 验收与安装 | 0% | ⏸ 未开始 |
 | M5 分发与升级 | 0% | ⏸ 未开始 |
 | M6 硬化与试点 | 0% | ⏸ 未开始 |
@@ -79,7 +79,21 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 | 测试 | ✅ | **44/44**（M1 28 + 控制面 14 + MCP 1 + 安装器→patch→MCP→控制面全链路 1）；语法 166 文件通过 |
 | 安装器注入 MCP/token | ✅ | installer 注入 `factory-control` managed block（含 `CONTROL_PLANE_TOKEN`），校验/幂等/卸载恢复；全链路测试通过 |
 | 真实 DSH UAT | ⏳ 待 owner | 为防止夜间改用户 `desktop` profile，未执行真实安装；安装器已就绪，owner 一键 `setup.ps1 install` 后做会话验收 |
-| 生成流水线 | ⏳ 进行中 | M3 本轮开始 |
+| 生成流水线 | 🟡 M3 进行中 | 见 §2.4 |
+
+### 2.4 M3 垂直切片（分支 `feat/prod-a-m3`）
+
+| 项 | 结果 | 证据 |
+|---|---|---|
+| SDK 契约 | ✅ | `packages/sdk`：zod `PluginSpecSchema`（id/version/type/taskType/owner/permissions/service/mcp/skill/report），单测覆盖非法 id/taskType/type/多余字段 |
+| 插件模板 | ✅ | `templates/plugin/`：service(server/runner/.env) + mcp(index/config/package/smoke) + skill + report + fixture |
+| 生成器 | ✅ | `apps/generator`：`generate / validate / staging`；生成 plugin.json+manifest+文件+evidence；默认拒绝覆盖 |
+| 结构/语法校验 | ✅ | 生成后 `node --check` 全部文件；schema/端口/SKILL name/fixture 存在性检查 |
+| 起服务预演 | ✅ | 生成服务真实启动 → `/health` → `POST /jobs` → done → result → dataset（2 行样本），进程回收 |
+| 证据落盘 | ✅ | `evidence/generation.json`、`evidence/validation.json`（检查项/dataset 路径/stderr） |
+| 测试 | ✅ | **47/47**（M2 44 + SDK 1 + 生成器 2） |
+| 真实 probe / 业务实现 | ⏳ 未做 | API/浏览器勘探、AI 业务代码、report staging 执行、金标用例 |
+| 与需求单/控制面自动编排 | ⏳ 未做 | 生成器目前 CLI 驱动，未接 `run_step` 流水线 |
 
 ## 3. 门禁对照（QUALITY-GATES-A）
 
@@ -100,7 +114,7 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 |---|---|---|
 | M1 安装器 + DSH 自动配置 | 🟡 部分（~60%） | 核心 + 测试已完成；剩余：依赖自动准备、真实干净机 DSH 验收、`--repair`/升级测试、打包签名 |
 | M2 本地控制面 + factory-agent | ✅ 代码完成（~95%） | 安装器注入/全链路测试已完成；仅真实 DSH UAT 待 owner 一键执行 |
-| M3 生成流水线 | 🟡 进行中 | 本轮开始：SDK/模板/生成器垂直切片；probe/generate/validate/staging 实际执行与 golden tickets 未闭合 |
+| M3 生成流水线 | 🟡 ~40% | fixture 生成/校验/预演已通；真实 probe、AI 业务实现、report staging、控制面编排未完成 |
 | M4–M6 | ⏸ 未开始 | 依赖前序里程碑 |
 | LICENSE | 🚫 BLOCKED-PENDING-OWNER | 许可证属所有者法律决策，AI 不擅自选择；建议 Apache-2.0 |
 | GitHub Actions 实跑 | ⏳ 待验证 | 代码已推送后由 owner 看一眼 CI 结果；本地等价命令已通过 |
@@ -116,7 +130,7 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 ## 6. 下一步（按 PLAN-A）
 
 1. **M2 UAT（owner）**：真实 DSH 会话执行 `setup.ps1 install` → 确认 `factory-control` 工具出现 → 创建需求单 → 回滚/卸载验收。
-2. **M3**：生成流水线（probe/generate/validate/staging 实际执行 + golden tickets + 沙箱/隔离设计）。
+2. **M3 收尾**：真实 probe（API/浏览器）、生成器接入控制面 `run_step`、report staging 执行、golden tickets、沙箱/隔离设计。
 3. **M1 收尾**：依赖自动准备、真实干净机 DSH 安装、`--repair`、打包/签名。
 4. **M4–M6**：验收/安装、分发升级、硬化试点。
 5. M1/M2/M3 闭合前保持分支，不合并 main；M0 仍是可回滚稳定基线。

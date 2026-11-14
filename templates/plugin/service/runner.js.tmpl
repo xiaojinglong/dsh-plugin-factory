@@ -1,0 +1,33 @@
+'use strict';
+
+/**
+ * 生成插件的执行层（M3 模板：fixture 数据源）
+ * 说明：这是"可运行骨架"，业务实现由后续 AI/人工填充；它只读 fixtures/data.json，不访问外部系统。
+ */
+
+const fs = require('node:fs');
+const path = require('node:path');
+
+async function runJob(job, ctx) {
+  const p = ctx.params || {};
+  const fixturePath = path.join(__dirname, '..', 'fixtures', 'data.json');
+  if (!fs.existsSync(fixturePath)) throw new Error(`fixture 不存在：${fixturePath}`);
+  const data = JSON.parse(fs.readFileSync(fixturePath, 'utf8'));
+  const rows = Array.isArray(data.rows) ? data.rows : [];
+  const limit = Math.max(1, Math.min(rows.length, Number(p.limit) || rows.length));
+  ctx.setProgress(`处理 ${limit}/${rows.length} 行（fixture）`);
+  const picked = rows.slice(0, limit);
+  const dataset = {
+    task: '{{taskType}}',
+    fetchedAt: new Date().toISOString(),
+    params: { limit },
+    extra: { source: 'fixture', template: 'm3-fixture-v1' },
+    total: rows.length,
+    totalPages: 1,
+    pages: [{ page: 1, rows: picked }],
+  };
+  await ctx.saveFile({ kind: 'main', fileName: '{{taskType}}_dataset.json', content: JSON.stringify(dataset, null, 2), encoding: 'utf8' });
+  ctx.setProgress(`完成：${picked.length} 行`);
+}
+
+module.exports = { runJob };

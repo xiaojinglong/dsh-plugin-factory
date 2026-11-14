@@ -1,0 +1,8 @@
+'use strict';
+
+const path = require('node:path');
+const root = process.env.FACTORY_ROOT || path.resolve(__dirname, '..', '..', '..', '..');
+const { boot } = require(path.join(root, 'platform', 'factory', 'bootstrap'));
+const manifest = require('../manifest.json');
+
+boot(manifest, require('./runner').runJob);

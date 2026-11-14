@@ -15,7 +15,8 @@
     "install:dry-run": "node apps/installer/installer.cjs install --dry-run",
     "control-plane": "node apps/control-plane/server.cjs",
     "control-plane:init": "node apps/control-plane/server.cjs --init",
-    "factory-control-mcp": "node apps/factory-control-mcp/index.cjs"
+    "factory-control-mcp": "node apps/factory-control-mcp/index.cjs",
+    "generate:staging": "node apps/generator/generator.cjs staging"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",
