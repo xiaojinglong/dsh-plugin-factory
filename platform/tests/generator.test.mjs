@@ -271,3 +271,45 @@ module.exports = { runJob };`;
   assert.equal(ds.extra.source, 'business-runner');
   assert.equal(ds.extra.sum, 3);
 });
+
+test('probe 浏览器：登录页拒绝并提示 storageState', async () => {
+  const loginHtml = '<!doctype html><title>Login</title><form><input type="text" name="u"><input type="password" name="p"><button>登录</button></form>';
+  const srv = http.createServer((req, res) => { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(loginHtml); });
+  await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+  const port = srv.address().port;
+  try {
+    await assert.rejects(() => probeBrowser(`http://127.0.0.1:${port}/login`), /需要登录态/);
+  } finally {
+    await new Promise((r) => srv.close(r));
+  }
+});
+
+test('pipeline 失败：写 failure.json 与修复建议', async () => {
+  const dataRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-a-fail-'));
+  const token = 'fail-token';
+  const cp = createControlPlane({ dataRoot, token });
+  const { port } = await cp.start({ port: 0 });
+  const base = `http://127.0.0.1:${port}`;
+  const H = { authorization: `Bearer ${token}`, 'content-type': 'application/json' };
+  try {
+    const created = await (await fetch(`${base}/requests`, {
+      method: 'POST', headers: H,
+      body: JSON.stringify({ brief: '缺少数据源', params: { pluginId: 'fail-demo', name: '失败演示', type: 'api' } }),
+    })).json();
+    const requestId = created.request.id;
+    await assert.rejects(() => runPipeline({ baseUrl: base, token, requestId, dataRoot }), /缺少勘探参数/);
+    const req = await (await fetch(`${base}/requests/${requestId}`, { headers: H })).json();
+    assert.equal(req.request.state, 'failed');
+    const probeSteps = req.request.steps.filter((s) => s.step === 'probe');
+    assert.ok(probeSteps.some((s) => s.status === 'failed'), 'probe 应有 failed 记录');
+    const failedStep = probeSteps.find((s) => s.status === 'failed');
+    assert.match(failedStep.error, /建议/);
+    const failureFile = path.join(dataRoot, 'generator', 'runs', requestId, 'failure.json');
+    assert.ok(fs.existsSync(failureFile), 'failure.json 应生成');
+    const failure = JSON.parse(fs.readFileSync(failureFile, 'utf8'));
+    assert.equal(failure.step, 'probe');
+    assert.match(failure.suggestion, /fixture/);
+  } finally {
+    await cp.stop();
+  }
+});

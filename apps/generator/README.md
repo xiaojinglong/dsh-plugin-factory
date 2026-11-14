@@ -57,6 +57,6 @@ DSH Agent / 人工可提供 `service/runner.js` 实现，再让流水线校验�
 ## 边界与未完成
 
 - `runner.js` 默认是 **fixture 数据源样板**，不是业务实现；业务逻辑需由 DSH Agent/人工提供 runner 并重跑校验。
-- probe 支持 fixture 与本机 HTTP；外部主机需加入 allowlist（私网解析默认拒绝）。
-- AI 业务代码生成、真实浏览器勘探、失败自修复仍未完成。
+- probe 支持 fixture / 本机 HTTP / 浏览器（含 iframe）；外部主机需加入 allowlist（私网解析默认拒绝）；登录页会报"需要登录态"，需提供 storageState。
+- pipeline 失败会写 `failure.json`（step/error/suggestion）；自动修复/重试仍未实现。
 - 生成器会拒绝写入仓库根/受保护目录；默认输出到 `FACTORY_DATA_ROOT/generator/staging`。

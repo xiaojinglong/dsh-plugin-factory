@@ -60,7 +60,8 @@ submitted → probe → generate → validate → staging → accept → install
 - 失败必须给可读 error，并保留现场（日志/文件路径）。
 - 不得在对话/报告/日志中输出 token、凭证、cookie。
 - 不得修改用户 DSH profile 或生产插件；安装/卸载只走安装器。
-- 生成流水线未实现时，明确告知用户"当前只能到需求单/勘探，生成能力待 M3"，不要假装。
+- 流水线失败时读 `<data-root>/generator/runs/<requestId>/failure.json` 的 suggestion；自动修复/重试未实现，不要声称已修复。
+- 登录页报"需要登录态"时，要求用户提供/更新 storageState，不得绕过登录或伪造数据。
 
 ## 6. 数据校验
 

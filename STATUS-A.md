@@ -1,8 +1,8 @@
 # STATUS-A — 生产级冲刺交付状态（A 单机版）
 
-> 更新时间：2026-11-15 05:2x（Asia/Shanghai）
-> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 流水线（56，**未合并 main**）
-> 结论：**M0 100%；M1 ~60%；M2 ~95%（UAT 待 owner）；M3 ~95%（probe 安全/浏览器+iframe/生成/校验/staging/报告/编排/沙箱/金标/业务 runner+write_runner 桥已通）；M4–M6 0%。** 未完成项不冒充完成。
+> 更新时间：2026-11-15 05:5x（Asia/Shanghai）
+> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 流水线（58，**未合并 main**）
+> 结论：**M0 100%；M1 ~60%；M2 ~95%（UAT 待 owner）；M3 ~97%（probe 安全/浏览器+iframe/登录检测/生成/校验/staging/报告/编排/沙箱/金标/业务 runner+write_runner/失败建议已通）；M4–M6 0%。** 未完成项不冒充完成。
 
 ## 1. 总体完成度（按 PLAN-A 里程碑）
 
@@ -11,7 +11,7 @@
 | M0 工程基线 | **100%** | ✅ 已完成并通过门禁（main） |
 | M1 安装器与 DSH 自动配置 | **~60%** | 🟡 核心 + 测试；依赖自动准备/真实干净机验收未闭合 |
 | M2 控制面 + factory-agent | **~95%** | ✅ 代码/自动测试完成；仅真实 DSH UAT 待 owner |
-| M3 生成流水线 | **~95%** | 🟡 probe(HTTP/浏览器+iframe)/业务 runner+write_runner/生成/校验/staging/报告/编排/沙箱/金标已通；DSH 自动生成业务代码、失败自修复、真实登录态未完成 |
+| M3 生成流水线 | **~97%** | 🟡 probe/iframe/登录检测/业务 runner/write_runner/生成/校验/staging/报告/编排/沙箱/金标/失败建议已通；DSH 端到端 UAT、自动修复未完成 |
 | M4 验收与安装 | 0% | ⏸ 未开始 |
 | M5 分发与升级 | 0% | ⏸ 未开始 |
 | M6 硬化与试点 | 0% | ⏸ 未开始 |
@@ -98,9 +98,11 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 | 控制面编排 | ✅ | `apps/generator/pipeline.cjs`：需求单 → probe → generate（可带业务 runner）→ validate → staging → 报告；失败落 failed + 现场证据 |
 | 沙箱执行 | ✅ | `apps/generator/sandbox.cjs`：Node `--permission`（只读仓库/staging、只写 staging）；单测验证外部写被拒绝；生成服务与报告均在沙箱内执行 |
 | 金标用例 | ✅ | 订单/库存两类 golden tickets：生成→校验→dataset→报告全绿 |
-| 测试 | ✅ | **56/56**（M2 44 + SDK/生成器/probe/pipeline/浏览器/沙箱/金标/业务 runner/write_runner 合计） |
+| 登录态检测 | ✅ | probeBrowser 检测登录跳转/密码框：无 storageState → "需要登录态"；有 storageState 仍登录 → "登录态已过期"；测试覆盖 |
+| 失败建议 | ✅ | pipeline 失败写 `failure.json`（step/error/suggestion），step.failed 错误携带建议（登录/凭证/参数/runner/沙箱） |
+| 测试 | ✅ | **58/58**（M2 44 + M3 14：SDK/生成器/probe/pipeline/浏览器 iframe/登录/沙箱/金标/业务 runner/write_runner/失败建议） |
 | DSH 自动生成业务代码 | ⏳ 未做 | 桥已就绪（write_runner），但"AI 自动产出 runner"仍依赖 DSH 会话流程，未端到端验证 |
-| 真实登录态 / 失败自修复 | ⏳ 未做 | storageState 参数已支持但未覆盖真实登录；失败重试与自动修复未实现 |
+| 自动修复 | ⏳ 未做 | 已有 failure.json + 建议；自动重试/自动改代码未实现 |
 | 真实业务 API 凭证 | ⏳ 未做 | 允许 allowlist 主机；真实业务凭证需安全流程提供 |
 
 ## 3. 门禁对照（QUALITY-GATES-A）
@@ -115,7 +117,7 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 | G7 可审查 | 小步提交、diff 自查、无断言之类 stub | ✅ |
 | G4 数据 / G8 回滚 | M0 不涉及；M1 备份/回滚已单测；M2 SQLite migration/WAL/备份已测 | ✅（M1/M2 部分） |
 | M2 补充 | G1（14 集成测试）/ G2（token、校验、审计、无 token 泄漏）/ G3（health/metrics/日志/优雅退出）/ G4（migration/备份） | ✅ |
-| M3 补充 | G1（probe/浏览器+iframe/生成/pipeline/沙箱/金标/业务 runner/write_runner 测试）/ G2（allowlist+SSRF+凭证不回显；Node 权限沙箱拒写外部；runner 静态禁止项）/ G5（56/56）/ G6（生成证据） | ✅（fixture/本机范围） |
+| M3 补充 | G1（probe/浏览器+iframe/登录/生成/pipeline/沙箱/金标/业务 runner/write_runner/失败建议测试）/ G2（allowlist+SSRF+凭证不回显；Node 权限沙箱拒写外部；runner 静态禁止项）/ G5（58/58）/ G6（生成证据） | ✅（fixture/本机范围） |
 
 ## 4. 未完成 / BLOCKED（诚实清单）
 
@@ -123,7 +125,7 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 |---|---|---|
 | M1 安装器 + DSH 自动配置 | 🟡 部分（~60%） | 核心 + 测试已完成；剩余：依赖自动准备、真实干净机 DSH 验收、`--repair`/升级测试、打包签名 |
 | M2 本地控制面 + factory-agent | ✅ 代码完成（~95%） | 安装器注入/全链路测试已完成；仅真实 DSH UAT 待 owner 一键执行 |
-| M3 生成流水线 | 🟡 ~95% | probe/iframe/业务 runner+write_runner/生成/校验/staging/报告/编排/沙箱/金标已通；DSH 自动生成业务代码、真实登录态、失败自修复未完成 |
+| M3 生成流水线 | 🟡 ~97% | probe/iframe/登录检测/业务 runner+write_runner/生成/校验/staging/报告/编排/沙箱/金标/失败建议已通；DSH 端到端 UAT、自动修复未完成 |
 | M4–M6 | ⏸ 未开始 | 依赖前序里程碑 |
 | LICENSE | 🚫 BLOCKED-PENDING-OWNER | 许可证属所有者法律决策，AI 不擅自选择；建议 Apache-2.0 |
 | GitHub Actions 实跑 | ⏳ 待验证 | 代码已推送后由 owner 看一眼 CI 结果；本地等价命令已通过 |
@@ -139,7 +141,7 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 ## 6. 下一步（按 PLAN-A）
 
 1. **M2 UAT（owner）**：真实 DSH 会话执行 `setup.ps1 install` → 确认 `factory-control` 工具出现 → 创建需求单 → 回滚/卸载验收。
-2. **M3 收尾**：DSH 自动生成业务代码端到端验证（write_runner → pipeline）、真实登录态 probe、失败自修复、真实业务凭证安全接入。
+2. **M3 收尾**：DSH 端到端验证（write_runner → pipeline）、自动修复/重试、真实业务凭证安全接入。
 3. **M1 收尾**：依赖自动准备、真实干净机 DSH 安装、`--repair`、打包/签名。
 4. **M4–M6**：验收/安装、分发升级、硬化试点。
 5. M1/M2/M3 闭合前保持分支，不合并 main；M0 仍是可回滚稳定基线。

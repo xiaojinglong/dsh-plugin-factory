@@ -22,10 +22,11 @@
 - `apps/factory-control-mcp`（8 个 MCP 工具 + SDK Client over stdio 端到端测试）+ `skills/factory-agent`（DSH 技能，已热加载可见）。
 - M3 生成流水线：`packages/sdk`（zod 契约 + runner 静态校验）、`templates/plugin`、`apps/generator`（probe HTTP/浏览器+iframe、write_runner 桥、业务 runner 注入、generate/validate/staging、报告 staging、Node 权限沙箱、控制面 pipeline、金标、evidence）。
 - `factory-control` 新增 `write_runner` 工具（DSH Agent 提交业务 runner → 控制面静态校验/落盘/更新 params）。
+- probe 登录检测（登录跳转/密码框）与 pipeline 失败建议 `failure.json`（step/error/suggestion）。
 - 文档同步：HANDOFF/README 更新到 12 插件/v3.2；`QUALITY-GATES-A.md`、`DECISIONS-A.md`、`STATUS-A.md`。
 
 ### 验证
-- 干净克隆（M0/M1/M2/M3 分支）分别 22/28/44/**56** 测试全绿；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP；`npm audit` 0。
+- 干净克隆（M0/M1/M2/M3 分支）分别 22/28/44/**58** 测试全绿；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP；`npm audit` 0。
 - 已知未完成：M1 依赖/真实机器、M2 真实 DSH UAT、M3 真实 probe/业务实现/编排、M4–M6；许可证与开源脱敏待 owner 确认；legacy 迁移脚本仍含旧绝对路径（不在产品路径）。
 
 

@@ -34,6 +34,16 @@ function api(baseUrl, token) {
   };
 }
 
+function suggestFor(message) {
+  const m = String(message || '');
+  if (/登录|storageState|sso/i.test(m)) return '提供/更新 storageState，或人工扫码登录后重试';
+  if (/401|403|credential|凭证|allowlist|DNS|私网/i.test(m)) return '检查凭证、allowlist 与网络边界';
+  if (/缺少勘探参数|fixture 不存在|browserUrl|apiUrl/i.test(m)) return '补充 fixture / apiUrl / browserUrl 后重试';
+  if (/runner|语法|schema|node --check/i.test(m)) return '修复 runner/plugin.json 后重试';
+  if (/沙箱|permission|EACCES/i.test(m)) return '检查沙箱读写目录';
+  return '查看 evidence/*.json、控制面审计与日志';
+}
+
 async function runPipeline({ baseUrl = 'http://127.0.0.1:8780', token, requestId, dataRoot = config.FACTORY_DATA_ROOT } = {}) {
   if (!token) throw new Error('缺少控制面 token（CONTROL_PLANE_TOKEN）');
   const cli = api(baseUrl, token);
@@ -54,7 +64,13 @@ async function runPipeline({ baseUrl = 'http://127.0.0.1:8780', token, requestId
       await cli.post(`/requests/${requestId}/steps`, { step: stepName, status: 'succeeded', evidence: ev });
       return ev;
     } catch (err) {
-      try { await cli.post(`/requests/${requestId}/steps`, { step: stepName, status: 'failed', error: String(err.message).slice(0, 1000) }); } catch { /* ignore */ }
+      const suggestion = suggestFor(err.message);
+      try {
+        fs.writeFileSync(path.join(runDir, 'failure.json'), JSON.stringify({
+          at: new Date().toISOString(), requestId, step: stepName, error: String(err.message), suggestion,
+        }, null, 2) + '\n', 'utf8');
+      } catch { /* ignore */ }
+      try { await cli.post(`/requests/${requestId}/steps`, { step: stepName, status: 'failed', error: `${String(err.message).slice(0, 800)}；建议：${suggestion}` }); } catch { /* ignore */ }
       throw err;
     }
   }

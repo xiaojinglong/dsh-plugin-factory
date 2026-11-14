@@ -156,6 +156,12 @@ async function probeBrowser(browserUrl, opts = {}) {
     await page.goto(browserUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
     await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     const title = await page.title();
+    const loginRequired = /login|signin|sso|auth/i.test(page.url()) || (await page.locator('input[type="password"]').count()) > 0;
+    if (loginRequired) {
+      throw new Error(storageState
+        ? '登录态已过期：页面仍跳转登录/包含密码框，请更新 storageState 后重试'
+        : '需要登录态：页面跳转登录/包含密码框，请提供 storageState（人工扫码更新）');
+    }
     const readTables = (target) => target.$$eval('table', (ts) => ts.slice(0, 5).map((t) => ({
       headers: [...t.querySelectorAll('thead th')].map((x) => (x.innerText || '').trim()),
       rows: [...t.querySelectorAll('tbody tr')].map((tr) => [...tr.querySelectorAll('td')].map((td) => (td.innerText || '').trim())),
