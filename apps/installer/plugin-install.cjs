@@ -23,7 +23,7 @@
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { spawn } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
 const { validatePluginSpec } = require('../../packages/sdk');
 
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -146,6 +146,15 @@ async function install(opts) {
       installed.smoke = smokeResult;
       if (!smokeResult.ok) throw new Error(`smoke 失败：health/401/200 未通过（${smokeResult.reason || ''}）`);
     }
+    if (opts.render) {
+      const cli = path.join(root, 'platform', 'factory', 'cli.cjs');
+      if (!fs.existsSync(cli)) throw new Error(`--render 需要工厂 CLI：${cli}`);
+      const r = spawnSync(process.execPath, ['cli.cjs', 'render'], {
+        cwd: path.dirname(cli), env: { ...process.env, FACTORY_ROOT: root }, encoding: 'utf8', timeout: 120000,
+      });
+      installed.render = { ok: r.status === 0, stdout: (r.stdout || '').slice(0, 2000), stderr: (r.stderr || '').slice(0, 2000) };
+      if (r.status !== 0) throw new Error(`render 失败：${(r.stderr || r.stdout || '').slice(0, 500)}`);
+    }
     fs.writeFileSync(stateFile(manifestsDir, id), JSON.stringify(installed, null, 2) + '\n', 'utf8');
     return { ok: true, ...installed };
   } catch (err) {
@@ -157,6 +166,69 @@ async function install(opts) {
     }
     throw err;
   }
+}
+
+function compareVersion(a, b) {
+  const pa = String(a || '0').split('.').map((x) => Number.parseInt(x, 10) || 0);
+  const pb = String(b || '0').split('.').map((x) => Number.parseInt(x, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length, 3); i += 1) {
+    const x = pa[i] || 0;
+    const y = pb[i] || 0;
+    if (x !== y) return x > y ? 1 : -1;
+  }
+  return 0;
+}
+
+function installedState(opts, id) {
+  const root = path.resolve(opts.root || ROOT);
+  const manifestsDir = path.resolve(opts.manifests || path.join(root, 'platform', 'manifests'));
+  const sf = stateFile(manifestsDir, id);
+  if (!fs.existsSync(sf)) fail(`未找到安装状态：${sf}`);
+  return { root, manifestsDir, state: readJson(sf) };
+}
+
+async function upgrade(opts) {
+  if (!opts.source) fail('upgrade 需要 --source');
+  const sourceSpec = validateSource(path.resolve(opts.source)).spec;
+  const { root, state } = installedState(opts, sourceSpec.id);
+  const current = readJson(path.join(state.dirs.plugin, 'plugin.json')).version;
+  if (!opts.force && compareVersion(sourceSpec.version, current) <= 0) {
+    fail(`源版本 ${sourceSpec.version} 不高于已安装 ${current}（如需降级/重装加 --force）`);
+  }
+  const result = await install({ ...opts, root, force: true });
+  return { ...result, upgradedFrom: current, upgradedTo: sourceSpec.version };
+}
+
+function listInstalled(opts = {}) {
+  const root = path.resolve(opts.root || ROOT);
+  const manifestsDir = path.resolve(opts.manifests || path.join(root, 'platform', 'manifests'));
+  const dir = stateDir(manifestsDir);
+  if (!fs.existsSync(dir)) return { ok: true, installed: [] };
+  const installed = fs.readdirSync(dir).filter((f) => f.endsWith('.json') && !f.includes('.manifest.bak')).map((f) => {
+    const s = readJson(path.join(dir, f));
+    return { id: s.id, installedAt: s.installedAt, source: s.source, dirs: s.dirs, smoke: s.smoke?.ok, render: s.render?.ok };
+  });
+  return { ok: true, installed };
+}
+
+function verify(opts) {
+  const id = String(opts.id || '').trim();
+  if (!id) fail('verify 需要 --id');
+  const { root, state } = installedState(opts, id);
+  const checks = [];
+  for (const key of ['plugin', 'tool', 'skill', 'manifest']) {
+    const p = state.dirs?.[key];
+    checks.push({ name: key, ok: !!p && fs.existsSync(p), path: p || '' });
+  }
+  const pluginJson = path.join(state.dirs.plugin, 'plugin.json');
+  checks.push({ name: 'plugin.json', ok: fs.existsSync(pluginJson), path: pluginJson });
+  const manifestFile = state.dirs.manifest;
+  let manifest = null;
+  try { manifest = readJson(manifestFile); checks.push({ name: 'manifest.json', ok: true, path: manifestFile }); } catch { checks.push({ name: 'manifest.json', ok: false, path: manifestFile }); }
+  const server = path.join(state.dirs.plugin, 'service', 'server.js');
+  checks.push({ name: 'service/server.js', ok: fs.existsSync(server), path: server });
+  const ok = checks.every((c) => c.ok);
+  return { ok, id, root, checks, version: manifest?.version || '', errors: checks.filter((c) => !c.ok).map((c) => c.name) };
 }
 
 function uninstall(opts) {
@@ -192,9 +264,12 @@ async function main() {
   }
   const cmd = args._ || process.argv[2];
   try {
-    if (cmd === 'install') console.log(JSON.stringify(await install({ ...args, source: args.source, force: args.force === 'true', smoke: args['no-smoke'] !== 'true' }), null, 2));
+    if (cmd === 'install') console.log(JSON.stringify(await install({ ...args, source: args.source, force: args.force === 'true', smoke: args['no-smoke'] !== 'true', render: args.render === 'true' }), null, 2));
+    else if (cmd === 'upgrade') console.log(JSON.stringify(await upgrade({ ...args, source: args.source, force: args.force === 'true', smoke: args['no-smoke'] !== 'true', render: args.render === 'true' }), null, 2));
     else if (cmd === 'uninstall' || cmd === 'rollback') console.log(JSON.stringify(uninstall(args), null, 2));
-    else { console.log('用法：install --source <dir> --root <factoryRoot> [--force] [--no-smoke] | uninstall/rollback --id <id> --root <root>'); process.exit(1); }
+    else if (cmd === 'list') console.log(JSON.stringify(listInstalled(args), null, 2));
+    else if (cmd === 'verify') console.log(JSON.stringify(verify(args), null, 2));
+    else { console.log('用法：install/upgrade --source <dir> --root <root> [--force] [--no-smoke] [--render] | uninstall/rollback/verify --id <id> | list'); process.exit(1); }
   } catch (err) {
     console.error(`[plugin-install] ${err.message}`);
     process.exit(1);
@@ -202,4 +277,4 @@ async function main() {
 }
 
 if (require.main === module) main();
-module.exports = { install, uninstall, validateSource, smoke };
+module.exports = { install, upgrade, uninstall, listInstalled, verify, compareVersion, validateSource, smoke };

@@ -14,6 +14,14 @@ node apps/installer/plugin-install.cjs install --source <dir> --root <root> --fo
 # 卸载/回滚（恢复备份）
 node apps/installer/plugin-install.cjs uninstall --id <pluginId> --root <root>
 node apps/installer/plugin-install.cjs rollback  --id <pluginId> --root <root>
+
+# 升级（只允许更高版本；--force 可降级/重装）
+node apps/installer/plugin-install.cjs upgrade --source <newStagingDir> --root <root>
+
+# 审计/验证/渲染
+node apps/installer/plugin-install.cjs list --root <root>
+node apps/installer/plugin-install.cjs verify --id <pluginId> --root <root>
+node apps/installer/plugin-install.cjs install --source <dir> --root <root> --render
 ```
 
 - 前置：需求单已 `accept`；staging 目录通过 validate。

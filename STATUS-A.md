@@ -1,8 +1,8 @@
 # STATUS-A — 生产级冲刺交付状态（A 单机版）
 
-> 更新时间：2026-11-15 06:2x（Asia/Shanghai）
-> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 流水线（58，**未合并 main**）；`feat/prod-a-m4` = M4 验收/安装（62，**未合并 main**）
-> 结论：**M0 100%；M1 ~60%；M2 ~95%（UAT 待 owner）；M3 ~97%；M4 ~25%（accept 门禁 + 生成插件安装/卸载/回滚已通）；M5–M6 0%。** 未完成项不冒充完成。
+> 更新时间：2026-11-15 06:5x（Asia/Shanghai）
+> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 流水线（58，**未合并 main**）；`feat/prod-a-m4` = M4 验收/安装（64，**未合并 main**）
+> 结论：**M0 100%；M1 ~60%；M2 ~95%（UAT 待 owner）；M3 ~97%；M4 ~40%（accept + install/uninstall/rollback + upgrade/list/verify/render 已通）；M5–M6 0%。** 未完成项不冒充完成。
 
 ## 1. 总体完成度（按 PLAN-A 里程碑）
 
@@ -12,7 +12,7 @@
 | M1 安装器与 DSH 自动配置 | **~60%** | 🟡 核心 + 测试；依赖自动准备/真实干净机验收未闭合 |
 | M2 控制面 + factory-agent | **~95%** | ✅ 代码/自动测试完成；仅真实 DSH UAT 待 owner |
 | M3 生成流水线 | **~97%** | 🟡 probe/iframe/登录检测/业务 runner/write_runner/生成/校验/staging/报告/编排/沙箱/金标/失败建议已通；DSH 端到端 UAT、自动修复未完成 |
-| M4 验收与安装 | **~25%** | 🟡 accept 门禁 + plugin-install（install/uninstall/rollback/smoke/备份）已通；真实 DSH 安装、升级、打包未完成 |
+| M4 验收与安装 | **~40%** | 🟡 accept + install/uninstall/rollback/upgrade/list/verify/render 已通；真实 DSH 安装/UAT、打包签名未完成 |
 | M5 分发与升级 | 0% | ⏸ 未开始 |
 | M6 硬化与试点 | 0% | ⏸ 未开始 |
 
@@ -113,9 +113,10 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 | 生成插件安装器 | ✅ | `apps/installer/plugin-install.cjs`：install/uninstall/rollback；复制 plugin/MCP/SKILL、写相对 manifest、状态/备份 |
 | 安装 smoke | ✅ | health + 无 token 401 + token 200（install 默认执行；测试用 --no-smoke） |
 | 覆盖回滚 | ✅ | `--force` 旧目录备份；uninstall 恢复旧目录与旧 manifest |
-| 测试 | ✅ | **62/62**（M3 58 + install 3 + accept 1） |
+| 升级/审计 | ✅ | `upgrade`（只允许更高版本，--force 降级）、`list`、`verify`、`--render`（调用工厂 render，失败回滚） |
+| 测试 | ✅ | **64/64**（M3 58 + install 5 + accept 1） |
 | 真实 DSH 安装/UAT | ⏳ 未做 | 需要 owner 真实 profile（安装器 M1 已具备备份/回滚） |
-| 升级/打包 | ⏳ 未做 | 版本升级、签名、发布包 |
+| 打包/签名 | ⏳ 未做 | 发布包、校验和、许可证 |
 
 ## 3. 门禁对照（QUALITY-GATES-A）
 
@@ -138,7 +139,7 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 | M1 安装器 + DSH 自动配置 | 🟡 部分（~60%） | 核心 + 测试已完成；剩余：依赖自动准备、真实干净机 DSH 验收、`--repair`/升级测试、打包签名 |
 | M2 本地控制面 + factory-agent | ✅ 代码完成（~95%） | 安装器注入/全链路测试已完成；仅真实 DSH UAT 待 owner 一键执行 |
 | M3 生成流水线 | 🟡 ~97% | probe/iframe/登录检测/业务 runner+write_runner/生成/校验/staging/报告/编排/沙箱/金标/失败建议已通；DSH 端到端 UAT、自动修复未完成 |
-| M4 验收/安装 | 🟡 ~25% | accept 门禁 + plugin-install（install/uninstall/rollback/smoke/备份）已通；真实 DSH 安装/UAT、升级、打包未完成 |
+| M4 验收/安装 | 🟡 ~40% | accept + install/uninstall/rollback/upgrade/list/verify/render 已通；真实 DSH 安装/UAT、打包签名未完成 |
 | M5–M6 | ⏸ 未开始 | 依赖前序里程碑 |
 | LICENSE | 🚫 BLOCKED-PENDING-OWNER | 许可证属所有者法律决策，AI 不擅自选择；建议 Apache-2.0 |
 | GitHub Actions 实跑 | ⏳ 待验证 | 代码已推送后由 owner 看一眼 CI 结果；本地等价命令已通过 |
