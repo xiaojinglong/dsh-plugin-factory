@@ -120,9 +120,12 @@ function createControlPlane(opts = {}) {
     };
   });
 
-  app.get('/metrics', { preHandler: [auth] }, async () => ({
-    ok: true, service: 'control-plane', version: VERSION, uptimeSec: Math.round(process.uptime()), ...store.metrics(),
-  }));
+  app.get('/metrics', { preHandler: [auth] }, async () => {
+    const dbFile = path.join(dataRoot, 'control-plane', 'state.db');
+    let dbSizeBytes = 0;
+    try { dbSizeBytes = fs.statSync(dbFile).size; } catch { /* ignore */ }
+    return { ok: true, service: 'control-plane', version: VERSION, uptimeSec: Math.round(process.uptime()), dbSizeBytes, rateLimit, ...store.metrics() };
+  });
 
   app.post('/admin/prune', { preHandler: [auth] }, async (req, reply) => {
     const body = req.body && typeof req.body === 'object' ? req.body : {};
