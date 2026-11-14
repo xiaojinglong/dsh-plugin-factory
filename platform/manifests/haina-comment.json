@@ -1,0 +1,41 @@
+{
+  "id": "haina-comment",
+  "name": "海纳博客评论",
+  "type": "browser",
+  "version": "3.0.0",
+  "port": 8796,
+  "taskType": "haina_comment",
+  "serverName": "haina-comment",
+  "service": {
+    "dir": "D:/www/dsh-plugin-factory/plugins/haina-comment/service",
+    "entry": "server.js",
+    "runner": "crawler.js",
+    "dataDir": "D:/www/dsh-plugin-factory/plugins/haina-comment/service/data",
+    "startCmd": [
+      "node",
+      [
+        "server.js"
+      ]
+    ]
+  },
+  "runtime": {
+    "write": true,
+    "retentionDays": 7,
+    "token": true,
+    "toolTimeoutMs": 1200001,
+    "serviceToken": "8560a6c3b5dc1d98b171c870178c2588"
+  },
+  "mcp": {
+    "dir": "D:/www/dshskills/tools/haina-comment-mcp"
+  },
+  "skill": {
+    "dir": "D:/www/dshskills/skills/haina-comment"
+  },
+  "report": null,
+  "secrets": [
+    "LISTING_API_KEY",
+    "HAINA_EMAIL",
+    "HAINA_PASSWORD"
+  ],
+  "legacy": false
+}

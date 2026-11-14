@@ -1,0 +1,18 @@
+# ─────────────────────────────────────────────────────────────
+# 插件级 patch：每个新插件加一条（替换 <业务标识> / <端口>）
+# 文件：C:\Users\Giikin\.dsh\profiles\desktop\cordis.patch.yml
+# 校验：id / serverName / args / cwd 四处唯一；路径用正斜杠；
+#       serverName 必须 = 业务标识（kebab-case）；toolCallTimeoutMs 长任务给 900000
+# ─────────────────────────────────────────────────────────────
+- insert:
+    - id: mcp-<业务标识>
+      name: "@deepseek-ai/dsh-mcp-client"
+      config:
+        serverName: <业务标识>
+        transport: stdio
+        command: node
+        toolCallTimeoutMs: 900000
+        args: ["D:/www/dshskills/tools/<业务标识>-mcp/index.js"]
+        cwd: "D:/www/dshskills/tools/<业务标识>-mcp"
+        env:
+          MCP_SERVICE_BASE_URL: "http://127.0.0.1:<端口>"

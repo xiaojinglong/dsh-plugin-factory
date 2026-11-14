@@ -1,0 +1,31 @@
+{
+  "id": "coupon-push",
+  "name": "优惠券批量发放（模拟·写操作）",
+  "type": "api",
+  "version": "3.0.0",
+  "port": 8799,
+  "taskType": "coupon_push",
+  "serverName": "coupon-push",
+  "service": {
+    "dir": "D:/www/dsh-plugin-factory/plugins/coupon-push/service",
+    "entry": "server.js",
+    "runner": "runner.js",
+    "dataDir": "D:/www/dsh-plugin-factory/plugins/coupon-push/service/data",
+    "startCmd": ["node", ["server.js"]]
+  },
+  "runtime": {
+    "write": true,
+    "retentionDays": 7,
+    "token": true,
+    "toolTimeoutMs": 120000,
+    "serviceToken": "8bf3683ba2970aae938d14153f49ae6f"
+  },
+  "mcp": { "dir": "D:/www/dshskills/tools/coupon-push-mcp" },
+  "skill": { "dir": "D:/www/dshskills/skills/coupon-push" },
+  "report": {
+    "generator": "D:/www/dsh-plugin-factory/plugins/coupon-push/gen-report-coupon.mjs",
+    "output": "D:/www/dsh-plugin-factory/plugins/coupon-push/report/coupon-push-report.html"
+  },
+  "secrets": ["COUPON_API_KEY"],
+  "legacy": false
+}

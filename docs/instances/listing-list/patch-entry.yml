@@ -1,0 +1,23 @@
+# 追加到 C:\Users\Giikin\.dsh\profiles\desktop\cordis.patch.yml 末尾
+# 1) 技能目录扫描：在既有 customSkillDirs 里加第二行（不要新建 provider）
+#    既有：
+#      customSkillDirs:
+#        - "D:/www/dshskills/skills"
+#    改为：
+#      customSkillDirs:
+#        - "D:/www/dshskills/skills"
+#        - "D:/www/dshspirder/plugin-factory/instances/listing-list/skills"
+#
+# 2) MCP 挂载：追加下面这段
+- insert:
+    - id: mcp-listing-list
+      name: "@deepseek-ai/dsh-mcp-client"
+      config:
+        serverName: listing-list
+        transport: stdio
+        command: node
+        toolCallTimeoutMs: 600000
+        args: ["D:/www/dshspirder/listing-list/mcp/index.js"]
+        cwd: "D:/www/dshspirder/listing-list/mcp"
+        env:
+          MCP_SERVICE_BASE_URL: "http://127.0.0.1:8791"

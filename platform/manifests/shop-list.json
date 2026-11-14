@@ -1,0 +1,42 @@
+{
+  "id": "shop-list",
+  "name": "店铺盘点",
+  "type": "api",
+  "version": "3.0.0",
+  "port": 8792,
+  "taskType": "shop_list",
+  "serverName": "shop-list",
+  "service": {
+    "dir": "D:/www/dsh-plugin-factory/plugins/shop-list/service",
+    "entry": "server.js",
+    "runner": "fetcher.js",
+    "dataDir": "D:/www/dsh-plugin-factory/plugins/shop-list/service/data",
+    "startCmd": [
+      "node",
+      [
+        "server.js"
+      ]
+    ]
+  },
+  "runtime": {
+    "write": false,
+    "retentionDays": 7,
+    "token": true,
+    "toolTimeoutMs": 600001,
+    "serviceToken": "61159f12ebc792765fdd0374b63d990c"
+  },
+  "mcp": {
+    "dir": "D:/www/dshskills/tools/shop-list-mcp"
+  },
+  "skill": {
+    "dir": "D:/www/dshskills/skills/shop-list"
+  },
+  "report": {
+    "generator": "D:/www/dsh-plugin-factory/plugins/shop-list/gen-report-shop.mjs",
+    "output": "D:/www/dsh-plugin-factory/plugins/shop-list/report/shop-list-report.html"
+  },
+  "secrets": [
+    "LISTING_API_KEY"
+  ],
+  "legacy": false
+}

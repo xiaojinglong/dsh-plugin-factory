@@ -1,0 +1,42 @@
+{
+  "id": "stock-alert",
+  "name": "缺货预警",
+  "type": "api",
+  "version": "3.0.0",
+  "port": 8795,
+  "taskType": "stock_alert",
+  "serverName": "stock-alert",
+  "service": {
+    "dir": "D:/www/dsh-plugin-factory/plugins/stock-alert/service",
+    "entry": "server.js",
+    "runner": "fetcher.js",
+    "dataDir": "D:/www/dsh-plugin-factory/plugins/stock-alert/service/data",
+    "startCmd": [
+      "node",
+      [
+        "server.js"
+      ]
+    ]
+  },
+  "runtime": {
+    "write": false,
+    "retentionDays": 7,
+    "token": true,
+    "toolTimeoutMs": 600001,
+    "serviceToken": "262e26e6c2949e5dfc17288e7c59681d"
+  },
+  "mcp": {
+    "dir": "D:/www/dshskills/tools/stock-alert-mcp"
+  },
+  "skill": {
+    "dir": "D:/www/dshskills/skills/stock-alert"
+  },
+  "report": {
+    "generator": "D:/www/dsh-plugin-factory/plugins/stock-alert/gen-report.mjs",
+    "output": "D:/www/dsh-plugin-factory/plugins/stock-alert/report/stock-alert-report.html"
+  },
+  "secrets": [
+    "LISTING_API_KEY"
+  ],
+  "legacy": false
+}

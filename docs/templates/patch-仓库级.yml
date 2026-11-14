@@ -1,0 +1,13 @@
+# ─────────────────────────────────────────────────────────────
+# 仓库级 patch：整个 dshskills 只需加一次（后续插件不用重复）
+# 文件：C:\Users\Giikin\.dsh\profiles\desktop\cordis.patch.yml
+# 说明：让 DSH 扫描自定义 skills 目录；改前先备份 .bak
+# ─────────────────────────────────────────────────────────────
+- insert:
+    - id: skill-filesystem-dshskills
+      name: "@deepseek-ai/dsh-skill-filesystem"
+      config:
+        providerName: dshskills-repo
+        includeDefaultRoots: false
+        customSkillDirs:
+          - "D:/www/dshskills/skills"

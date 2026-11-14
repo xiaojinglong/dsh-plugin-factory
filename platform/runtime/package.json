@@ -1,0 +1,12 @@
+{
+  "name": "@dsh/plugin-runtime",
+  "version": "3.0.0",
+  "private": true,
+  "description": "DSH 插件共享运行时：任务引擎 / 持久化 / 鉴权 / 写操作治理 / 指标 / 日志",
+  "main": "index.js",
+  "type": "commonjs",
+  "engines": { "node": ">=22.5" },
+  "dependencies": {
+    "fastify": "^5.12.8"
+  }
+}

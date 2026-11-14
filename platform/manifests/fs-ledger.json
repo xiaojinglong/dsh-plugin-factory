@@ -1,0 +1,31 @@
+{
+  "id": "fs-ledger",
+  "name": "本地台账核对（文件系统型）",
+  "type": "file",
+  "version": "3.0.0",
+  "port": 8801,
+  "taskType": "fs_ledger",
+  "serverName": "fs-ledger",
+  "service": {
+    "dir": "D:/www/dsh-plugin-factory/plugins/fs-ledger/service",
+    "entry": "server.js",
+    "runner": "runner.js",
+    "dataDir": "D:/www/dsh-plugin-factory/plugins/fs-ledger/service/data",
+    "startCmd": ["node", ["server.js"]]
+  },
+  "runtime": {
+    "write": false,
+    "retentionDays": 7,
+    "token": true,
+    "toolTimeoutMs": 60000,
+    "serviceToken": "00c8765f115290c51257bcb99ddcb8d3"
+  },
+  "mcp": { "dir": "D:/www/dshskills/tools/fs-ledger-mcp" },
+  "skill": { "dir": "D:/www/dshskills/skills/fs-ledger" },
+  "report": {
+    "generator": "D:/www/dsh-plugin-factory/plugins/fs-ledger/gen-report-fs.mjs",
+    "output": "D:/www/dsh-plugin-factory/plugins/fs-ledger/report/fs-ledger-report.html"
+  },
+  "secrets": [],
+  "legacy": false
+}

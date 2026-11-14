@@ -1,0 +1,31 @@
+{
+  "id": "page-audit",
+  "name": "商品页巡检（模拟站点·浏览器）",
+  "type": "browser",
+  "version": "3.0.0",
+  "port": 8800,
+  "taskType": "page_audit",
+  "serverName": "page-audit",
+  "service": {
+    "dir": "D:/www/dsh-plugin-factory/plugins/page-audit/service",
+    "entry": "server.js",
+    "runner": "crawler.js",
+    "dataDir": "D:/www/dsh-plugin-factory/plugins/page-audit/service/data",
+    "startCmd": ["node", ["server.js"]]
+  },
+  "runtime": {
+    "write": false,
+    "retentionDays": 7,
+    "token": true,
+    "toolTimeoutMs": 180000,
+    "serviceToken": "08c62b0ca61d740acad9cabdb3ddc1ea"
+  },
+  "mcp": { "dir": "D:/www/dshskills/tools/page-audit-mcp" },
+  "skill": { "dir": "D:/www/dshskills/skills/page-audit" },
+  "report": {
+    "generator": "D:/www/dsh-plugin-factory/plugins/page-audit/gen-report-page.mjs",
+    "output": "D:/www/dsh-plugin-factory/plugins/page-audit/report/page-audit-report.html"
+  },
+  "secrets": [],
+  "legacy": false
+}

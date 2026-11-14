@@ -1,0 +1,42 @@
+{
+  "id": "draft-cleanup",
+  "name": "草稿商品清理",
+  "type": "api",
+  "version": "3.0.0",
+  "port": 8794,
+  "taskType": "draft_cleanup",
+  "serverName": "draft-cleanup",
+  "service": {
+    "dir": "D:/www/dsh-plugin-factory/plugins/draft-cleanup/service",
+    "entry": "server.js",
+    "runner": "fetcher.js",
+    "dataDir": "D:/www/dsh-plugin-factory/plugins/draft-cleanup/service/data",
+    "startCmd": [
+      "node",
+      [
+        "server.js"
+      ]
+    ]
+  },
+  "runtime": {
+    "write": false,
+    "retentionDays": 7,
+    "token": true,
+    "toolTimeoutMs": 600001,
+    "serviceToken": "5e9733f6fef888514ecb8a03a48cc883"
+  },
+  "mcp": {
+    "dir": "D:/www/dshskills/tools/draft-cleanup-mcp"
+  },
+  "skill": {
+    "dir": "D:/www/dshskills/skills/draft-cleanup"
+  },
+  "report": {
+    "generator": "D:/www/dsh-plugin-factory/plugins/draft-cleanup/gen-report-draft.mjs",
+    "output": "D:/www/dsh-plugin-factory/plugins/draft-cleanup/report/draft-cleanup-report.html"
+  },
+  "secrets": [
+    "LISTING_API_KEY"
+  ],
+  "legacy": false
+}

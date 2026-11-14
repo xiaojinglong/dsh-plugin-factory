@@ -1,0 +1,36 @@
+﻿import { readFile } from 'node:fs/promises';
+const f = process.argv[2];
+const ds = JSON.parse(await readFile(f, 'utf8'));
+const rows = ds.pages.flatMap(p => p.rows || []);
+console.log('rows=', rows.length, 'total=', ds.total, 'totalPages=', ds.totalPages);
+const uniqCount = (fn) => { const m = new Map(); for (const r of rows) { const k = fn(r) ?? '(空)'; m.set(k, (m.get(k)||0)+1); } return [...m.entries()].sort((a,b)=>b[1]-a[1]); };
+console.log('site=', JSON.stringify(uniqCount(r=>r.site)));
+console.log('category_cn_name top8=', JSON.stringify(uniqCount(r=>r.category_cn_name).slice(0,8)));
+console.log('status=', JSON.stringify(uniqCount(r=>r.status)));
+console.log('quality_level=', JSON.stringify(uniqCount(r=>r.quality_level)));
+console.log('sale=', JSON.stringify(uniqCount(r=>r.sale).slice(0,6)));
+const np = rows.filter(r=>!Number(r.current_price)).length;
+console.log('无价格(current_price<=0)=', np);
+const ni = rows.filter(r=>!String(r.main_image||'').trim()).length;
+console.log('无主图=', ni);
+console.log('has_video=', rows.filter(r=>Number(r.has_video)===1).length);
+console.log('similar_title>0=', rows.filter(r=>Number(r.similar_title_percent)>0).length, 'similar_image>0=', rows.filter(r=>Number(r.similar_image_percent)>0).length);
+console.log('contraband=', rows.filter(r=>Number(r.is_contraband)===1).length, 'banwords=', rows.filter(r=>String(r.marked_ban_words||'').trim()).length);
+const days = (s)=>{ if(!s) return null; const t=new Date(String(s).replace(' ','T')); if(Number.isNaN(t.getTime())) return null; return Math.round((Date.now()-t.getTime())/86400000); };
+const d30 = rows.filter(r=>{const d=days(r.update_time); return d!==null && d<=30;}).length;
+const d90 = rows.filter(r=>{const d=days(r.update_time); return d!==null && d>90;}).length;
+const d180 = rows.filter(r=>{const d=days(r.update_time); return d!==null && d>180;}).length;
+console.log('update<=30d=',d30,'>90d=',d90,'>180d=',d180);
+console.log('update_time min/max=', rows.map(r=>r.update_time).sort()[0], '|', rows.map(r=>r.update_time).sort().at(-1));
+console.log('create_time min/max=', rows.map(r=>r.create_time).sort()[0], '|', rows.map(r=>r.create_time).sort().at(-1));
+const titleMap = new Map(); for (const r of rows) { const k=String(r.item_name||r.title||'').trim(); if(k) titleMap.set(k,(titleMap.get(k)||0)+1); }
+const dupTitles = [...titleMap.entries()].filter(([,v])=>v>1);
+console.log('重复标题组=', dupTitles.length, JSON.stringify(dupTitles.slice(0,3)));
+const imgMap = new Map(); for (const r of rows) { const k=String(r.main_image||'').trim(); if(k) imgMap.set(k,(imgMap.get(k)||0)+1); }
+const dupImgs=[...imgMap.entries()].filter(([,v])=>v>1);
+console.log('重复主图组=', dupImgs.length, JSON.stringify(dupImgs.slice(0,3)));
+console.log('stock sum=', rows.reduce((s,r)=>s+Number(r.normal_stock||0),0), 'zero stock=', rows.filter(r=>Number(r.normal_stock)<=0).length);
+console.log('views>0=', rows.filter(r=>Number(r.views)>0).length, 'order_count>0=', rows.filter(r=>Number(r.order_count)>0).length);
+console.log('upload_time 空=', rows.filter(r=>!String(r.upload_time||'').trim()).length);
+console.log('sample keys count=', Object.keys(rows[0]).length);
+console.log('sample=', JSON.stringify({id:rows[0].id, item_name:rows[0].item_name?.slice(0,40), site:rows[0].site, current_price:rows[0].current_price, main_image:!!rows[0].main_image, update_time:rows[0].update_time, create_time:rows[0].create_time, sale:rows[0].sale, quality_level:rows[0].quality_level}));

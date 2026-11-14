@@ -1,0 +1,42 @@
+# ---------- Dependencies ----------
+node_modules/
+**/node_modules/
+
+# ---------- Runtime data (never commit) ----------
+**/service/data/
+data/
+plugins/*/data/
+**/*.db
+**/*.db-wal
+**/*.db-shm
+**/*.log
+**/*.log.*
+
+# ---------- Generated reports / smoke outputs ----------
+plugins/*/report/
+**/smoke-result.txt
+**/probe-output.txt
+
+# ---------- Secrets & sessions (MUST NEVER COMMIT) ----------
+**/.env
+platform/secrets/
+**/*.enc
+data/sessions/
+
+# ---------- Local runtime state ----------
+platform/run/
+*.bak.*
+cordis.patch.yml.bak.*
+
+# ---------- Generated deployment artifacts ----------
+deployment/registry.md
+
+# ---------- Archive / experiments / old outputs ----------
+archive/
+experiments/
+
+# ---------- OS / editor ----------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
