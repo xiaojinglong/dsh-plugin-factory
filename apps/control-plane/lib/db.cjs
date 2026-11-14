@@ -238,6 +238,17 @@ class ControlPlaneStore {
     }));
   }
 
+  pruneAudit({ olderThanDays = 30, dryRun = true, actor = 'system', ip = '' } = {}) {
+    const days = Math.max(0, Math.min(3650, Number(olderThanDays)));
+    const cutoff = new Date(Date.now() - days * 86400000).toISOString();
+    const count = this.db.prepare('SELECT COUNT(*) c FROM audit WHERE at < ?').get(cutoff).c;
+    if (!dryRun && count > 0) {
+      this.db.prepare('DELETE FROM audit WHERE at < ?').run(cutoff);
+      this._audit({ actor, action: 'audit.prune', object: 'audit', after: { cutoff, deleted: count }, ip });
+    }
+    return { cutoff, olderThanDays: days, deleted: dryRun ? 0 : count, candidates: count, dryRun: !!dryRun };
+  }
+
   metrics() {
     const byState = {};
     for (const r of this.db.prepare('SELECT state, COUNT(*) c FROM requests GROUP BY state').all()) byState[r.state] = r.c;

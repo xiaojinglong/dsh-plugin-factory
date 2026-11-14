@@ -37,9 +37,12 @@ Token 文件：`<data-root>/control-plane/token`（默认 `<repo>/data/control-p
 | POST | `/requests/:id/steps` | `{step,status,evidence?,error?}`，step∈probe/generate/validate/staging/accept/install/note，status∈running/succeeded/failed |
 | GET | `/audit?limit=` | 全局审计 |
 | POST | `/admin/backup` | `{fileName?}` → `VACUUM INTO` 备份到 `control-plane/backups/` |
+| POST | `/admin/prune` | `{olderThanDays?, dryRun}` 审计保留清理（默认 dry-run） |
 
 错误统一：`{ error: { code, message, requestId } }`；401/403/404/409/400。
 POST 默认限流 120 次/分钟/IP（`CONTROL_PLANE_RATE_LIMIT` 可调），超限 429 + `Retry-After`。
+
+恢复（需先停控制面）：`node apps/control-plane/restore.cjs --backup <backup.db> --data-root <dir>`；当前库保留为 `.before-restore-<ts>`。
 
 ## 状态机
 

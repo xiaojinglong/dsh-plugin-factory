@@ -1,8 +1,8 @@
 # STATUS-A — 生产级冲刺交付状态（A 单机版）
 
-> 更新时间：2026-11-15 08:1x（Asia/Shanghai）
-> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 流水线（58，**未合并 main**）；`feat/prod-a-m4` = M4/M5/M6（68，**未合并 main**）
-> 结论：**M0 100%；M1 ~60%；M2 ~95%（UAT 待 owner）；M3 ~97%；M4 ~60%；M5 ~25%；M6 ~15%（限流/health 就绪）。** 未完成项不冒充完成。
+> 更新时间：2026-11-15 08:3x（Asia/Shanghai）
+> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 流水线（58，**未合并 main**）；`feat/prod-a-m4` = M4/M5/M6（70，**未合并 main**）
+> 结论：**M0 100%；M1 ~60%；M2 ~95%（UAT 待 owner）；M3 ~97%；M4 ~60%；M5 ~25%；M6 ~35%（限流/health/备份恢复/审计保留）。** 未完成项不冒充完成。
 
 ## 1. 总体完成度（按 PLAN-A 里程碑）
 
@@ -14,7 +14,7 @@
 | M3 生成流水线 | **~97%** | 🟡 probe/iframe/登录检测/业务 runner/write_runner/生成/校验/staging/报告/编排/沙箱/金标/失败建议已通；DSH 端到端 UAT、自动修复未完成 |
 | M4 验收与安装 | **~60%** | 🟡 accept + install/uninstall/rollback/upgrade/verify/render/preflight/兼容性检查已通；真实 DSH 安装/UAT、签名未完成 |
 | M5 分发与升级 | **~25%** | 🟡 发布 tarball + SHA-256 + verify + release CI + 策略文档；分发渠道/签名/灰度未完成 |
-| M6 硬化与试点 | **~15%** | 🟡 控制面限流/health 就绪已实现；告警/备份恢复演练/容量/试点未完成 |
+| M6 硬化与试点 | **~35%** | 🟡 限流/health 就绪/备份恢复/审计保留已通；告警/容量/试点未完成 |
 
 > 说明：`PLAN-A.md` 完整周期约 6 周；本轮按生产级标准完成 M0，未用 MVP 替代或降低门禁。
 
@@ -145,7 +145,7 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 | M3 生成流水线 | 🟡 ~97% | probe/iframe/登录检测/业务 runner+write_runner/生成/校验/staging/报告/编排/沙箱/金标/失败建议已通；DSH 端到端 UAT、自动修复未完成 |
 | M4 验收/安装 | 🟡 ~60% | accept + install/uninstall/rollback/upgrade/list/verify/render/preflight/兼容性已通；真实 DSH 安装/UAT、签名未完成 |
 | M5 分发与升级 | 🟡 ~25% | 发布 tarball + SHA-256 + verify + release CI + 策略文档；分发渠道/签名/灰度未完成 |
-| M6 硬化与试点 | 🟡 ~15% | 限流/health 就绪已实现；告警/备份恢复演练/容量/试点未完成 |
+| M6 硬化与试点 | 🟡 ~35% | 限流/health/备份恢复/审计保留已通；告警/容量/试点未完成 |
 | LICENSE | 🚫 BLOCKED-PENDING-OWNER | 许可证属所有者法律决策，AI 不擅自选择；建议 Apache-2.0 |
 | GitHub Actions 实跑 | ⏳ 待验证 | 代码已推送后由 owner 看一眼 CI 结果；本地等价命令已通过 |
 | 遗留绝对路径脚本 | ⚠️ 已知 | `platform/factory/legacy/*`、`patch-*.mjs`、`plugins/*/probe`、`deploy-*` 为一次性历史脚本，不在产品路径；M1 清理（见 DECISIONS D8） |

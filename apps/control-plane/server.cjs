@@ -124,6 +124,16 @@ function createControlPlane(opts = {}) {
     ok: true, service: 'control-plane', version: VERSION, uptimeSec: Math.round(process.uptime()), ...store.metrics(),
   }));
 
+  app.post('/admin/prune', { preHandler: [auth] }, async (req, reply) => {
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const olderThanDays = body.olderThanDays === undefined ? 30 : Number(body.olderThanDays);
+    if (!Number.isFinite(olderThanDays) || olderThanDays < 0 || olderThanDays > 3650) {
+      return fail(req.id, reply, 400, 'INVALID_DAYS', 'olderThanDays 必须为 0–3650');
+    }
+    const dryRun = body.dryRun !== false;
+    return { ok: true, ...store.pruneAudit({ olderThanDays, dryRun, actor: actorOf(req), ip: req.ip }) };
+  });
+
   app.get('/plugins', { preHandler: [auth] }, async () => ({ ok: true, plugins: loadPlugins() }));
 
   app.post('/requests', { preHandler: [auth] }, async (req, reply) => {

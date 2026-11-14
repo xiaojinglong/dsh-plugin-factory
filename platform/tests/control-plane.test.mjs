@@ -8,6 +8,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { createControlPlane } = require('../../apps/control-plane/server.cjs');
+const { restore } = require('../../apps/control-plane/restore.cjs');
 
 const TOKEN = 'test-token';
 const H = { authorization: `Bearer ${TOKEN}`, 'content-type': 'application/json' };
@@ -280,5 +281,50 @@ test('硬化工装：POST 限流 429，GET health 不受影响且带 db 检查',
     assert.equal((await get(base, '/plugins', {})).status, 401, 'GET 无 token 仍 401，不受限流影响');
   } finally {
     await cp.stop();
+  }
+});
+
+test('prune：默认 dry-run，确认后删除旧审计并记一条 prune 审计', async () => {
+  await withApp(async ({ base }) => {
+    for (let i = 0; i < 3; i += 1) await post(base, '/requests', { brief: `审计${i}` });
+    const dry = await post(base, '/admin/prune', { olderThanDays: 0, dryRun: true });
+    assert.equal(dry.status, 200);
+    assert.ok(dry.body.candidates >= 3);
+    assert.equal(dry.body.deleted, 0);
+    const real = await post(base, '/admin/prune', { olderThanDays: 0, dryRun: false });
+    assert.equal(real.status, 200);
+    assert.ok(real.body.deleted >= 3);
+    const audit = await get(base, '/audit?limit=10');
+    assert.ok(audit.body.audit.some((a) => a.action === 'audit.prune'));
+    assert.equal((await post(base, '/admin/prune', { olderThanDays: 99999 })).status, 400);
+  });
+});
+
+test('restore：备份恢复到新数据根，需求单可读；非法备份拒绝', async () => {
+  const dataRootA = tmp();
+  const cpA = createControlPlane({ dataRoot: dataRootA, token: TOKEN });
+  const { port } = await cpA.start({ port: 0 });
+  const baseA = `http://127.0.0.1:${port}`;
+  let id;
+  try {
+    id = (await post(baseA, '/requests', { brief: '恢复演练' })).body.request.id;
+    const backup = path.join(dataRootA, 'backup.db');
+    cpA.store.backup(backup);
+    await cpA.stop();
+    const dataRootB = tmp();
+    const r = restore({ backup, dataRoot: dataRootB });
+    assert.equal(r.ok, true);
+    const cpB = createControlPlane({ dataRoot: dataRootB, token: TOKEN });
+    const { port: portB } = await cpB.start({ port: 0 });
+    try {
+      const got = await get(`http://127.0.0.1:${portB}`, `/requests/${id}`);
+      assert.equal(got.status, 200);
+      assert.equal(got.body.request.brief, '恢复演练');
+    } finally { await cpB.stop(); }
+    const bad = path.join(dataRootB, 'bad.db');
+    fs.writeFileSync(bad, 'not-a-sqlite', 'utf8');
+    assert.throws(() => restore({ backup: bad, dataRoot: tmp() }), /数据库|SQLite|file is not a database|缺少表/i);
+  } finally {
+    try { await cpA.stop(); } catch { /* already stopped */ }
   }
 });
