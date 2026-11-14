@@ -82,6 +82,24 @@ function createControlPlane(opts = {}) {
     return undefined;
   };
 
+  const rateLimit = Number(opts.rateLimit ?? process.env.CONTROL_PLANE_RATE_LIMIT ?? 120);
+  if (rateLimit > 0) {
+    const buckets = new Map();
+    app.addHook('onRequest', async (req, reply) => {
+      if (req.method !== 'POST') return undefined;
+      const key = req.ip || 'unknown';
+      const now = Date.now();
+      let b = buckets.get(key);
+      if (!b || b.reset <= now) { b = { count: 0, reset: now + 60000 }; buckets.set(key, b); }
+      b.count += 1;
+      if (b.count > rateLimit) {
+        reply.header('retry-after', String(Math.max(1, Math.ceil((b.reset - now) / 1000))));
+        return reply.code(429).send({ ok: false, error: { code: 'RATE_LIMITED', message: '请求过于频繁，请稍后重试', requestId: req.id } });
+      }
+      return undefined;
+    });
+  }
+
   app.addHook('onResponse', async (req, reply) => {
     logger.info({ requestId: req.id, method: req.method, url: req.url, status: reply.statusCode, ms: Math.round(reply.elapsedTime) }, 'request');
   });
@@ -92,7 +110,15 @@ function createControlPlane(opts = {}) {
     return fail(req.id, reply, status, err.code || (status >= 500 ? 'INTERNAL' : 'BAD_REQUEST'), status >= 500 ? '内部错误' : String(err.message));
   });
 
-  app.get('/health', async () => ({ ok: true, service: 'control-plane', version: VERSION, now: new Date().toISOString(), uptimeSec: Math.round(process.uptime()) }));
+  app.get('/health', async (req, reply) => {
+    let dbOk = true;
+    try { store.db.prepare('SELECT 1').get(); } catch { dbOk = false; }
+    if (!dbOk) reply.code(503);
+    return {
+      ok: dbOk, service: 'control-plane', version: VERSION, now: new Date().toISOString(),
+      uptimeSec: Math.round(process.uptime()), checks: { db: dbOk }, rateLimit,
+    };
+  });
 
   app.get('/metrics', { preHandler: [auth] }, async () => ({
     ok: true, service: 'control-plane', version: VERSION, uptimeSec: Math.round(process.uptime()), ...store.metrics(),

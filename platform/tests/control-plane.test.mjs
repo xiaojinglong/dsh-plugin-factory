@@ -262,3 +262,23 @@ test('accept 门禁：仅 staging 可验收，必须 acceptedBy，验收后进 a
     assert.equal((await post(base, `/requests/${id}/accept`, { acceptedBy: '业务-李四' })).status, 409);
   });
 });
+
+test('硬化工装：POST 限流 429，GET health 不受影响且带 db 检查', async () => {
+  const dataRoot = tmp();
+  const cp = createControlPlane({ dataRoot, token: TOKEN, rateLimit: 2 });
+  const { port } = await cp.start({ port: 0 });
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    assert.equal((await post(base, '/requests', { brief: '限流1' })).status, 201);
+    assert.equal((await post(base, '/requests', { brief: '限流2' })).status, 201);
+    const limited = await post(base, '/requests', { brief: '限流3' });
+    assert.equal(limited.status, 429);
+    assert.equal(limited.body.error.code, 'RATE_LIMITED');
+    const health = await get(base, '/health');
+    assert.equal(health.status, 200);
+    assert.equal(health.body.checks.db, true);
+    assert.equal((await get(base, '/plugins', {})).status, 401, 'GET 无 token 仍 401，不受限流影响');
+  } finally {
+    await cp.stop();
+  }
+});

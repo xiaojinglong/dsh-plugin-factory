@@ -26,7 +26,7 @@ Token 文件：`<data-root>/control-plane/token`（默认 `<repo>/data/control-p
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
-| GET | `/health` | 存活（无鉴权） |
+| GET | `/health` | 存活/就绪（无鉴权；含 `checks.db`，DB 异常 503） |
 | GET | `/metrics` | 请求/审计统计 |
 | GET | `/plugins` | 插件目录（不含 token/路径） |
 | POST | `/requests` | 创建需求单 `{brief, params?}`；可选 `Idempotency-Key` header |
@@ -39,6 +39,7 @@ Token 文件：`<data-root>/control-plane/token`（默认 `<repo>/data/control-p
 | POST | `/admin/backup` | `{fileName?}` → `VACUUM INTO` 备份到 `control-plane/backups/` |
 
 错误统一：`{ error: { code, message, requestId } }`；401/403/404/409/400。
+POST 默认限流 120 次/分钟/IP（`CONTROL_PLANE_RATE_LIMIT` 可调），超限 429 + `Retry-After`。
 
 ## 状态机
 
