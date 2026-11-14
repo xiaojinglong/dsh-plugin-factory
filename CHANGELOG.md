@@ -20,11 +20,11 @@
 - 安装器核心 `apps/installer`（check/install/uninstall/rollback/dry-run + setup.ps1 + 6 测试；M1 部分完成，未合并 main）；M2 收尾：安装器注入 `factory-control` MCP（managed block + token，自动备份/回滚），新增"安装器→patch→MCP→控制面"全链路测试。
 - 本地控制面 `apps/control-plane`（8780；SQLite migration/WAL、token、需求单状态机、审计、指标、备份 + 14 集成测试；M2 代码完成）。
 - `apps/factory-control-mcp`（7 个 MCP 工具 + SDK Client over stdio 端到端测试）+ `skills/factory-agent`（DSH 技能，已热加载可见）。
-- M3 生成垂直切片：`packages/sdk`（zod plugin 契约）、`templates/plugin`（service/mcp/skill/report/fixture）、`apps/generator`（generate/validate/staging + 生成服务真实预演 + evidence）。
+- M3 生成流水线：`packages/sdk`（zod 契约）、`templates/plugin`、`apps/generator`（generate/validate/staging + fixture/本机 HTTP probe + 报告 staging 执行 + 控制面 pipeline 编排 + evidence）。
 - 文档同步：HANDOFF/README 更新到 12 插件/v3.2；`QUALITY-GATES-A.md`、`DECISIONS-A.md`、`STATUS-A.md`。
 
 ### 验证
-- 干净克隆（M0/M1/M2/M3 分支）分别 22/28/44/**47** 测试全绿；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP；`npm audit` 0。
+- 干净克隆（M0/M1/M2/M3 分支）分别 22/28/44/**49** 测试全绿；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP；`npm audit` 0。
 - 已知未完成：M1 依赖/真实机器、M2 真实 DSH UAT、M3 真实 probe/业务实现/编排、M4–M6；许可证与开源脱敏待 owner 确认；legacy 迁移脚本仍含旧绝对路径（不在产品路径）。
 
 

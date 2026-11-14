@@ -17,7 +17,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const net = require('node:net');
 const crypto = require('node:crypto');
-const { spawn } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
 const config = require('../../packages/config');
 const { validatePluginSpec, slugRegex } = require('../../packages/sdk');
 
@@ -117,6 +117,7 @@ async function generate(opts) {
   };
 
   fs.mkdirSync(out, { recursive: true });
+  fs.mkdirSync(path.join(out, 'report'), { recursive: true });
   fs.writeFileSync(path.join(out, 'plugin.json'), JSON.stringify(spec, null, 2) + '\n', 'utf8');
   fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', 'utf8');
 
@@ -216,6 +217,13 @@ async function validateDir(dir, opts = {}) {
     return { ok: false, errors, checks };
   }
 
+  if (opts.staticOnly) {
+    fs.mkdirSync(path.join(out, 'evidence'), { recursive: true });
+    fs.writeFileSync(path.join(out, 'evidence', 'validation-static.json'), JSON.stringify({ validatedAt: new Date().toISOString(), ok: true, checks, errors: [] }, null, 2) + '\n', 'utf8');
+    log(`validate(static) ${spec.id}: PASS`);
+    return { ok: true, errors: [], checks, staticOnly: true };
+  }
+
   // 预演：启动生成服务 → health → submit → done → result → dataset
   const port = Number(opts.port) > 0 ? Number(opts.port) : await freePort();
   const child = spawn(process.execPath, ['server.js'], {
@@ -250,6 +258,18 @@ async function validateDir(dir, opts = {}) {
     const ds = JSON.parse(fs.readFileSync(datasetPath, 'utf8'));
     rowsCount = (ds.pages || []).flatMap((p) => p.rows || []).length;
     add('staging:dataset', ds.task === spec.taskType && rowsCount === 2, `task=${ds.task} rows=${rowsCount}`);
+
+    const reportScript = path.join(out, 'gen-report.mjs');
+    const reportFile = path.join(out, 'report', `${spec.id}-report.html`);
+    if (fs.existsSync(reportScript)) {
+      const rep = spawnSync(process.execPath, [reportScript, datasetPath], {
+        cwd: out, env: { ...process.env, FACTORY_ROOT: ROOT }, encoding: 'utf8', timeout: 30000,
+      });
+      add('staging:report', rep.status === 0 && fs.existsSync(reportFile) && fs.statSync(reportFile).size > 0,
+        rep.status === 0 ? reportFile : `exit=${rep.status} ${(rep.stderr || '').slice(0, 300)}`);
+    } else {
+      add('staging:report', false, '缺 gen-report.mjs');
+    }
   } catch (err) {
     errors.push(`staging：${err.message}`);
   } finally {
@@ -259,7 +279,8 @@ async function validateDir(dir, opts = {}) {
   const ok = errors.length === 0;
   fs.mkdirSync(path.join(out, 'evidence'), { recursive: true });
   fs.writeFileSync(path.join(out, 'evidence', 'validation.json'), JSON.stringify({
-    validatedAt: new Date().toISOString(), ok, spec, manifest, checks, errors, datasetPath, rows: rowsCount, stderr: stderr.slice(0, 2000),
+    validatedAt: new Date().toISOString(), ok, spec, manifest, checks, errors, datasetPath,
+    reportPath: path.join(out, 'report', `${spec.id}-report.html`), rows: rowsCount, stderr: stderr.slice(0, 2000),
   }, null, 2) + '\n', 'utf8');
   log(`validate ${spec.id}: ${ok ? 'PASS' : 'FAIL'} (${rowsCount} rows)`);
   return { ok, errors, checks, datasetPath, rows: rowsCount };

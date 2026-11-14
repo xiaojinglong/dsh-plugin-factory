@@ -1,8 +1,8 @@
 # STATUS-A — 生产级冲刺交付状态（A 单机版）
 
-> 更新时间：2026-11-15 01:3x（Asia/Shanghai）
-> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 垂直切片（47，**未合并 main**）
-> 结论：**M0 100%；M1 ~60%；M2 ~95%（UAT 待 owner）；M3 ~40%（fixture 生成/校验/预演已通）；M4–M6 0%。** 未完成项不冒充完成。
+> 更新时间：2026-11-15 03:5x（Asia/Shanghai）
+> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 流水线（49，**未合并 main**）
+> 结论：**M0 100%；M1 ~60%；M2 ~95%（UAT 待 owner）；M3 ~65%（fixture probe/生成/校验/staging/报告/控制面编排已通）；M4–M6 0%。** 未完成项不冒充完成。
 
 ## 1. 总体完成度（按 PLAN-A 里程碑）
 
@@ -11,7 +11,7 @@
 | M0 工程基线 | **100%** | ✅ 已完成并通过门禁（main） |
 | M1 安装器与 DSH 自动配置 | **~60%** | 🟡 核心 + 测试；依赖自动准备/真实干净机验收未闭合 |
 | M2 控制面 + factory-agent | **~95%** | ✅ 代码/自动测试完成；仅真实 DSH UAT 待 owner |
-| M3 生成流水线 | **~40%** | 🟡 fixture 模板：生成→结构/语法校验→起服务预演→证据；真实 probe/业务实现/编排未完成 |
+| M3 生成流水线 | **~65%** | 🟡 fixture probe→generate→validate→staging→report + 控制面编排已通；真实 API/浏览器勘探、AI 业务实现、沙箱、金标未完成 |
 | M4 验收与安装 | 0% | ⏸ 未开始 |
 | M5 分发与升级 | 0% | ⏸ 未开始 |
 | M6 硬化与试点 | 0% | ⏸ 未开始 |
@@ -90,10 +90,13 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 | 生成器 | ✅ | `apps/generator`：`generate / validate / staging`；生成 plugin.json+manifest+文件+evidence；默认拒绝覆盖 |
 | 结构/语法校验 | ✅ | 生成后 `node --check` 全部文件；schema/端口/SKILL name/fixture 存在性检查 |
 | 起服务预演 | ✅ | 生成服务真实启动 → `/health` → `POST /jobs` → done → result → dataset（2 行样本），进程回收 |
-| 证据落盘 | ✅ | `evidence/generation.json`、`evidence/validation.json`（检查项/dataset 路径/stderr） |
-| 测试 | ✅ | **47/47**（M2 44 + SDK 1 + 生成器 2） |
-| 真实 probe / 业务实现 | ⏳ 未做 | API/浏览器勘探、AI 业务代码、report staging 执行、金标用例 |
-| 与需求单/控制面自动编排 | ⏳ 未做 | 生成器目前 CLI 驱动，未接 `run_step` 流水线 |
+| 证据落盘 | ✅ | `evidence/generation.json`、`evidence/validation.json`（检查项/dataset/report/stderr） |
+| probe 适配器 | ✅ | `apps/generator/probe.cjs`：fixture + 本机 HTTP JSON（127.0.0.1/localhost，公网需后续 allowlist） |
+| 报告 staging 执行 | ✅ | 生成报告在 staging 真实执行（动态解析 factory-kit/dataset），HTML 非空校验 |
+| 控制面编排 | ✅ | `apps/generator/pipeline.cjs`：需求单 → probe(running/succeeded) → generate → validate → staging → 报告；失败落 failed + 现场证据 |
+| 测试 | ✅ | **49/49**（M2 44 + SDK 1 + 生成器 2 + probe 1 + pipeline 1） |
+| 真实 API/浏览器勘探 | ⏳ 未做 | 目前只允许本机 HTTP；真实业务系统需 allowlist/凭证/登录态 |
+| AI 业务实现 / 沙箱 / 金标 | ⏳ 未做 | 生成骨架仍为 fixture；业务代码生成与沙箱隔离未实现 |
 
 ## 3. 门禁对照（QUALITY-GATES-A）
 
@@ -107,6 +110,7 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 | G7 可审查 | 小步提交、diff 自查、无断言之类 stub | ✅ |
 | G4 数据 / G8 回滚 | M0 不涉及；M1 备份/回滚已单测；M2 SQLite migration/WAL/备份已测 | ✅（M1/M2 部分） |
 | M2 补充 | G1（14 集成测试）/ G2（token、校验、审计、无 token 泄漏）/ G3（health/metrics/日志/优雅退出）/ G4（migration/备份） | ✅ |
+| M3 补充 | G1（probe/生成/预演/pipeline 测试）/ G2（probe 仅本机、生成器拒绝写受保护目录）/ G5（49/49）/ G6（生成证据） | ✅（fixture 范围） |
 
 ## 4. 未完成 / BLOCKED（诚实清单）
 
@@ -114,7 +118,7 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 |---|---|---|
 | M1 安装器 + DSH 自动配置 | 🟡 部分（~60%） | 核心 + 测试已完成；剩余：依赖自动准备、真实干净机 DSH 验收、`--repair`/升级测试、打包签名 |
 | M2 本地控制面 + factory-agent | ✅ 代码完成（~95%） | 安装器注入/全链路测试已完成；仅真实 DSH UAT 待 owner 一键执行 |
-| M3 生成流水线 | 🟡 ~40% | fixture 生成/校验/预演已通；真实 probe、AI 业务实现、report staging、控制面编排未完成 |
+| M3 生成流水线 | 🟡 ~65% | fixture probe/生成/校验/staging/报告 + 控制面编排已通；真实 API/浏览器勘探、AI 业务实现、沙箱、金标未完成 |
 | M4–M6 | ⏸ 未开始 | 依赖前序里程碑 |
 | LICENSE | 🚫 BLOCKED-PENDING-OWNER | 许可证属所有者法律决策，AI 不擅自选择；建议 Apache-2.0 |
 | GitHub Actions 实跑 | ⏳ 待验证 | 代码已推送后由 owner 看一眼 CI 结果；本地等价命令已通过 |
@@ -130,7 +134,7 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 ## 6. 下一步（按 PLAN-A）
 
 1. **M2 UAT（owner）**：真实 DSH 会话执行 `setup.ps1 install` → 确认 `factory-control` 工具出现 → 创建需求单 → 回滚/卸载验收。
-2. **M3 收尾**：真实 probe（API/浏览器）、生成器接入控制面 `run_step`、report staging 执行、golden tickets、沙箱/隔离设计。
+2. **M3 收尾**：真实 API/浏览器勘探（allowlist/凭证/登录态）、AI 业务实现与代码生成、沙箱隔离、golden tickets、失败自修复。
 3. **M1 收尾**：依赖自动准备、真实干净机 DSH 安装、`--repair`、打包/签名。
 4. **M4–M6**：验收/安装、分发升级、硬化试点。
 5. M1/M2/M3 闭合前保持分支，不合并 main；M0 仍是可回滚稳定基线。

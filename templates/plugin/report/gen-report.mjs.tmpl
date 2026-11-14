@@ -1,12 +1,14 @@
 // gen-report.mjs —— {{name}}（{{id}}）报告（M3 生成样板）
 // 用法：node gen-report.mjs [dataset.json]
-import { writeFile } from 'node:fs/promises';
+import { writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { shell, table, top, pct, esc, n } from '../../factory-kit/report-kit.mjs';
-import { resolveDataset, rowsOf } from '../../factory-kit/dataset.mjs';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = process.env.FACTORY_ROOT || path.resolve(DIR, '..', '..');
+const { shell, table, pct, esc } = await import(pathToFileURL(path.join(ROOT, 'factory-kit', 'report-kit.mjs')).href);
+const { resolveDataset, rowsOf } = await import(pathToFileURL(path.join(ROOT, 'factory-kit', 'dataset.mjs')).href);
+
 const OUT = path.join(DIR, 'report', '{{id}}-report.html');
 const { ds, jobId = '', source } = await resolveDataset(DIR);
 const rows = rowsOf(ds);
@@ -38,6 +40,7 @@ const body = `
 ${table(keys, rows.map((r) => `<tr>${keys.map((k) => `<td>${esc(JSON.stringify(r[k]))}</td>`).join('')}</tr>`))}</section>
 <section><h2>八、生成信息</h2><p>插件 <code>{{id}}</code> · M3 生成样板 · 单文件 HTML。</p></section>`;
 
+await mkdir(path.join(DIR, 'report'), { recursive: true });
 await writeFile(OUT, shell({
   title: '{{name}}报告',
   meta: ['业务：{{id}}', `任务：${jobLabel}`, `取数时间：${fetchedAt || '未记录'}`],

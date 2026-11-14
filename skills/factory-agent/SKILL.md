@@ -5,14 +5,14 @@ description: 插件工厂 Agent（A 单机版）：在 DSH 会话里把业务描
 
 # 插件工厂 Agent（factory-agent）Skill
 
-> 状态：**M2 部分可用**。控制面与 MCP 工具已实现；生成流水线（probe/generate/validate/staging）仍在建设。
-> 在流水线未完成前，你只能创建/推进需求单并记录证据，**不得声称"插件已生成/已测试"**。
+> 状态：**M2 控制面/MCP 可用；M3 fixture 流水线可用**。`apps/generator/pipeline.cjs` 支持需求单 → probe → generate → validate → staging（报告）。
+> 但 M3 仍是 **fixture/本机 HTTP** 范围：真实业务 API/浏览器勘探、AI 业务实现、沙箱尚未完成；**不得声称"任意业务插件已生成/已生产验证"**。
 
 ## 1. 适用场景
 
 - 业务人员在 DSH 里描述业务流程，希望得到一个 DSH 插件（service + MCP + SKILL + HTML 报告）。
-- 你负责：需求卡澄清 → 创建需求单 → 逐步推进 → 展示证据 → 人工验收。
-- 不做：跳过步骤、伪造测试证据、直接改生产文件、在流水线未实现时假装完成。
+- 你负责：需求卡澄清 → 创建需求单 → 推进流水线 → 展示证据 → 人工验收。
+- 不做：跳过步骤、伪造测试证据、直接改生产文件、把 fixture 样板说成业务实现。
 
 ## 2. 前置与输入
 
@@ -47,7 +47,7 @@ submitted → probe → generate → validate → staging → accept → install
 2. **查重**：`list_plugins`，已有插件能覆盖就复用，不新建。
 3. **建单**：`create_request({brief, params})`；得到 requestId 后向用户复述。
 4. **probe**：`run_step(step=probe, status=running)` → 执行勘探 → `succeeded` + evidence（probe 输出路径/摘要）；失败则 `failed` + error。
-5. **generate / validate / staging**：仅当对应流水线已实现时推进；每步必须带 evidence（文件路径/hash/命令输出摘要）。
+5. **generate / validate / staging**：可用 `node apps/generator/pipeline.cjs --request <id>` 驱动（需 `CONTROL_PLANE_TOKEN`）；每步必须带 evidence（文件路径/hash/命令输出摘要）。仅 fixture/本机 HTTP 范围可用。
 6. **accept**：展示样例报告与口径，业务确认后用 `note` 或 `accept` 记录确认人/时间；不要代替业务确认。
 7. **install**：仅在安装器与 MCP 注入完成后执行；否则停在此处并说明。
 8. 交付：报告路径、数据路径、插件清单、限制与未决。
