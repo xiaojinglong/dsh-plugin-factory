@@ -10,7 +10,9 @@
     "test": "node platform/factory/cli.cjs test",
     "doctor": "node platform/factory/cli.cjs doctor",
     "render": "node platform/factory/cli.cjs render",
-    "check": "node scripts/check-syntax.mjs"
+    "check": "node scripts/check-syntax.mjs",
+    "install:check": "node apps/installer/installer.cjs check",
+    "install:dry-run": "node apps/installer/installer.cjs install --dry-run"
   },
   "dependencies": {
     "fastify": "5.12.8",

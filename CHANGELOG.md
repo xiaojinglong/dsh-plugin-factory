@@ -16,7 +16,8 @@
 ### 工程化
 - 根 `package.json` + `package-lock.json` + `.nvmrc`（Node 24）+ GitHub Actions CI（Windows/Linux）。
 - `packages/config` 统一路径解析；manifest 迁移为**仓库相对路径**（12 个）；report 生成器改为基于脚本位置解析。
-- `scripts/check-syntax.mjs`（158 文件语法门禁）、`scripts/migrate-manifests.mjs`（可复跑迁移）。
+- `scripts/check-syntax.mjs`（160 文件语法门禁）、`scripts/migrate-manifests.mjs`（可复跑迁移）。
+- 安装器核心 `apps/installer`（check/install/uninstall/rollback/dry-run + setup.ps1 + 6 测试；M1 部分完成，未合并 main）。
 - 文档同步：HANDOFF/README 更新到 12 插件/v3.2；`QUALITY-GATES-A.md`、`DECISIONS-A.md`、`STATUS-A.md`。
 
 ### 验证

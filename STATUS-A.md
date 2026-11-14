@@ -1,15 +1,15 @@
 # STATUS-A — 生产级冲刺交付状态（A 单机版）
 
-> 更新时间：2026-11-15 00:0x（Asia/Shanghai）
-> 分支：`feat/prod-a` · 基线：`7c94915`（本文档提交后另有一笔 docs 提交）
-> 结论：**M0 工程基线 100% 完成并通过干净克隆验收；M1–M6 未开始（0%）。** 未完成项不冒充完成。
+> 更新时间：2026-11-15 00:4x（Asia/Shanghai）
+> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（`b1190db`，28 测试，**未合并 main**）
+> 结论：**M0 工程基线 100% 完成并通过干净克隆验收；M1 安装器核心 ~60%（自动测试通过，未闭合）；M2–M6 未开始。** 未完成项不冒充完成。
 
 ## 1. 总体完成度（按 PLAN-A 里程碑）
 
 | 里程碑 | 完成度 | 状态 |
 |---|---|---|
-| M0 工程基线 | **100%** | ✅ 已完成并通过门禁 |
-| M1 安装器与 DSH 自动配置 | 0% | ⏸ 未开始 |
+| M0 工程基线 | **100%** | ✅ 已完成并通过门禁（main） |
+| M1 安装器与 DSH 自动配置 | **~60%** | 🟡 核心实现 + 6 测试；真实干净机/依赖准备未闭合（分支） |
 | M2 控制面 | 0% | ⏸ 未开始 |
 | M3 生成流水线 | 0% | ⏸ 未开始 |
 | M4 验收与安装 | 0% | ⏸ 未开始 |
@@ -52,6 +52,21 @@ npm.cmd run check              → checked 158 files, failed 0
 npm.cmd test                   → tests 22 / pass 22 / fail 0
 ```
 
+### 2.2 M1 部分交付（分支 `feat/prod-a-m1`）
+
+| 项 | 结果 | 证据 |
+|---|---|---|
+| 安装器核心 | ✅ | `apps/installer/installer.cjs`：`check / install / uninstall / rollback / --dry-run` |
+| setup.ps1 | ✅ | `apps/installer/setup.ps1`（UTF-8 BOM，测试断言 0xEF 0xBB 0xBF） |
+| 备份/回滚 | ✅ | 安装前备份 patch/registry；`uninstall` 恢复原 patch；`rollback` 单测通过 |
+| 幂等 | ✅ | 重复 install：patch 条目仍为 11，不重复注入 |
+| 不触碰真实 profile | ✅ | 测试全部使用临时 `--dsh-root/--patch/--data-root`；未运行真实 `desktop` |
+| 测试 | ✅ | 28/28（新增 6 例：BOM/check/install/幂等/uninstall/dry-run/rollback） |
+| 干净克隆 | ✅ | `git clone --branch feat/prod-a-m1` → `npm ci` → 28/28，check 160 文件通过 |
+| 真实干净机 DSH 验收 | ⏳ 未做 | 需要真实 `desktop` profile + 热加载/重启兜底/卸载残留检查 |
+| 依赖自动准备 | ⏳ 未做 | MCP `node_modules` / Playwright 浏览器 / npm 安装引导 |
+| `--repair` / 升级测试 / 打包 | ⏳ 未做 | M1 剩余项 |
+
 ## 3. 门禁对照（QUALITY-GATES-A）
 
 | 门禁 | M0 适用项 | 结果 |
@@ -62,13 +77,13 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 | G5 测试 | 22/22；干净克隆可重复 | ✅ |
 | G6 文档 | README/HANDOFF/CHANGELOG/QUALITY/DECISIONS 更新 | ✅ |
 | G7 可审查 | 小步提交、diff 自查、无断言之类 stub | ✅ |
-| G4 数据 / G8 回滚 | 本里程碑未涉及数据迁移/安装，不适用 | n/a |
+| G4 数据 / G8 回滚 | M0 不涉及；M1 备份/回滚已单测 | ✅（M1 部分） |
 
 ## 4. 未完成 / BLOCKED（诚实清单）
 
 | 项 | 状态 | 原因 / 下一步 |
 |---|---|---|
-| M1 安装器 + DSH 自动配置 | ⏸ 未开始 | 下一轮按 PLAN-A M1；需要备份 `desktop` profile + 回滚演练 |
+| M1 安装器 + DSH 自动配置 | 🟡 部分（~60%） | 核心 + 测试已完成；剩余：依赖自动准备、真实干净机 DSH 验收、`--repair`/升级测试、打包签名 |
 | M2 本地控制面 | ⏸ 未开始 | 下一轮；8780 + SQLite + token + 审计 + 测试 |
 | M3 生成流水线 | ⏸ 未开始 | 依赖 M2；probe/generate/validate/staging |
 | M4–M6 | ⏸ 未开始 | 依赖前序里程碑 |
@@ -80,12 +95,12 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 
 - **路径迁移回滚**：`git revert <commit>` 或 `git checkout <baseline> -- platform/manifests platform/factory packages/config`；相对路径迁移有 `scripts/migrate-manifests.mjs`（仅前向）。
 - **运行中服务**：本轮未重启 12 个服务；新代码在下次 `factory up` 时生效（bootstrap 已支持相对 manifest）。如需立即验证，可对单个服务 `down/up`。
-- **未改用户 DSH profile**：`~/.dsh/profiles/desktop` 未动；安装器/热加载属 M1。
+- **未改用户 DSH profile**：`~/.dsh/profiles/desktop` 未动；安装器仅用临时目录验证，真实安装待 M1 闭合时按 `apps/installer/README.md` 执行（先备份）。
 - **GitHub Actions**：推送后需确认两个 OS 的 CI 结果（依赖网络与 runner Node 24）。
 
 ## 6. 下一步（按 PLAN-A）
 
-1. **M1**：`apps/installer` + `setup.ps1`（`--check/--repair/--uninstall`），备份/回滚 DSH profile，stdio 冒烟验证。
+1. **M1 收尾**：依赖自动准备（MCP node_modules/Playwright）、真实干净机 DSH 安装 + 热加载/重启兜底、`--repair`、升级测试、打包/签名。
 2. **M2**：`apps/control-plane`（8780 + SQLite + token + 审计 + 健壮性测试）。
 3. **M3**：生成流水线（probe/generate/validate/staging），golden tickets。
-4. M1 起按 `QUALITY-GATES-A` 全量启用 G4/G8。
+4. M1 闭合前保持 `feat/prod-a-m1` 分支，不合并 main。

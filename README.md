@@ -47,18 +47,21 @@ D:\www\dsh-plugin-factory\
 │   ├── factory\bootstrap.js   插件启动入口（env + DPAPI 注入）
 │   ├── manifests\<id>.json    12 个插件的单一事实源（仓库相对路径）
 │   ├── secrets\<id>.enc       DPAPI 加密凭证
-│   └── tests\                 22 个测试（契约 + runtime + 复杂场景）
+│   └── tests\                 28 个测试（契约 + runtime + 复杂场景 + 安装器）
 │
 ├── packages\config\           ★ 统一路径/环境解析（FACTORY_ROOT / FACTORY_DSH_*）
+├── apps\installer\            ★ 安装器（check/install/uninstall/rollback；M1 部分完成）
 ├── templates\                 插件脚手架（M1 起）
 ├── PLAN-A.md / PROMPT-A.md    A 单机版路线 / 生产级冲刺指令
 │
-├── plugins\                   ← 8 个插件项目（每个 = service / mcp / report / gen-report）
+├── plugins\                   ← 12 个插件项目（每个 = service / mcp / report / gen-report）
 │   ├── concise-analysis\   8790（legacy 爬虫）
 │   ├── listing-list\       8791   ├── shop-list\    8792
 │   ├── ads-list\           8793   ├── draft-cleanup\ 8794
 │   ├── stock-alert\        8795   ├── haina-comment\ 8796（写操作）
-│   └── gsmp-academy\       8797（浏览器/视频）
+│   ├── gsmp-academy\       8797   ├── bulk-sync\     8798（API 模拟）
+│   ├── coupon-push\        8799（写操作·模拟） ├── page-audit\ 8800（浏览器·模拟）
+│   └── fs-ledger\          8801（文件系统）
 │
 ├── deployment\                ← 部署区（DSH 实际加载；原 D:\www\dshskills 是它的 junction）
 │   ├── skills\<id>\SKILL.md
