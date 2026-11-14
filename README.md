@@ -47,10 +47,13 @@ D:\www\dsh-plugin-factory\
 │   ├── factory\bootstrap.js   插件启动入口（env + DPAPI 注入）
 │   ├── manifests\<id>.json    12 个插件的单一事实源（仓库相对路径）
 │   ├── secrets\<id>.enc       DPAPI 加密凭证
-│   └── tests\                 28 个测试（契约 + runtime + 复杂场景 + 安装器）
+│   └── tests\                 43 个测试（契约 + runtime + 复杂场景 + 安装器 + 控制面 + MCP）
 │
 ├── packages\config\           ★ 统一路径/环境解析（FACTORY_ROOT / FACTORY_DSH_*）
 ├── apps\installer\            ★ 安装器（check/install/uninstall/rollback；M1 部分完成）
+├── apps\control-plane\        ★ 本地控制面（8780；需求单/步骤/审计/指标/备份；M2 部分完成）
+├── apps\factory-control-mcp\  ★ factory-control MCP（stdio 薄壳）
+├── skills\factory-agent\      ★ DSH 工厂 Agent 技能（已复制到 deployment/skills）
 ├── templates\                 插件脚手架（M1 起）
 ├── PLAN-A.md / PROMPT-A.md    A 单机版路线 / 生产级冲刺指令
 │

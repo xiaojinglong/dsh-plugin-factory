@@ -1,16 +1,16 @@
 # STATUS-A — 生产级冲刺交付状态（A 单机版）
 
-> 更新时间：2026-11-15 00:4x（Asia/Shanghai）
-> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（`b1190db`，28 测试，**未合并 main**）
-> 结论：**M0 工程基线 100% 完成并通过干净克隆验收；M1 安装器核心 ~60%（自动测试通过，未闭合）；M2–M6 未开始。** 未完成项不冒充完成。
+> 更新时间：2026-11-15 00:5x（Asia/Shanghai）
+> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28 测试）；`feat/prod-a-m2` = M2 部分（43 测试，**未合并 main**）
+> 结论：**M0 100%；M1 ~60%；M2 ~80%（控制面 + MCP + Skill + 43 测试）；M3–M6 0%。** 未完成项不冒充完成。
 
 ## 1. 总体完成度（按 PLAN-A 里程碑）
 
 | 里程碑 | 完成度 | 状态 |
 |---|---|---|
 | M0 工程基线 | **100%** | ✅ 已完成并通过门禁（main） |
-| M1 安装器与 DSH 自动配置 | **~60%** | 🟡 核心实现 + 6 测试；真实干净机/依赖准备未闭合（分支） |
-| M2 控制面 | 0% | ⏸ 未开始 |
+| M1 安装器与 DSH 自动配置 | **~60%** | 🟡 核心实现 + 6 测试；真实干净机/依赖准备未闭合 |
+| M2 控制面 + factory-agent | **~80%** | 🟡 控制面/MCP/Skill/14 集成测试；安装器注入 + 真实 DSH E2E 未闭合 |
 | M3 生成流水线 | 0% | ⏸ 未开始 |
 | M4 验收与安装 | 0% | ⏸ 未开始 |
 | M5 分发与升级 | 0% | ⏸ 未开始 |
@@ -67,6 +67,22 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 | 依赖自动准备 | ⏳ 未做 | MCP `node_modules` / Playwright 浏览器 / npm 安装引导 |
 | `--repair` / 升级测试 / 打包 | ⏳ 未做 | M1 剩余项 |
 
+### 2.3 M2 部分交付（分支 `feat/prod-a-m2`）
+
+| 项 | 结果 | 证据 |
+|---|---|---|
+| 控制面 `apps/control-plane` | ✅ | Fastify 8780 + SQLite（migration/WAL）+ token 鉴权 + 需求单状态机 + 步骤证据 + 审计 + 指标 + 备份 |
+| 需求单状态机 | ✅ | submitted→probe→generate→validate→staging→accept→installed；跳步/并发/失败语义均有测试 |
+| 幂等与审计 | ✅ | `Idempotency-Key` 重放返回同一单；审计含 actor/action/object/前后值/IP |
+| factory-control MCP | ✅ | `apps/factory-control-mcp`：7 个工具；SDK Client over stdio 端到端测试通过 |
+| factory-agent Skill | ✅ | `skills/factory-agent/SKILL.md`（已复制到 `deployment/skills`，DSH 已热加载可见） |
+| 测试 | ✅ | **43/43**（M1 28 + 控制面 14 + MCP 1）；语法 166 文件通过 |
+| CLI 冒烟 | ✅ | `node apps/control-plane/server.cjs --init` → start:18780 → `/health` ok → 创建需求单 → 停止 |
+| 干净克隆 | ✅ | `git clone --branch feat/prod-a-m2` → `npm ci` → 43/43 |
+| 安装器注入 MCP/token | ⏳ 未做 | 未把 factory-control MCP 条目写入 DSH patch（避免夜间改用户 profile） |
+| 真实 DSH E2E | ⏳ 未做 | 需要在安装器闭合后，通过真实会话验证"描述→需求单→步骤"链路 |
+| 生成流水线 | ⏳ 未做 | M3；当前 `run_step(generate/validate/staging)` 只记录状态，不执行生成 |
+
 ## 3. 门禁对照（QUALITY-GATES-A）
 
 | 门禁 | M0 适用项 | 结果 |
@@ -77,15 +93,16 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 | G5 测试 | 22/22；干净克隆可重复 | ✅ |
 | G6 文档 | README/HANDOFF/CHANGELOG/QUALITY/DECISIONS 更新 | ✅ |
 | G7 可审查 | 小步提交、diff 自查、无断言之类 stub | ✅ |
-| G4 数据 / G8 回滚 | M0 不涉及；M1 备份/回滚已单测 | ✅（M1 部分） |
+| G4 数据 / G8 回滚 | M0 不涉及；M1 备份/回滚已单测；M2 SQLite migration/WAL/备份已测 | ✅（M1/M2 部分） |
+| M2 补充 | G1（14 集成测试）/ G2（token、校验、审计、无 token 泄漏）/ G3（health/metrics/日志/优雅退出）/ G4（migration/备份） | ✅ |
 
 ## 4. 未完成 / BLOCKED（诚实清单）
 
 | 项 | 状态 | 原因 / 下一步 |
 |---|---|---|
 | M1 安装器 + DSH 自动配置 | 🟡 部分（~60%） | 核心 + 测试已完成；剩余：依赖自动准备、真实干净机 DSH 验收、`--repair`/升级测试、打包签名 |
-| M2 本地控制面 | ⏸ 未开始 | 下一轮；8780 + SQLite + token + 审计 + 测试 |
-| M3 生成流水线 | ⏸ 未开始 | 依赖 M2；probe/generate/validate/staging |
+| M2 本地控制面 + factory-agent | 🟡 部分（~80%） | 控制面/MCP/Skill/测试已完成；剩余：安装器注入 MCP/token、真实 DSH E2E、M3 流水线接线 |
+| M3 生成流水线 | ⏸ 未开始 | 依赖 M2；probe/generate/validate/staging 实际执行与 golden tickets |
 | M4–M6 | ⏸ 未开始 | 依赖前序里程碑 |
 | LICENSE | 🚫 BLOCKED-PENDING-OWNER | 许可证属所有者法律决策，AI 不擅自选择；建议 Apache-2.0 |
 | GitHub Actions 实跑 | ⏳ 待验证 | 代码已推送后由 owner 看一眼 CI 结果；本地等价命令已通过 |
@@ -100,7 +117,7 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 
 ## 6. 下一步（按 PLAN-A）
 
-1. **M1 收尾**：依赖自动准备（MCP node_modules/Playwright）、真实干净机 DSH 安装 + 热加载/重启兜底、`--repair`、升级测试、打包/签名。
-2. **M2**：`apps/control-plane`（8780 + SQLite + token + 审计 + 健壮性测试）。
-3. **M3**：生成流水线（probe/generate/validate/staging），golden tickets。
-4. M1 闭合前保持 `feat/prod-a-m1` 分支，不合并 main。
+1. **M2 收尾**：安装器注入 factory-control MCP + token（备份/回滚）；真实 DSH 会话 E2E；控制面与 installer 的升级路径。
+2. **M1 收尾**：依赖自动准备、真实干净机 DSH 安装、`--repair`、打包/签名。
+3. **M3**：生成流水线（probe/generate/validate/staging 实际执行 + golden tickets + 沙箱/隔离设计）。
+4. M1/M2 闭合前保持分支，不合并 main；M0 仍是可回滚稳定基线。

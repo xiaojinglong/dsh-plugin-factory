@@ -18,10 +18,12 @@
 - `packages/config` 统一路径解析；manifest 迁移为**仓库相对路径**（12 个）；report 生成器改为基于脚本位置解析。
 - `scripts/check-syntax.mjs`（160 文件语法门禁）、`scripts/migrate-manifests.mjs`（可复跑迁移）。
 - 安装器核心 `apps/installer`（check/install/uninstall/rollback/dry-run + setup.ps1 + 6 测试；M1 部分完成，未合并 main）。
+- 本地控制面 `apps/control-plane`（8780；SQLite migration/WAL、token、需求单状态机、审计、指标、备份 + 14 集成测试；M2 部分完成）。
+- `apps/factory-control-mcp`（7 个 MCP 工具 + SDK Client over stdio 端到端测试）+ `skills/factory-agent`（DSH 技能，已热加载可见）。
 - 文档同步：HANDOFF/README 更新到 12 插件/v3.2；`QUALITY-GATES-A.md`、`DECISIONS-A.md`、`STATUS-A.md`。
 
 ### 验证
-- `npm ci && npm test`（干净克隆）22/22；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP。
+- 干净克隆（M0/M1/M2 分支）分别 22/28/**43** 测试全绿；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP；`npm audit` 0。
 - 已知未完成：安装器/控制面/factory-agent（PLAN-A M1–M3）；许可证与开源脱敏待 owner 确认；legacy 迁移脚本仍含旧绝对路径（不在产品路径）。
 
 

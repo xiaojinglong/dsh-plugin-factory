@@ -2,7 +2,7 @@
   "name": "dsh-plugin-factory",
   "version": "3.2.0",
   "private": true,
-  "description": "DSH Plugin Factory A — single-machine plugin factory: business description → runnable DSH plugin (service + MCP + skill + report).",
+  "description": "DSH Plugin Factory A: single-machine plugin factory. Business description -> runnable DSH plugin (service + MCP + skill + report).",
   "engines": {
     "node": ">=24.0.0"
   },
@@ -12,10 +12,15 @@
     "render": "node platform/factory/cli.cjs render",
     "check": "node scripts/check-syntax.mjs",
     "install:check": "node apps/installer/installer.cjs check",
-    "install:dry-run": "node apps/installer/installer.cjs install --dry-run"
+    "install:dry-run": "node apps/installer/installer.cjs install --dry-run",
+    "control-plane": "node apps/control-plane/server.cjs",
+    "control-plane:init": "node apps/control-plane/server.cjs --init",
+    "factory-control-mcp": "node apps/factory-control-mcp/index.cjs"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "fastify": "5.12.8",
-    "playwright": "1.65.0"
+    "playwright": "1.65.0",
+    "zod": "^4.6.7"
   }
 }
