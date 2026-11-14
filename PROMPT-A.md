@@ -1,102 +1,113 @@
-# PROMPT-A · 今夜 MVP 开发指令（单机版 A）
+# PROMPT-A · 生产级开发指令（不设 MVP，不降标准）
 
 > 用法：在 `D:\www\dsh-plugin-factory` 打开新会话，把本文件整份内容作为第一条消息发给 AI。
-> 说明：`PLAN-A.md` 的 6 周是完整产品周期；本文件把今晚压缩为**可运行的最小垂直切片**，其余按 PLAN-A 后续推进。
+> 重要前提：完整生产级 A 约 6 周工作量，**一晚不可能全部完成**。本指令要求以生产标准推进，
+> 完成多少算多少；**未完成的绝不冒充完成**。允许少交付，禁止假交付。
 
 ---
 
-你是 A 项目（单机版插件工厂）的自主开发工程师。用户已睡觉，**不要提问**；遇到不确定项自己拍板，写进 `DECISIONS-A.md`。目标是在今晚尽可能交付一个**可运行、可验证、已提交推送**的最小切片，而不是假装完成全部计划。
+你是 A 项目（单机版插件工厂）的自主开发工程师。用户已睡觉，**不要提问**；不确定的选择自己拍板并写入 `DECISIONS-A.md`。
+用户明确要求：**生产级，不接受 MVP/演示级/偷工减料**。你的任务是把仓库按 `PLAN-A.md` 推进到生产标准，而不是做玩具。
 
-## 0. 立即开始（先做，10 分钟内）
+## 0. 立即开始（前 30 分钟）
 
-1. 阅读顺序：`PLAN-A.md` → `HANDOFF.md` → `docs/23-复杂场景插件与可靠性改进.md` → `docs/25-A+B双形态架构.md` → `docs/10-标准产物契约.md`。
-2. 运行基线并记录输出：
+1. 阅读：`PLAN-A.md` → `HANDOFF.md` → `docs/23-复杂场景插件与可靠性改进.md` → `docs/25-A+B双形态架构.md` → `docs/10-标准产物契约.md`。
+2. 跑基线并记录：
    ```powershell
    cd D:\www\dsh-plugin-factory\platform\factory
-   node cli.cjs status
-   node cli.cjs doctor --health
-   node cli.cjs test
+   node cli.cjs status ; node cli.cjs doctor --health ; node cli.cjs test
    ```
-   期望：12 服务 UP、doctor 全绿（warn 1 legacy）、21/21 测试通过。**如果基线不绿，先修基线再开发。**
-3. 确认 Git 状态：`git status --short` 应为空；`git log --oneline -3` 应包含 `13cd5a9`。
+   期望：12 UP、doctor 全绿（warn 1 legacy）、21/21。基线不绿先修基线。
+3. 读 `QUALITY-GATES-A.md`（若无则你创建，见 §2）并把它作为每一刀的验收清单。
+4. 确认 Git：`git status --short` 空；`git log --oneline -3` 含 `f765172`。
 
 ## 1. 硬约束（违反即失败）
 
-- **只改 A 仓库**：`D:\www\dsh-plugin-factory`。绝对不要读写 `D:\www\dsh-plugin-factory-bc`。
-- **不要动 B 的命名空间**：不要使用 889x 端口、`desktop-bc` profile、`D:/www/dshskills-bc`。
-- **不要修改 8 个既有业务插件的业务逻辑/数据**（`plugins/concise-analysis|listing-list|shop-list|ads-list|draft-cleanup|stock-alert|haina-comment|gsmp-academy`）；只允许新增代码或必要的路径/配置适配。
-- **不要改用户正在使用的 DSH profile** `~/.dsh/profiles/desktop`。需要验证 MCP/技能时用 **stdio 直接测试**（参考 `plugins/*/mcp/smoke.cjs`）；如确需写入 DSH，必须先用 `desktop-a-dev` 测试 profile，并写清回滚步骤。
-- **不要提交**：`.env`、`platform/secrets/*.enc`、`data/sessions/*`、`plugins/*/data/*`、`plugins/*/service/data/*`、`plugins/*/report/*`、`platform/run/*`、`node_modules`（已被 `.gitignore` 覆盖，提交前用 `git status` 复核）。
-- **不伪造完成**：没跑过的验证不能写"通过"；未完成项必须在 `STATUS-A.md` 标 `TODO/BLOCKED` 并写原因。
-- **不要长时间卡在一个问题**：同一问题尝试 3 次仍失败 → 记录 `BLOCKED`，转下一项。
-- Windows 环境规则：PowerShell 5.1 **不支持 `&&`**（用 `;`）；`.ps1` 必须 UTF-8 带 BOM；`npm` 被 ExecutionPolicy 拦截时用 **`npm.cmd`**；不要假设 Linux 命令可用。
+- 只改 A 仓库 `D:\www\dsh-plugin-factory`；绝不读写 `D:\www\dsh-plugin-factory-bc`。
+- A 使用：879x 插件端口、`desktop` profile、`D:/www/dshskills`、控制面 8780。不要用 B 的 889x/`desktop-bc`/`dshskills-bc`。
+- 不修改 8 个既有业务插件的业务逻辑与数据；只做必要适配或新增。
+- **不要直接改用户正在用的 `~/.dsh/profiles/desktop`**。需要验证 DSH 集成时：先备份 → 用 `desktop-a-dev` 测试 → 写回滚步骤；默认用 stdio 冒烟（参考 `plugins/*/mcp/smoke.cjs`）。
+- 不提交：`.env`、`platform/secrets/*.enc`、`data/sessions/*`、`plugins/*/data/*`、`**/service/data/*`、`plugins/*/report/*`、`platform/run/*`、`node_modules`。提交前 `git status` 复核。
+- 不删除/削弱既有测试；不添加 `skip` 让测试"过"；不把 mock 当生产实现。
+- Windows：PowerShell 5.1 不支持 `&&`（用 `;`）；`.ps1` 必须 UTF-8 带 BOM；`npm` 被策略拦截用 `npm.cmd`。
 
-## 2. 今夜交付定义（DoD）
+## 2. 生产级门禁（每一刀都必须过）
 
-按优先级从 P0 往下做。**P0 未完成则 P1/P2 不做**；每完成一项立即提交并记录证据。
+创建 `QUALITY-GATES-A.md`，对每个交付项逐条打勾并附证据（命令/输出/文件路径）：
 
-### P0（必须完成，约 4–6 小时）
+1. **正确性**：正常/异常/边界/并发场景有测试；失败有可读错误；数据库写操作有事务/幂等考虑。
+2. **安全**：入口鉴权与权限；输入校验；秘密不落库/日志/仓库；路径不越界；依赖无已知高危（`npm.cmd audit` 尽力）；错误不泄漏堆栈给外部。
+3. **可运维**：结构化日志（含 jobId/requestId/actor）；健康检查；指标或可查询状态；超时/重试/资源上限；优雅退出；配置可覆盖。
+4. **数据**：SQLite migration 可重复执行、向后兼容；备份/恢复步骤有文档；保留策略。
+5. **测试**：`node --test` 全绿；新增代码覆盖率有基本保障（关键分支有测试）；测试不依赖真实网络/真实凭证/用户机器状态。
+6. **文档**：`README`/`docs`/OpenAPI（如适用）/运行手册/回滚步骤；变更写 CHANGELOG。
+7. **可审查**：提交粒度清晰；`git diff` 自查；无 `TODO/FIXME` 留在"已完成"的交付路径（可留 issue 记录）。
+8. **可回滚**：部署/安装类改动有备份与回滚脚本或明确步骤。
 
-1. **工程基线**
-   - 根 `package.json`（`name/version/private/engines>=24/scripts`：`test`、`doctor`、`render`）+ `package-lock.json`（若 registry 不可用，用 `npm.cmd install --package-lock-only --offline`，仍不行则记录 BLOCKED 并保证现有 `node_modules` 下 `node --test` 可跑）。
-   - `.nvmrc`、GitHub Actions `.github/workflows/ci.yml`（windows-latest：`npm.cmd ci` → `node --test` → `node --check`；允许失败时降级为 `npm.cmd install`）。
-   - 更新 `HANDOFF.md`/`README.md`/`CHANGELOG.md`：12 插件、6 项修复、A 单机版定位；不改写历史章节。
-2. **路径配置层**
-   - 新增 `packages/config/`：`resolveRoot()`、`resolveDataRoot()`、`resolveDshProfile()`、`resolveDshTools()`；支持 `FACTORY_ROOT`/`FACTORY_DATA_ROOT` 环境变量。
-   - 让 `platform/factory/cli.cjs` 与测试优先使用该层（保留环境变量覆盖），禁止在**新增代码**里硬编码 `D:/www/...`。
-   - 验收：`grep` 新增目录无 `D:/www`；现有 21 测试仍通过。
-3. **本地控制面骨架**（核心）
-   - `apps/control-plane/`：Fastify 服务，默认 `127.0.0.1:8780`，SQLite `state.db`（数据根下）。
-   - 表：`requests`（id/brief/state/params/created_at/updated_at）、`step_runs`（request_id/step/status/evidence/error）、`audit`（actor/action/object/before/after/at）。
-   - API：`GET /health`、`POST /requests`、`GET /requests/:id`、`POST /requests/:id/step`（先支持 `note`），token 鉴权（安装时生成，写入数据根配置文件）。
-   - 统一错误结构 + 请求校验；写最小集成测试（临时 SQLite/随机端口，`fetch` 调用）≥6 例。
-   - 提供 `npm.cmd run control-plane` 启动脚本；不能影响 8790–8801 现有服务。
-4. **提交与证据**
-   - `STATUS-A.md`：完成/未完成/阻塞、命令与输出摘要、假设、回滚方法。
-   - `DECISIONS-A.md`：今晚拍板的技术选择（如 SQLite 表结构、token 存放、为何未改 DSH profile）。
-   - 分支 `feat/night-mvp-a`，每 45–60 分钟小步提交（conventional commits）；结束时若全绿：合并 `main`、打 tag `night-2026-11-15-a`、push（含 tag）。
+**任何一项未过，就不能把该交付项标为完成；只能标 READY FOR REVIEW 或 BLOCKED。**
 
-### P1（P0 完成后做，约 2–4 小时）
+## 3. 推进顺序（不跳级）
 
-5. **插件契约 SDK**
-   - `packages/sdk/`：`plugin.json` JSON Schema（id/version/runtimeRange/type/name/owner/paramsSchema/outputSchema/permissions/service/mcp/skill/report），`validatePlugin()` + 单测。
-   - `templates/plugin/`：一个新插件脚手架（service/mcp/skill/report/test/sample），可被 `factory new` 使用。
-6. **factory-control MCP + factory-agent Skill 骨架**
-   - `apps/factory-control-mcp/`：stdio MCP 薄壳，工具：`create_request`、`get_request`、`run_step`、`list_plugins`；转发到控制面 token。
-   - `skills/factory-agent/SKILL.md`：需求卡 6 要素（数据源/凭证/登录态/输出/规则/边界）、≤3 问、门禁话术、失败解释模板；**不写业务逻辑**。
-   - 用 node stdio 冒烟（参考 `smoke.cjs`）验证工具可调用；**不写入用户 DSH profile**。
-7. **一条 golden path（模板级）**
-   - 用 fixture（API 或文件类）跑通：`request → probe(fixture) → generate(模板) → validate(contract+smoke) → staging report`。
-   - 产物落数据根 `artifacts/<requestId>/`；报告用 `report-kit`。
-   - 如果时间不够，至少完成到 `validate`，并在 STATUS 写清缺口与下一步。
+严格按 `PLAN-A.md` 的 M0 → M1 → M2 → M3 → M4 → M5 → M6 顺序推进；每个里程碑的验收项全部闭合后才进入下一个。
+今晚时间到了就停在**最后一个全绿的里程碑**，不要为了"看起来进度多"而跳过门禁。
 
-### P2（可选，时间允许才做）
+### M0 工程基线（必须先闭合）
+- 根 `package.json` + `package-lock.json` + `.nvmrc` + `engines.node>=24`；
+- CI（windows-latest）跑 install/test/check，作为后续所有改动的门禁；
+- `packages/config` 路径层（FACTORY_ROOT/FACTORY_DATA_ROOT/DSH profile/tools），清理新增代码硬编码；
+- 文档同步（12 插件、6 修复、A 定位、安装/回滚）；
+- **验收**：干净克隆可复现；21 测试绿；`grep` 新增代码无 `D:/www`。
 
-8. 安装器骨架 `apps/installer/setup.ps1`：`--check`（Node/端口/Playwright/DSH 检测）+ 备份/回滚框架，不实际改 DSH。
-9. `doctor` 增加控制面健康检查。
-10. 生成器探测适配器（file 类优先）单测。
+### M1 安装器与 DSH 自动配置（生产级）
+- 幂等安装：检测 Node/端口/Playwright/DSH；备份 patch 与 skills；失败自动回滚；`--check/--repair/--uninstall`；
+- 不破坏现有 12 个服务与用户 DSH 会话；安装/卸载有完整日志；
+- **验收**：干净环境模拟测试（可用临时目录/临时 profile 代替真实 DSH）；回滚演练。
 
-## 3. 质量要求
+### M2 控制面（生产级）
+- `apps/control-plane`：Fastify 8780 + SQLite（WAL、migration、备份）；token 鉴权；请求/状态/审计；
+- 输入校验、错误模型、结构化日志、health、优雅退出、并发/幂等；
+- 集成测试 ≥15 例（含 401/403/非法输入/重复提交/重启恢复）。
 
-- 所有新增 JS/TS 必须能 `node --check`；测试用 `node --test`。
-- 每个 API 必须有输入校验、可读错误、审计记录；控制面测试不得依赖真实网络/真实凭证。
-- 提交前跑：`node cli.cjs test`（21+ 新测试全绿）、`git status` 无敏感文件、`git diff --stat` 自查。
-- 不要为了让测试过而删/改既有测试；可以新增。
+### M3 生成流水线（生产级）
+- 需求卡校验 → probe 适配器 → 模板生成 → contract/smoke 校验 → staging 任务与报告；
+- 失败语义完整（缺凭证/接口变/空数据/登录过期）；证据包落盘；
+- golden tickets 至少 API + file 两类型；**禁止 AI 编造字段**。
 
-## 4. Git 与汇报
+### M4–M6
+按 PLAN-A 执行；每个里程碑同样过 §2 门禁。
 
-- 分支：`feat/night-mvp-a`；commit 前缀：`feat:`/`fix:`/`test:`/`docs:`/`chore:`。
-- 结束时：`main` 全绿则合并 + tag `night-2026-11-15-a` + `git push origin main --tags`；不绿则只 push 分支并在 STATUS 说明。
-- 最终输出（对话里）：
-  1) 完成/未完成清单；2) 关键命令与输出；3) commit/tag/远端；4) 下一步（按 PLAN-A）；5) 风险与回滚。
+## 4. 明确禁止的"偷工减料"
 
-## 5. 停手条件
+- 用 `stub/return {ok:true}/TODO` 冒充实现；
+- 只写 happy path，不写异常/权限/边界测试；
+- 把"未验证"写成"通过"、把"部分完成"写成"完成"；
+- 关闭/跳过校验、鉴权、审计、测试来换进度；
+- 用真实业务数据/凭证做开发测试；
+- 把 MVP/演示版说成生产级；
+- 为了赶进度一次性大提交、无法审查。
 
-- 基线不绿且 30 分钟内无法修复 → 停止新增，写 BLOCKED，提交现有状态。
-- 依赖安装被网络/策略阻断 → 用现有 `node_modules` 继续，`package-lock` 标 BLOCKED。
-- 任何可能影响用户现有 12 个服务/DSH 会话的操作 → 先备份，默认不做。
-- 时间/上下文耗尽 → 停在全绿状态，写清 STATUS，push。
+## 5. 时间与提交策略
+
+- 每 45–60 分钟：跑测试 → 自查门禁 → 小步 commit（conventional commits）；
+- 每闭合一个里程碑：跑一次全量验证，写 `STATUS-A.md` 更新，打内部 tag（如 `a-m0`）；
+- 分支：`feat/prod-a`；只有在全部门禁绿时才合并 `main` 并 push；否则 push 分支并说明。
+- 上下文/时间耗尽：停在全绿状态，`STATUS-A.md` 写清 0/25/50/75/100% 完成度（按验收项），并列出下一步。
+
+## 6. 最终交付物（明早可验收）
+
+1. `STATUS-A.md`：按里程碑列验收项、完成度、证据、BLOCKED 原因、下一步；**必须诚实**。
+2. `QUALITY-GATES-A.md`：门禁清单与逐项证据。
+3. `DECISIONS-A.md`：技术决策与假设。
+4. Git：commit/tag/branch/push 记录；不绿不合并。
+5. 对话最终汇报：完成了什么、没完成什么、如何验证、风险与回滚。**不要声称"生产级已完成"，除非所有门禁真的绿——即使绿，也需人工签收。**
+
+## 7. 停手条件
+
+- 基线不绿 30 分钟无法修复 → 停，写 BLOCKED。
+- 依赖/网络/权限阻断 → 记录并转非阻断项，不得用不安全替代方案。
+- 任何可能影响用户现有服务/DSH 会话的操作 → 备份后默认不做。
+- 时间耗尽 → 停在全绿，写 STATUS，push。
 
 ---
 
-**现在开始：先读文件 + 跑基线，然后按 P0-1 → P0-2 → P0-3 顺序执行。**
+**现在开始：先读文件 + 跑基线 + 建 `QUALITY-GATES-A.md`，然后严格按 M0 → M1 → M2… 推进。**

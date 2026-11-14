@@ -2,7 +2,7 @@
 
 > 本文件是 A 项目的**唯一开发入口**。新会话请先读：`HANDOFF.md` → `PLAN-A.md` → `docs/23-复杂场景插件与可靠性改进.md` → `docs/25-A+B双形态架构.md`。
 > 基线：**v3.2.0**（2026-11-14）。仓库：`D:\www\dsh-plugin-factory`（GitHub: `xiaojinglong/dsh-plugin-factory`）。
-> **今夜压缩冲刺**：完整计划约 6 周；若用户要求提前交付，按 `PROMPT-A.md` 的"今夜 MVP"范围执行（可运行最小切片 + 证据 + 推送），其余继续按本计划推进。
+> **生产级冲刺说明**：完整计划约 6 周；按用户要求不设 MVP、不降标准，按 `PROMPT-A.md` 以生产级门禁推进，完成多少算多少，未完成不得标完成。
 > 与 B 的关系：B 是本仓库的副本（`D:\www\dsh-plugin-factory-bc`，端口 889x、profile `desktop-bc`、`dshskills-bc`），**A 是共享内核的上游**；两仓库独立提交，不要跨仓库直接改文件。
 
 ---
