@@ -18,6 +18,7 @@ const path = require('node:path');
 const net = require('node:net');
 const crypto = require('node:crypto');
 const { spawn, spawnSync } = require('node:child_process');
+const sandbox = require('./sandbox.cjs');
 const config = require('../../packages/config');
 const { validatePluginSpec, slugRegex } = require('../../packages/sdk');
 
@@ -226,11 +227,26 @@ async function validateDir(dir, opts = {}) {
 
   // 预演：启动生成服务 → health → submit → done → result → dataset
   const port = Number(opts.port) > 0 ? Number(opts.port) : await freePort();
-  const child = spawn(process.execPath, ['server.js'], {
-    cwd: path.join(out, 'service'),
-    env: { ...process.env, PORT: String(port), FACTORY_ROOT: ROOT },
-    stdio: ['ignore', 'ignore', 'pipe'],
-  });
+  const serviceDir = path.join(out, 'service');
+  const useSandbox = sandbox.supportsPermissionModel() && process.env.FACTORY_SANDBOX !== '0';
+  const serviceEnv = {
+    ...process.env, PORT: String(port), FACTORY_ROOT: ROOT,
+    // 沙箱内不探测 legacy DSH 路径（config 会在模块加载时 existsSync）
+    FACTORY_DSH_TOOLS: path.join(ROOT, 'deployment', 'tools'),
+    FACTORY_DSH_SKILLS: path.join(ROOT, 'deployment', 'skills'),
+    FACTORY_DSH_REGISTRY: path.join(ROOT, 'deployment', 'registry.md'),
+    FACTORY_DSH_PATCH: path.join(ROOT, 'data', '.sandbox-placeholder.yml'),
+  };
+  const child = useSandbox
+    ? sandbox.spawnSandboxed(['server.js'], {
+      cwd: serviceDir, env: serviceEnv,
+      readDirs: [ROOT, out], writeDirs: [out], stdio: ['ignore', 'ignore', 'pipe'],
+    })
+    : spawn(process.execPath, ['server.js'], {
+      cwd: serviceDir, env: serviceEnv,
+      stdio: ['ignore', 'ignore', 'pipe'],
+    });
+  add('sandbox:service', useSandbox, useSandbox ? 'node --permission（只读仓库/staging，只写 staging）' : '不支持或已禁用');
   let stderr = '';
   child.stderr.on('data', (c) => { stderr += c; });
   let datasetPath = '';
@@ -262,9 +278,11 @@ async function validateDir(dir, opts = {}) {
     const reportScript = path.join(out, 'gen-report.mjs');
     const reportFile = path.join(out, 'report', `${spec.id}-report.html`);
     if (fs.existsSync(reportScript)) {
-      const rep = spawnSync(process.execPath, [reportScript, datasetPath], {
+      const reportArgs = sandbox.buildArgs({ readDirs: [ROOT, out], writeDirs: [out], scriptArgs: [reportScript, datasetPath] });
+      const rep = spawnSync(process.execPath, reportArgs, {
         cwd: out, env: { ...process.env, FACTORY_ROOT: ROOT }, encoding: 'utf8', timeout: 30000,
       });
+      add('sandbox:report', sandbox.supportsPermissionModel() && process.env.FACTORY_SANDBOX !== '0', 'node --permission');
       add('staging:report', rep.status === 0 && fs.existsSync(reportFile) && fs.statSync(reportFile).size > 0,
         rep.status === 0 ? reportFile : `exit=${rep.status} ${(rep.stderr || '').slice(0, 300)}`);
     } else {

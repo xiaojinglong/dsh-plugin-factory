@@ -1,7 +1,13 @@
 # M3 生成流水线（apps/generator + packages/sdk + templates/plugin）
 
-> 状态：**M3 流水线（fixture/本机 HTTP 范围）**。已实现 probe → 生成 → 结构/语法校验 → 起服务预演 → 报告 → 控制面编排 + 证据落盘；
-> 真实业务 API/浏览器勘探、AI 业务实现、沙箱仍在后续。
+> 状态：**M3 流水线（fixture/本机 HTTP/真实 allowlist 范围）**。已实现 probe（allowlist/SSRF）→ 生成 → 校验 → 沙箱起服务 → 报告 → 控制面编排 + 金标 + 证据落盘；
+> 真实浏览器勘探、AI 业务实现仍在后续。
+
+## 安全
+
+- probe allowlist：`config/probe-allowlist.json` 或 `FACTORY_PROBE_ALLOWLIST`（支持 `*.example.com`）；非本机主机解析到私网/保留地址会拒绝。
+- 生成服务/报告在 **Node `--permission` 沙箱**内执行：只读仓库/staging，只写 staging；单测验证外部写被拒绝。
+- 注意：权限模型不拦截网络与原生模块 I/O；生产仍需容器级网络隔离。
 
 ## 命令
 
@@ -43,6 +49,6 @@ node -e "require('./apps/generator/probe.cjs').probe({fixture:'D:/tmp/f.json'}).
 ## 边界与未完成
 
 - `runner.js` 是 **fixture 数据源样板**，不是业务实现；业务逻辑需后续填充并重跑校验。
-- probe 仅支持 fixture 与本机 HTTP（127.0.0.1/localhost）；公网/内网目标需 allowlist + 审批。
-- AI 业务代码生成、沙箱隔离、golden tickets、失败自修复仍未完成。
+- probe 支持 fixture 与本机 HTTP；外部主机需加入 allowlist（私网解析默认拒绝）。
+- AI 业务代码生成、真实浏览器勘探、失败自修复仍未完成。
 - 生成器会拒绝写入仓库根/受保护目录；默认输出到 `FACTORY_DATA_ROOT/generator/staging`。

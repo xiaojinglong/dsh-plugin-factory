@@ -1,12 +1,84 @@
 'use strict';
 
 /**
- * apps/generator/probe.cjs —— 勘探适配器（M3）
- * 支持：fixture 文件、本机 HTTP JSON（127.0.0.1/localhost）。真实外部 API/浏览器勘探后续接入。
+ * apps/generator/probe.cjs —— 勘探适配器（M3，安全加固版）
+ *
+ * 支持：fixture 文件、HTTP JSON（默认只允许本机；外部主机必须在 allowlist）。
+ * 安全：
+ *   - allowlist（env FACTORY_PROBE_ALLOWLIST 或 config/probe-allowlist.json，支持 *.example.com）
+ *   - DNS rebinding 防护：非本机主机若解析到私网/保留地址则拒绝（除非 allowlist 显式写了该 IP）
+ *   - 只允许 http/https；重定向最多 3 次且每次重新校验；响应上限 1MB；超时 10s
+ *   - 凭证通过 authEnv 从进程环境读取，不写入结果/日志
  */
 
 const fs = require('node:fs');
 const path = require('node:path');
+const dns = require('node:dns').promises;
+const net = require('node:net');
+const config = require('../../packages/config');
+
+const MAX_BYTES = 1024 * 1024;
+const MAX_REDIRECTS = 3;
+const TIMEOUT_MS = 10000;
+const DEFAULT_ALLOWLIST = ['127.0.0.1', 'localhost', '::1'];
+
+function allowlistFile() { return path.join(config.FACTORY_ROOT, 'config', 'probe-allowlist.json'); }
+function loadAllowlist() {
+  const env = String(process.env.FACTORY_PROBE_ALLOWLIST || '').trim();
+  if (env) return env.split(',').map((s) => s.trim()).filter(Boolean);
+  try {
+    const arr = JSON.parse(fs.readFileSync(allowlistFile(), 'utf8'));
+    if (Array.isArray(arr)) return arr.map(String);
+  } catch { /* ignore */ }
+  return [...DEFAULT_ALLOWLIST];
+}
+
+function isLocalHost(host) { return ['127.0.0.1', 'localhost', '::1'].includes(String(host).toLowerCase()); }
+function isHostAllowed(host, allowlist = loadAllowlist()) {
+  const h = String(host || '').toLowerCase();
+  return allowlist.some((entry) => {
+    const e = String(entry).trim().toLowerCase();
+    if (!e) return false;
+    if (e.startsWith('*.')) return h.endsWith(e.slice(1)) && h !== e.slice(2);
+    return h === e;
+  });
+}
+function isPrivateIp(ip) {
+  const v = String(ip);
+  if (net.isIPv4(v)) {
+    const [a, b] = v.split('.').map(Number);
+    if (a === 10) return true;
+    if (a === 127) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 0 || a >= 224) return true;
+    return false;
+  }
+  if (net.isIPv6(v)) {
+    const low = v.toLowerCase();
+    return low === '::1' || low.startsWith('fc') || low.startsWith('fd') || low.startsWith('fe80');
+  }
+  return false;
+}
+
+async function assertUrlAllowed(raw, allowlist = loadAllowlist()) {
+  let u;
+  try { u = new URL(String(raw)); } catch { throw new Error(`非法 URL：${raw}`); }
+  if (!['http:', 'https:'].includes(u.protocol)) throw new Error('只允许 http/https');
+  const host = u.hostname;
+  if (!isHostAllowed(host, allowlist)) throw new Error(`主机不在 allowlist：${host}（配置 config/probe-allowlist.json 或 FACTORY_PROBE_ALLOWLIST）`);
+  if (isLocalHost(host)) return { url: u, addresses: [] };
+  let addresses = [];
+  try { addresses = await dns.lookup(host, { all: true }); } catch (e) { throw new Error(`DNS 解析失败：${host}（${e.message}）`); }
+  if (!addresses.length) throw new Error(`DNS 无结果：${host}`);
+  for (const a of addresses) {
+    if (!isPrivateIp(a.address)) continue;
+    const explicitlyAllowedIp = allowlist.map((x) => String(x).trim()).includes(a.address);
+    if (!explicitlyAllowedIp) throw new Error(`拒绝私网/保留地址 ${a.address}（${host}）；如确需请显式加入 allowlist IP`);
+  }
+  return { url: u, addresses };
+}
 
 function summarizeList(list) {
   const rows = Array.isArray(list) ? list : [];
@@ -22,32 +94,61 @@ async function probeFixture(file) {
   return { kind: 'fixture', source: abs, ...summarizeList(list) };
 }
 
-function assertLocalUrl(raw) {
-  let u;
-  try { u = new URL(String(raw)); } catch { throw new Error(`非法 apiUrl：${raw}`); }
-  if (!['http:', 'https:'].includes(u.protocol)) throw new Error('apiUrl 只支持 http/https');
-  if (!['127.0.0.1', 'localhost', '::1'].includes(u.hostname)) {
-    throw new Error(`M3 仅允许本机 HTTP 勘探（当前 ${u.hostname}）；公网/内网目标需后续 allowlist + 审批`);
+async function probeHttp(apiUrl, opts = {}) {
+  const allowlist = opts.allowlist || loadAllowlist();
+  const method = String(opts.method || 'GET').toUpperCase();
+  if (!['GET', 'POST'].includes(method)) throw new Error('probe 只支持 GET/POST');
+  const headers = { accept: 'application/json' };
+  let authUsed = false;
+  if (opts.authEnv) {
+    const token = String(process.env[opts.authEnv] || '').trim();
+    if (!token) throw new Error(`缺少凭证环境变量：${opts.authEnv}`);
+    headers.authorization = `Bearer ${token}`;
+    authUsed = true;
   }
-  return u;
-}
-async function probeHttp(apiUrl) {
-  const u = assertLocalUrl(apiUrl);
-  const res = await fetch(u, { signal: AbortSignal.timeout(10000), headers: { accept: 'application/json' } });
-  const text = await res.text();
-  let json = null;
-  try { json = text ? JSON.parse(text) : null; } catch { /* ignore */ }
-  const list = Array.isArray(json) ? json : (json && (json.list || (json.data && json.data.list)) || []);
-  return {
-    kind: 'http', source: u.toString(), status: res.status, contentType: res.headers.get('content-type') || '',
-    bytes: Buffer.byteLength(text), ...summarizeList(list),
-  };
+  let body;
+  if (method === 'POST') {
+    if (!opts.body || typeof opts.body !== 'object' || Array.isArray(opts.body)) throw new Error('POST probe 需要 params.body 对象');
+    headers['content-type'] = 'application/json';
+    body = JSON.stringify(opts.body);
+  }
+
+  let current = String(apiUrl);
+  for (let i = 0; i <= MAX_REDIRECTS; i += 1) {
+    await assertUrlAllowed(current, allowlist);
+    const res = await fetch(current, {
+      method, headers, body, redirect: 'manual', signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    if ([301, 302, 303, 307, 308].includes(res.status)) {
+      const location = res.headers.get('location');
+      if (!location) throw new Error(`重定向缺少 location（HTTP ${res.status}）`);
+      current = new URL(location, current).toString();
+      continue;
+    }
+    const len = Number(res.headers.get('content-length') || 0);
+    if (len > MAX_BYTES) throw new Error(`响应过大（${len} > ${MAX_BYTES}）`);
+    const text = await res.text();
+    if (Buffer.byteLength(text) > MAX_BYTES) throw new Error(`响应过大（>${MAX_BYTES}）`);
+    let json = null;
+    try { json = text ? JSON.parse(text) : null; } catch { /* ignore */ }
+    const list = Array.isArray(json) ? json : (json && (json.list || (json.data && json.data.list)) || []);
+    return {
+      kind: 'http', source: new URL(current).toString(), finalUrl: new URL(current).toString(), method,
+      status: res.status, contentType: res.headers.get('content-type') || '',
+      bytes: Buffer.byteLength(text), authUsed, ...summarizeList(list),
+    };
+  }
+  throw new Error(`重定向超过 ${MAX_REDIRECTS} 次`);
 }
 
 async function probe(params = {}) {
   if (params.fixture) return probeFixture(params.fixture);
-  if (params.apiUrl) return probeHttp(params.apiUrl);
+  if (params.apiUrl) return probeHttp(params.apiUrl, params);
   throw new Error('缺少勘探参数：需要 params.fixture 或 params.apiUrl');
 }
 
-module.exports = { probe, probeFixture, probeHttp, summarizeList };
+module.exports = {
+  probe, probeFixture, probeHttp, summarizeList,
+  loadAllowlist, isHostAllowed, isPrivateIp, assertUrlAllowed,
+  MAX_BYTES, DEFAULT_ALLOWLIST,
+};
