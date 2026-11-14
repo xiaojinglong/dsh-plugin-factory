@@ -80,6 +80,28 @@ function smoke(serviceDir, token, factoryRoot) {
   });
 }
 
+function factoryVersion(root) {
+  for (const dir of [root, ROOT]) {
+    try {
+      const p = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
+      if (p.version) return String(p.version);
+    } catch { /* next */ }
+  }
+  return '0.0.0';
+}
+
+function satisfiesRange(version, range) {
+  if (!range) return true;
+  const v = String(version).split('.').map((x) => Number.parseInt(x, 10) || 0);
+  const r = String(range).trim();
+  if (r.startsWith('^')) {
+    const b = r.slice(1).split('.').map((x) => Number.parseInt(x, 10) || 0);
+    return v[0] === b[0] && (v[1] || 0) >= (b[1] || 0);
+  }
+  if (r.startsWith('>=')) return compareVersion(version, r.slice(2)) >= 0;
+  return compareVersion(version, r) === 0;
+}
+
 function preflight(opts = {}) {
   if (!opts.source) fail('preflight 需要 --source');
   const source = path.resolve(opts.source);
@@ -96,9 +118,11 @@ function preflight(opts = {}) {
     manifest: path.join(manifestsDir, `${id}.json`),
   };
   const conflicts = Object.entries(planned).filter(([, p]) => fs.existsSync(p)).map(([k, p]) => ({ kind: k, path: p }));
+  const fv = factoryVersion(root);
+  const compatibility = { factoryVersion: fv, runtimeRange: spec.runtimeRange || '', ok: satisfiesRange(fv, spec.runtimeRange) };
   return {
-    ok: !!opts.force || conflicts.length === 0,
-    id, source, root, version: spec.version, port: manifest.port, conflicts, planned, force: !!opts.force,
+    ok: (!!opts.force || conflicts.length === 0) && compatibility.ok,
+    id, source, root, version: spec.version, port: manifest.port, conflicts, planned, force: !!opts.force, compatibility,
   };
 }
 
@@ -111,7 +135,10 @@ async function install(opts) {
   const deploymentDir = path.resolve(opts.deployment || path.join(root, 'deployment'));
   const pre = preflight({ ...opts, root });
   if (opts.dryRun) return { ...pre, dryRun: true };
-  if (!pre.ok) fail(`存在冲突：${pre.conflicts.map((c) => c.kind).join('/')}（如需覆盖加 --force）`);
+  if (!pre.ok) {
+    if (pre.conflicts.length) fail(`存在冲突：${pre.conflicts.map((c) => c.kind).join('/')}（如需覆盖加 --force）`);
+    fail(`运行时不兼容：插件 ${pre.compatibility.runtimeRange} vs 工厂 ${pre.compatibility.factoryVersion}`);
+  }
   const { spec, manifest } = validateSource(source);
   const id = spec.id;
   const dest = path.join(pluginsDir, id);
@@ -303,4 +330,4 @@ async function main() {
 }
 
 if (require.main === module) main();
-module.exports = { install, upgrade, uninstall, listInstalled, verify, preflight, compareVersion, validateSource, smoke };
+module.exports = { install, upgrade, uninstall, listInstalled, verify, preflight, factoryVersion, satisfiesRange, compareVersion, validateSource, smoke };

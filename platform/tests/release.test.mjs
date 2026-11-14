@@ -8,6 +8,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { packageRelease, SENSITIVE } = require('../../scripts/package-release.cjs');
+const { verifyRelease } = require('../../scripts/verify-release.cjs');
 
 test('release：npm pack 产出 tarball + sha256，且不含敏感路径', () => {
   const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-a-rel-'));
@@ -21,4 +22,13 @@ test('release：npm pack 产出 tarball + sha256，且不含敏感路径', () =>
   assert.ok(!SENSITIVE.some((re) => re.test('templates/plugin/service/.env.tmpl')), '.env 模板不应被当作敏感文件');
   assert.ok(SENSITIVE.some((re) => re.test('service/.env')), '.env 应被拦截');
   assert.ok(SENSITIVE.some((re) => re.test('platform/secrets/a.enc')), 'secrets 应被拦截');
+
+  const v = verifyRelease({ outDir });
+  assert.equal(v.ok, true, JSON.stringify(v.errors));
+  assert.equal(v.actual, r.sha256);
+  const metaBad = { ...meta, sha256: '0'.repeat(64) };
+  fs.writeFileSync(path.join(outDir, 'release.json'), JSON.stringify(metaBad, null, 2) + '\n', 'utf8');
+  const v2 = verifyRelease({ outDir });
+  assert.equal(v2.ok, false);
+  assert.ok(v2.errors.some((e) => e.includes('SHA-256')));
 });

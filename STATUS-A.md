@@ -1,8 +1,8 @@
 # STATUS-A — 生产级冲刺交付状态（A 单机版）
 
-> 更新时间：2026-11-15 07:2x（Asia/Shanghai）
-> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 流水线（58，**未合并 main**）；`feat/prod-a-m4` = M4 验收/安装（66，**未合并 main**）
-> 结论：**M0 100%；M1 ~60%；M2 ~95%（UAT 待 owner）；M3 ~97%；M4 ~55%（accept + install/uninstall/rollback/upgrade/verify/render/preflight + 发布包/校验和）；M5 ~10%；M6 0%。** 未完成项不冒充完成。
+> 更新时间：2026-11-15 07:4x（Asia/Shanghai）
+> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 流水线（58，**未合并 main**）；`feat/prod-a-m4` = M4/M5（67，**未合并 main**）
+> 结论：**M0 100%；M1 ~60%；M2 ~95%（UAT 待 owner）；M3 ~97%；M4 ~60%；M5 ~25%（发布包/校验/release CI）；M6 0%。** 未完成项不冒充完成。
 
 ## 1. 总体完成度（按 PLAN-A 里程碑）
 
@@ -12,8 +12,8 @@
 | M1 安装器与 DSH 自动配置 | **~60%** | 🟡 核心 + 测试；依赖自动准备/真实干净机验收未闭合 |
 | M2 控制面 + factory-agent | **~95%** | ✅ 代码/自动测试完成；仅真实 DSH UAT 待 owner |
 | M3 生成流水线 | **~97%** | 🟡 probe/iframe/登录检测/业务 runner/write_runner/生成/校验/staging/报告/编排/沙箱/金标/失败建议已通；DSH 端到端 UAT、自动修复未完成 |
-| M4 验收与安装 | **~55%** | 🟡 accept + install/uninstall/rollback/upgrade/list/verify/render/preflight 已通；真实 DSH 安装/UAT、签名未完成 |
-| M5 分发与升级 | **~10%** | 🟡 发布 tarball + SHA-256 清单；分发渠道/升级策略未完成 |
+| M4 验收与安装 | **~60%** | 🟡 accept + install/uninstall/rollback/upgrade/verify/render/preflight/兼容性检查已通；真实 DSH 安装/UAT、签名未完成 |
+| M5 分发与升级 | **~25%** | 🟡 发布 tarball + SHA-256 + verify + release CI + 策略文档；分发渠道/签名/灰度未完成 |
 | M6 硬化与试点 | 0% | ⏸ 未开始 |
 
 > 说明：`PLAN-A.md` 完整周期约 6 周；本轮按生产级标准完成 M0，未用 MVP 替代或降低门禁。
@@ -115,10 +115,12 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 | 覆盖回滚 | ✅ | `--force` 旧目录备份；uninstall 恢复旧目录与旧 manifest |
 | 升级/审计 | ✅ | `upgrade`（只允许更高版本，--force 降级）、`list`、`verify`、`--render`（调用工厂 render，失败回滚） |
 | 预检/干跑 | ✅ | `preflight`/`check` + `install --dry-run`：零写入发现冲突 |
-| 发布包 | ✅ | `scripts/package-release.cjs`：npm tarball + SHA-256 + release.json；敏感路径拦截（.env/secrets/data/db/token） |
-| 测试 | ✅ | **66/66**（M3 58 + install 6 + accept 1 + release 1） |
+| 兼容性检查 | ✅ | `runtimeRange` vs 工厂版本；不兼容拒绝安装（测试覆盖 ^9.9） |
+| 发布包/校验 | ✅ | `scripts/package-release.cjs` + `verify-release.cjs`：tarball + SHA-256 + release.json；敏感路径拦截 |
+| 发布 CI/策略 | ✅ | `.github/workflows/release.yml`（tag→测试→打包→校验→artifact）；`docs/26-M5分发与升级.md` |
+| 测试 | ✅ | **67/67**（M3 58 + install 7 + accept 1 + release 1） |
 | 真实 DSH 安装/UAT | ⏳ 未做 | 需要 owner 真实 profile（安装器 M1 已具备备份/回滚） |
-| 签名/分发渠道 | ⏳ 未做 | 需要 owner 签名密钥；分发渠道/升级策略属 M5 |
+| 签名/分发渠道 | ⏳ 未做 | 需要 owner 签名密钥与分发账号；灰度未实现 |
 
 ## 3. 门禁对照（QUALITY-GATES-A）
 
@@ -141,8 +143,8 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 | M1 安装器 + DSH 自动配置 | 🟡 部分（~60%） | 核心 + 测试已完成；剩余：依赖自动准备、真实干净机 DSH 验收、`--repair`/升级测试、打包签名 |
 | M2 本地控制面 + factory-agent | ✅ 代码完成（~95%） | 安装器注入/全链路测试已完成；仅真实 DSH UAT 待 owner 一键执行 |
 | M3 生成流水线 | 🟡 ~97% | probe/iframe/登录检测/业务 runner+write_runner/生成/校验/staging/报告/编排/沙箱/金标/失败建议已通；DSH 端到端 UAT、自动修复未完成 |
-| M4 验收/安装 | 🟡 ~55% | accept + install/uninstall/rollback/upgrade/list/verify/render/preflight 已通；真实 DSH 安装/UAT、签名未完成 |
-| M5 分发与升级 | 🟡 ~10% | 发布 tarball + SHA-256 清单；分发渠道/升级策略未完成 |
+| M4 验收/安装 | 🟡 ~60% | accept + install/uninstall/rollback/upgrade/list/verify/render/preflight/兼容性已通；真实 DSH 安装/UAT、签名未完成 |
+| M5 分发与升级 | 🟡 ~25% | 发布 tarball + SHA-256 + verify + release CI + 策略文档；分发渠道/签名/灰度未完成 |
 | M6 | ⏸ 未开始 | 依赖前序里程碑 |
 | LICENSE | 🚫 BLOCKED-PENDING-OWNER | 许可证属所有者法律决策，AI 不擅自选择；建议 Apache-2.0 |
 | GitHub Actions 实跑 | ⏳ 待验证 | 代码已推送后由 owner 看一眼 CI 结果；本地等价命令已通过 |

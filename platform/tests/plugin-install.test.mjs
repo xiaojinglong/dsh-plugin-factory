@@ -124,3 +124,16 @@ test('preflight/--dry-run：零写入，冲突可提前发现', async () => {
   const dry2 = await install({ source, root, smoke: false, dryRun: true });
   assert.equal(dry2.ok, false);
 });
+
+test('preflight：runtimeRange 与工厂版本不兼容时拒绝安装', async () => {
+  const source = await makeSource();
+  const p = path.join(source, 'plugin.json');
+  const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+  j.runtimeRange = '^9.9';
+  fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n', 'utf8');
+  const root = makeRoot();
+  const pre = preflight({ source, root });
+  assert.equal(pre.compatibility.ok, false);
+  assert.equal(pre.ok, false);
+  await assert.rejects(() => install({ source, root, smoke: false }), /运行时不兼容/);
+});
