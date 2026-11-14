@@ -1,7 +1,7 @@
 # STATUS-A — 生产级冲刺交付状态（A 单机版）
 
 > 更新时间：2026-11-15 09:4x（Asia/Shanghai）
-> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 流水线（58，**未合并 main**）；`feat/prod-a-m4` = M4/M5/M6（73，**未合并 main**）
+> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 流水线（58，**未合并 main**）；`feat/prod-a-m4` = M4/M5/M6（72，**未合并 main**）
 > 结论：**M0 100%；M1 ~60%；M2 ~95%（UAT 待 owner）；M3 ~97%；M4 ~60%；M5 ~25%；M6 ~55%（限流/health/恢复/保留/巡检/容量/告警）。** 未完成项不冒充完成。
 
 ## 1. 总体完成度（按 PLAN-A 里程碑）
