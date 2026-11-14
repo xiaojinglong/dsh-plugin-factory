@@ -16,7 +16,8 @@
     "control-plane": "node apps/control-plane/server.cjs",
     "control-plane:init": "node apps/control-plane/server.cjs --init",
     "factory-control-mcp": "node apps/factory-control-mcp/index.cjs",
-    "generate:staging": "node apps/generator/generator.cjs staging"
+    "generate:staging": "node apps/generator/generator.cjs staging",
+    "pipeline": "node apps/generator/pipeline.cjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",
