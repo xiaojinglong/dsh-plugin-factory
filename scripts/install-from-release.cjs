@@ -13,8 +13,18 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { verifyRelease } = require('./verify-release.cjs');
 
+// Windows CI 的 PATH 里常是 Git 的 GNU tar，读不了 npm pack 的 UTF-8/PAX 条目；
+// 优先用 Windows 自带 bsdtar，其它平台用系统 tar。
+function tarBin() {
+  if (process.platform === 'win32') {
+    const p = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'tar.exe');
+    if (fs.existsSync(p)) return p;
+  }
+  return 'tar';
+}
+
 function listEntries(tarball) {
-  const r = spawnSync('tar', ['-tzf', tarball], { encoding: 'utf8', timeout: 60000 });
+  const r = spawnSync(tarBin(), ['-tzf', tarball], { encoding: 'utf8', timeout: 60000 });
   if (r.status !== 0) throw new Error(`无法读取 tar：${(r.stderr || '').slice(0, 300)}`);
   return String(r.stdout || '').split(/\r?\n/).filter(Boolean);
 }
@@ -46,7 +56,7 @@ function installFromRelease(opts = {}) {
     fs.renameSync(target, backup);
   }
   fs.mkdirSync(target, { recursive: true });
-  const r = spawnSync('tar', ['-xzf', tarball, '-C', target, '--strip-components=1'], { encoding: 'utf8', timeout: 120000 });
+  const r = spawnSync(tarBin(), ['-xzf', tarball, '-C', target, '--strip-components=1'], { encoding: 'utf8', timeout: 120000 });
   if (r.status !== 0) {
     fs.rmSync(target, { recursive: true, force: true });
     throw new Error(`解包失败：${(r.stderr || '').slice(0, 500)}`);
