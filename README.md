@@ -118,13 +118,19 @@ node cli.cjs secret <id> set K=V  # 凭证加密保存（DPAPI）
 
 ---
 
-## 五、当前状态（2026-11-14）
+## 五、当前状态（2026-11-15）
 
 | 项 | 状态 |
 |---|---|
 | 插件 | 12 个（8790–8801），全部健康 |
 | MCP/Skill | 12 套，DSH 已加载（`registry.md` 自动生成） |
-| 测试 | 22/22 通过（契约 + runtime + 复杂场景 + manifest 可移植性） |
+| 测试 | **81/81** 通过（契约 + runtime + 复杂场景 + 安装器 + 控制面 + MCP + 生成/安装/发布/运维） |
 | 自检 | `doctor --health` 全部通过（仅 legacy 1 条 warn） |
 | 鉴权 | v3 服务 no-token=401 / manifest token=200 |
-| 迁移 | 旧 `D:\www\dshspirder` 中的工厂资产已全部迁入本目录；路径已配置化 |
+| 交付 | `main` + tag `v3.2.0-a1`；最终包 `dist/dsh-plugin-factory-3.2.0.tgz` |
+| 真实 UAT | DSH 安装/MCP/pipeline/accept/install/回滚已跑通（`docs/35`） |
+
+## 六、License
+
+本项目使用 **Apache License 2.0**，见 [`LICENSE`](LICENSE) 与 [`NOTICE`](NOTICE)。
+
