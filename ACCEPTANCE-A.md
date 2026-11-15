@@ -25,7 +25,9 @@ npm run release:verify -- --out dist
 
 - 产物：`dist/dsh-plugin-factory-<version>.tgz` + `dist/release.json`
 - 打包校验：敏感路径拦截（`.env` 模板除外、secrets、data、db、token）
-- **本次包 SHA-256 / commit**：见 `dist/release.json`（打包后填写；`release.json` 为权威）
+- **本次包 SHA-256**：`a0d94e7093c9334e31d3a2e3f6a614b8f204e1a48472e10e228c670a615667e0`
+- **包大小 / 文件数**：420841 bytes / 376 files
+- **打包基准 commit**：`e5fd871`（`release.json` 为权威；之后仅文档修改）
 - 签名：**未做**（需 owner 密钥）；当前只有 SHA-256，不声称已签名。
 
 ## 3. Owner 验收步骤（必须）
