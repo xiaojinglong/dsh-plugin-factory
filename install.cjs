@@ -87,6 +87,11 @@ if (args['no-start'] !== 'true') {
   run('健康检查', process.execPath, [path.join(ROOT, 'platform', 'factory', 'cli.cjs'), 'doctor', '--health']);
 }
 
+// 6) 登录自启（可用 --no-autostart 跳过）
+if (args['no-autostart'] !== 'true') {
+  run('安装登录自启', process.execPath, [path.join(ROOT, 'scripts', 'install-autostart.cjs')]);
+}
+
 log('\n[install] 完成。');
 log('下一步：重开一次 DSH，然后直接对 AI 说你要做什么。');
 log('示例：用 git-flow-audit 审计这个仓库');

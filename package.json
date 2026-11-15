@@ -14,6 +14,8 @@
     "setup": "node install.cjs",
     "start": "node scripts/start-factory.cjs",
     "stop": "node scripts/stop-factory.cjs",
+    "autostart:install": "node scripts/install-autostart.cjs",
+    "autostart:remove": "node scripts/uninstall-autostart.cjs",
     "install:check": "node apps/installer/installer.cjs check",
     "install:dry-run": "node apps/installer/installer.cjs install --dry-run",
     "control-plane": "node apps/control-plane/server.cjs",
