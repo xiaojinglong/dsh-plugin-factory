@@ -1,8 +1,8 @@
 # ACCEPTANCE-A — A 单机版交付验收记录
 
-> 分支：`main`（A 工程收口，`c13975f` 起）
+> 分支：`main`（A 收口；tag `v3.2.0-a1`）
 > 生成时间：2026-11-15
-> 结论：A 工程/自动化交付收口完成；代码签名、分发渠道、真实业务试点为 owner 外部项。**不冒充完成。**
+> 结论：A 工程/自动化交付收口完成；代码签名不做；GitHub Release 由 tag 发布。**不冒充完成。**
 
 ## 1. 验证证据
 
@@ -27,9 +27,9 @@ npm run release:verify -- --out dist
 
 - 产物：`dist/dsh-plugin-factory-<version>.tgz` + `dist/release.json`
 - 打包校验：敏感路径拦截（`.env` 模板除外、secrets、data、db、token）
-- **本次包 SHA-256**：`00a4e4d62ef07a94be4d058b32732d800a049d4ed729f8b999910f6998961065`
-- **包大小 / 文件数**：427147 bytes / 382 files
-- **打包基准 commit**：`816e15c`（`release.json` 为权威；之后仅文档修改）
+- **本次包 SHA-256**：`a8c13cfbfbd75180a4b5948a0d0d4f7262bcd09928c8708728d0652f2ec458c9`
+- **包大小 / 文件数**：431496 bytes / 384 files
+- **打包基准 commit**：`7f21ddb`（`release.json` 为权威；之后仅文档修改）
 - 签名：**未做**（需 owner 密钥）；当前只有 SHA-256，不声称已签名。
 
 ## 3. Owner 验收步骤（必须）
