@@ -313,3 +313,22 @@ test('pipeline 失败：写 failure.json 与修复建议', async () => {
     await cp.stop();
   }
 });
+
+test('probe HTTP：瞬态 5xx 自动重试后成功', async () => {
+  let hits = 0;
+  const srv = http.createServer((req, res) => {
+    hits += 1;
+    if (hits <= 2) { res.writeHead(503, { 'content-type': 'application/json' }); res.end('{"error":"try later"}'); return; }
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ list: [{ id: 1 }, { id: 2 }] }));
+  });
+  await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+  try {
+    const r = await probeHttp(`http://127.0.0.1:${srv.address().port}/`, { retries: 2 });
+    assert.equal(hits, 3, '应重试 2 次后成功');
+    assert.equal(r.status, 200);
+    assert.equal(r.count, 2);
+  } finally {
+    await new Promise((r) => srv.close(r));
+  }
+});

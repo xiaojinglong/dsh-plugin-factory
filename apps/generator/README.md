@@ -6,6 +6,7 @@
 ## 安全
 
 - probe allowlist：`config/probe-allowlist.json` 或 `FACTORY_PROBE_ALLOWLIST`（支持 `*.example.com`）；非本机主机解析到私网/保留地址会拒绝。
+- probe HTTP 对 429/5xx 默认重试 2 次（指数退避，可用 `retries` 覆盖）。
 - 生成服务/报告在 **Node `--permission` 沙箱**内执行：只读仓库/staging，只写 staging；单测验证外部写被拒绝。
 - 注意：权限模型不拦截网络与原生模块 I/O；生产仍需容器级网络隔离。
 

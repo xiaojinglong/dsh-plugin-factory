@@ -94,6 +94,27 @@ async function probeFixture(file) {
   return { kind: 'fixture', source: abs, ...summarizeList(list) };
 }
 
+const RETRY_STATUS = new Set([429, 500, 502, 503, 504]);
+function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+async function fetchWithRetry(url, init, retries = 2) {
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      const res = await fetch(url, init);
+      if (RETRY_STATUS.has(res.status) && attempt < retries) {
+        await sleep(200 * (2 ** attempt));
+        continue;
+      }
+      return res;
+    } catch (err) {
+      lastErr = err;
+      if (attempt >= retries) throw err;
+      await sleep(200 * (2 ** attempt));
+    }
+  }
+  throw lastErr || new Error('fetch 失败');
+}
+
 async function probeHttp(apiUrl, opts = {}) {
   const allowlist = opts.allowlist || loadAllowlist();
   const method = String(opts.method || 'GET').toUpperCase();
@@ -116,9 +137,9 @@ async function probeHttp(apiUrl, opts = {}) {
   let current = String(apiUrl);
   for (let i = 0; i <= MAX_REDIRECTS; i += 1) {
     await assertUrlAllowed(current, allowlist);
-    const res = await fetch(current, {
+    const res = await fetchWithRetry(current, {
       method, headers, body, redirect: 'manual', signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
+    }, Number(opts.retries ?? 2));
     if ([301, 302, 303, 307, 308].includes(res.status)) {
       const location = res.headers.get('location');
       if (!location) throw new Error(`重定向缺少 location（HTTP ${res.status}）`);
