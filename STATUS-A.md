@@ -156,6 +156,7 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 - **运行中服务**：本轮未重启 12 个服务；新代码在下次 `factory up` 时生效（bootstrap 已支持相对 manifest）。如需立即验证，可对单个服务 `down/up`。
 - **未改用户 DSH profile**：`~/.dsh/profiles/desktop` 未动；M2 全链路用临时 profile 验证。真实安装/热加载 UAT 由 owner 执行 `apps/installer/setup.ps1 install`（自动备份，可 `uninstall/rollback`）。
 - **生成插件安装**：`plugin-install.cjs` 默认 smoke；`--force` 会备份旧目录/manifest，uninstall 可恢复；真实安装前必须有 accept 记录。
+- **合并预演**：已在临时 worktree 将 `feat/prod-a-m4` 合并到 main（无冲突），`npm ci` 后 `check` 191 文件 / `test` 79/79 通过；**main 未实际合并**，见 `docs/32-合并预演.md`。
 - **GitHub Actions**：推送后需确认两个 OS 的 CI 结果（依赖网络与 runner Node 24）。
 
 ## 6. 下一步（按 PLAN-A）
@@ -164,6 +165,6 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 2. **M3 收尾**：DSH 端到端验证（write_runner → pipeline）、自动修复/重试、真实业务凭证安全接入。
 3. **M4 收尾**：真实 install（owner profile/UAT）、签名（owner 密钥）、安装 smoke 扩展。
 4. **M5 收尾**：分发渠道/升级策略、兼容性矩阵、release 校验。
-5. **M1 收尾**：依赖自动准备、真实干净机 DSH 安装、`--repair`、打包/签名。
-6. **M6**：备份恢复演练、告警、容量/保留策略、试点（见 `docs/27-M6硬化与试点.md`）。
-7. M1/M2/M3/M4/M5/M6 闭合前保持分支，不合并 main；M0 仍是可回滚稳定基线。
+5. **M1 收尾**：依赖自动安装（`deps-check` 已就绪）、真实干净机 DSH 安装、打包/签名。
+6. **M6**：真实试点（备份/恢复/巡检/演练已就绪，见 `docs/27-M6硬化与试点.md`、`docs/29`）。
+7. M1/M2/M3/M4/M5/M6 闭合前保持分支；合并预演已通过（`docs/32`），但等 owner UAT 后再合并 main；M0 仍是可回滚稳定基线。
