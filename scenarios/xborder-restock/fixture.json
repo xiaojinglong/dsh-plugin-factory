@@ -1,0 +1,14 @@
+{
+  "rows": [
+    { "sku": "SKU-1001", "name": "折叠收纳箱", "site": "SG", "stock": 18, "in_transit": 0, "daily_sales_7d": 6.2, "lead_time_days": 21, "moq": 50, "unit_cost": 8.5, "price": 19.9 },
+    { "sku": "SKU-1002", "name": "宠物饮水机", "site": "MY", "stock": 220, "in_transit": 0, "daily_sales_7d": 3.1, "lead_time_days": 14, "moq": 30, "unit_cost": 22, "price": 59.9 },
+    { "sku": "SKU-1003", "name": "硅胶厨房垫", "site": "TH", "stock": 4, "in_transit": 0, "daily_sales_7d": 8.8, "lead_time_days": 18, "moq": 100, "unit_cost": 3.2, "price": 12.5 },
+    { "sku": "SKU-1004", "name": "便携榨汁杯", "site": "SG", "stock": 60, "in_transit": 100, "daily_sales_7d": 5.5, "lead_time_days": 25, "moq": 50, "unit_cost": 15, "price": 39.9 },
+    { "sku": "SKU-1005", "name": "桌面理线器", "site": "MY", "stock": 35, "in_transit": 0, "daily_sales_7d": 1.2, "lead_time_days": 10, "moq": 100, "unit_cost": 1.8, "price": 6.9 },
+    { "sku": "SKU-1006", "name": "车载手机支架", "site": "PH", "stock": 0, "in_transit": 30, "daily_sales_7d": 4.4, "lead_time_days": 20, "moq": 50, "unit_cost": 6.4, "price": 16.9 },
+    { "sku": "SKU-1007", "name": "旅行分装瓶", "site": "TH", "stock": 140, "in_transit": 0, "daily_sales_7d": 2.0, "lead_time_days": 12, "moq": 200, "unit_cost": 2.1, "price": 9.9 },
+    { "sku": "SKU-1008", "name": "无线充电板", "site": "SG", "stock": 9, "in_transit": 0, "daily_sales_7d": 2.8, "lead_time_days": 30, "moq": 20, "unit_cost": 18, "price": 49.9 },
+    { "sku": "SKU-1009", "name": "宠物梳毛刷", "site": "MY", "stock": 75, "in_transit": 0, "daily_sales_7d": 0.8, "lead_time_days": 9, "moq": 100, "unit_cost": 3.5, "price": 11.9 },
+    { "sku": "SKU-1010", "name": "户外折叠椅", "site": "PH", "stock": 12, "in_transit": 0, "daily_sales_7d": 1.6, "lead_time_days": 35, "moq": 10, "unit_cost": 28, "price": 79.9 }
+  ]
+}

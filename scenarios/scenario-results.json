@@ -1,0 +1,101 @@
+[
+  {
+    "id": "hr-resume-screen",
+    "requestId": "req_20261115044007_c43b13",
+    "start": "ok",
+    "job": "done",
+    "dataset": "D:\\www\\dsh-plugin-factory\\plugins\\hr-resume-screen\\service\\data\\jobs\\20261115044048-ff55\\hr_resume_screen_dataset.json",
+    "rows": 8,
+    "reportExit": 0,
+    "report": "D:\\www\\dsh-plugin-factory\\plugins\\hr-resume-screen\\report\\hr-resume-screen-report.html",
+    "reportExists": true
+  },
+  {
+    "id": "xborder-restock",
+    "requestId": "req_20261115044011_860a83",
+    "start": "ok",
+    "job": "done",
+    "dataset": "D:\\www\\dsh-plugin-factory\\plugins\\xborder-restock\\service\\data\\jobs\\20261115044049-fa8f\\xborder_restock_dataset.json",
+    "rows": 10,
+    "reportExit": 0,
+    "report": "D:\\www\\dsh-plugin-factory\\plugins\\xborder-restock\\report\\xborder-restock-report.html",
+    "reportExists": true
+  },
+  {
+    "id": "admin-asset-audit",
+    "requestId": "req_20261115044014_e10fae",
+    "start": "ok",
+    "job": "done",
+    "dataset": "D:\\www\\dsh-plugin-factory\\plugins\\admin-asset-audit\\service\\data\\jobs\\20261115044049-22be\\admin_asset_audit_dataset.json",
+    "rows": 10,
+    "reportExit": 0,
+    "report": "D:\\www\\dsh-plugin-factory\\plugins\\admin-asset-audit\\report\\admin-asset-audit-report.html",
+    "reportExists": true
+  },
+  {
+    "id": "cs-ticket-triage",
+    "requestId": "req_20261115044017_b8551a",
+    "start": "ok",
+    "job": "done",
+    "dataset": "D:\\www\\dsh-plugin-factory\\plugins\\cs-ticket-triage\\service\\data\\jobs\\20261115044050-0ecb\\cs_ticket_triage_dataset.json",
+    "rows": 10,
+    "reportExit": 0,
+    "report": "D:\\www\\dsh-plugin-factory\\plugins\\cs-ticket-triage\\report\\cs-ticket-triage-report.html",
+    "reportExists": true
+  },
+  {
+    "id": "dev-repo-audit",
+    "requestId": "req_20261115044020_4dbd20",
+    "start": "ok",
+    "job": "done",
+    "dataset": "D:\\www\\dsh-plugin-factory\\plugins\\dev-repo-audit\\service\\data\\jobs\\20261115044050-8d4b\\dev_repo_audit_dataset.json",
+    "rows": 10,
+    "reportExit": 0,
+    "report": "D:\\www\\dsh-plugin-factory\\plugins\\dev-repo-audit\\report\\dev-repo-audit-report.html",
+    "reportExists": true
+  },
+  {
+    "id": "seo-content-preflight",
+    "requestId": "req_20261115044023_0c6e72",
+    "start": "ok",
+    "job": "done",
+    "dataset": "D:\\www\\dsh-plugin-factory\\plugins\\seo-content-preflight\\service\\data\\jobs\\20261115044051-e7ec\\seo_content_preflight_dataset.json",
+    "rows": 8,
+    "reportExit": 0,
+    "report": "D:\\www\\dsh-plugin-factory\\plugins\\seo-content-preflight\\report\\seo-content-preflight-report.html",
+    "reportExists": true
+  },
+  {
+    "id": "opt-keyword-gap",
+    "requestId": "req_20261115044026_4be4ba",
+    "start": "ok",
+    "job": "done",
+    "dataset": "D:\\www\\dsh-plugin-factory\\plugins\\opt-keyword-gap\\service\\data\\jobs\\20261115044051-431e\\opt_keyword_gap_dataset.json",
+    "rows": 8,
+    "reportExit": 0,
+    "report": "D:\\www\\dsh-plugin-factory\\plugins\\opt-keyword-gap\\report\\opt-keyword-gap-report.html",
+    "reportExists": true
+  },
+  {
+    "id": "promo-channel-roi",
+    "requestId": "req_20261115044029_4faa46",
+    "start": "ok",
+    "job": "done",
+    "dataset": "D:\\www\\dsh-plugin-factory\\plugins\\promo-channel-roi\\service\\data\\jobs\\20261115044052-4892\\promo_channel_roi_dataset.json",
+    "rows": 7,
+    "reportExit": 0,
+    "report": "D:\\www\\dsh-plugin-factory\\plugins\\promo-channel-roi\\report\\promo-channel-roi-report.html",
+    "reportExists": true
+  },
+  {
+    "id": "assistant-account-audit",
+    "requestId": "req_20261115044032_167e14",
+    "start": "ok",
+    "job": "done",
+    "dataset": "D:\\www\\dsh-plugin-factory\\plugins\\assistant-account-audit\\service\\data\\jobs\\20261115044053-1fb4\\assistant_account_audit_dataset.json",
+    "rows": 10,
+    "reportExit": 0,
+    "report": "D:\\www\\dsh-plugin-factory\\plugins\\assistant-account-audit\\report\\assistant-account-audit-report.html",
+    "reportExists": true
+  }
+]

@@ -25,6 +25,7 @@ data/sessions/
 
 # ---------- Local runtime state ----------
 platform/run/
+platform/manifests/.installed/
 *.bak.*
 cordis.patch.yml.bak.*
 

@@ -1,0 +1,40 @@
+{
+  "id": "hr-resume-screen",
+  "version": "0.1.0",
+  "name": "简历筛选与面试安排",
+  "type": "file",
+  "runtimeRange": "^3.2",
+  "owner": "local",
+  "taskType": "hr_resume_screen",
+  "paramsSchema": {
+    "type": "object",
+    "properties": {
+      "limit": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "additionalProperties": false
+  },
+  "outputSchema": {
+    "type": "object"
+  },
+  "permissions": {
+    "write": false,
+    "network": [],
+    "browser": false
+  },
+  "service": {
+    "entry": "server.js",
+    "runner": "runner.js"
+  },
+  "mcp": {
+    "serverName": "hr-resume-screen"
+  },
+  "skill": {
+    "name": "hr-resume-screen"
+  },
+  "report": {
+    "generator": "gen-report.mjs"
+  }
+}

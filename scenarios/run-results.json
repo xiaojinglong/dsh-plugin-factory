@@ -1,0 +1,65 @@
+[
+  {
+    "id": "hr-resume-screen",
+    "requestId": "req_20261115044007_c43b13",
+    "state": "staging",
+    "pluginDir": "D:\\\\www\\\\dsh-plugin-factory\\\\data\\\\generator\\\\runs\\\\req_20261115044007_c43b13\\\\hr-resume-screen",
+    "exit": 0
+  },
+  {
+    "id": "xborder-restock",
+    "requestId": "req_20261115044011_860a83",
+    "state": "staging",
+    "pluginDir": "D:\\\\www\\\\dsh-plugin-factory\\\\data\\\\generator\\\\runs\\\\req_20261115044011_860a83\\\\xborder-restock",
+    "exit": 0
+  },
+  {
+    "id": "admin-asset-audit",
+    "requestId": "req_20261115044014_e10fae",
+    "state": "staging",
+    "pluginDir": "D:\\\\www\\\\dsh-plugin-factory\\\\data\\\\generator\\\\runs\\\\req_20261115044014_e10fae\\\\admin-asset-audit",
+    "exit": 0
+  },
+  {
+    "id": "cs-ticket-triage",
+    "requestId": "req_20261115044017_b8551a",
+    "state": "staging",
+    "pluginDir": "D:\\\\www\\\\dsh-plugin-factory\\\\data\\\\generator\\\\runs\\\\req_20261115044017_b8551a\\\\cs-ticket-triage",
+    "exit": 0
+  },
+  {
+    "id": "dev-repo-audit",
+    "requestId": "req_20261115044020_4dbd20",
+    "state": "staging",
+    "pluginDir": "D:\\\\www\\\\dsh-plugin-factory\\\\data\\\\generator\\\\runs\\\\req_20261115044020_4dbd20\\\\dev-repo-audit",
+    "exit": 0
+  },
+  {
+    "id": "seo-content-preflight",
+    "requestId": "req_20261115044023_0c6e72",
+    "state": "staging",
+    "pluginDir": "D:\\\\www\\\\dsh-plugin-factory\\\\data\\\\generator\\\\runs\\\\req_20261115044023_0c6e72\\\\seo-content-preflight",
+    "exit": 0
+  },
+  {
+    "id": "opt-keyword-gap",
+    "requestId": "req_20261115044026_4be4ba",
+    "state": "staging",
+    "pluginDir": "D:\\\\www\\\\dsh-plugin-factory\\\\data\\\\generator\\\\runs\\\\req_20261115044026_4be4ba\\\\opt-keyword-gap",
+    "exit": 0
+  },
+  {
+    "id": "promo-channel-roi",
+    "requestId": "req_20261115044029_4faa46",
+    "state": "staging",
+    "pluginDir": "D:\\\\www\\\\dsh-plugin-factory\\\\data\\\\generator\\\\runs\\\\req_20261115044029_4faa46\\\\promo-channel-roi",
+    "exit": 0
+  },
+  {
+    "id": "assistant-account-audit",
+    "requestId": "req_20261115044032_167e14",
+    "state": "staging",
+    "pluginDir": "D:\\\\www\\\\dsh-plugin-factory\\\\data\\\\generator\\\\runs\\\\req_20261115044032_167e14\\\\assistant-account-audit",
+    "exit": 0
+  }
+]

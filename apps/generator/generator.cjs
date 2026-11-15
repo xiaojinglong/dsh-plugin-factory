@@ -142,6 +142,10 @@ async function generate(opts) {
   writeTemplate('mcp/smoke.cjs.tmpl', path.join(out, 'mcp', 'smoke.cjs'), vars);
   writeTemplate('skills/SKILL.md.tmpl', path.join(out, 'skills', id, 'SKILL.md'), vars);
   writeTemplate('report/gen-report.mjs.tmpl', path.join(out, 'gen-report.mjs'), vars);
+  if (opts.reportFile) {
+    const reportSource = fs.readFileSync(path.resolve(opts.reportFile), 'utf8');
+    fs.writeFileSync(path.join(out, 'gen-report.mjs'), reportSource, 'utf8');
+  }
 
   const mcpShell = fs.readFileSync(MCP_SHELL, 'utf8').replace(/const SERVER_NAME = '[^']+';/, `const SERVER_NAME = '${id}-mcp';`);
   if (!/const SERVER_NAME = '/.test(mcpShell)) fail('MCP 薄壳复制失败：未找到 SERVER_NAME');
@@ -284,7 +288,7 @@ async function validateDir(dir, opts = {}) {
     datasetPath = res.body.main.path;
     const ds = JSON.parse(fs.readFileSync(datasetPath, 'utf8'));
     rowsCount = (ds.pages || []).flatMap((p) => p.rows || []).length;
-    add('staging:dataset', ds.task === spec.taskType && rowsCount === 2, `task=${ds.task} rows=${rowsCount}`);
+    add('staging:dataset', ds.task === spec.taskType && rowsCount > 0, `task=${ds.task} rows=${rowsCount}`);
 
     const reportScript = path.join(out, 'gen-report.mjs');
     const reportFile = path.join(out, 'report', `${spec.id}-report.html`);

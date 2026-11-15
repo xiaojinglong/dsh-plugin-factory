@@ -1,0 +1,40 @@
+{
+  "id": "xborder-restock",
+  "name": "多站点库存补货",
+  "type": "file",
+  "version": "0.1.0",
+  "port": 55574,
+  "taskType": "xborder_restock",
+  "serverName": "xborder-restock",
+  "service": {
+    "dir": "D:\\www\\dsh-plugin-factory\\plugins\\xborder-restock\\service",
+    "entry": "server.js",
+    "runner": "runner.js",
+    "dataDir": "D:\\www\\dsh-plugin-factory\\plugins\\xborder-restock\\service\\data",
+    "startCmd": [
+      "node",
+      [
+        "server.js"
+      ]
+    ]
+  },
+  "runtime": {
+    "write": false,
+    "retentionDays": 1,
+    "token": true,
+    "toolTimeoutMs": 60000,
+    "serviceToken": "682b132d8df2224fcc70878ae0ffb68c"
+  },
+  "mcp": {
+    "dir": "D:\\www\\dsh-plugin-factory\\deployment\\tools\\xborder-restock-mcp"
+  },
+  "skill": {
+    "dir": "D:\\www\\dsh-plugin-factory\\deployment\\skills\\xborder-restock"
+  },
+  "report": {
+    "generator": "D:\\www\\dsh-plugin-factory\\plugins\\xborder-restock\\gen-report.mjs",
+    "output": "D:\\www\\dsh-plugin-factory\\plugins\\xborder-restock\\report\\xborder-restock-report.html"
+  },
+  "secrets": [],
+  "legacy": false
+}

@@ -244,7 +244,9 @@ async function doctor(withHealth) {
     const boot = m.service?.dir && m.service?.entry ? path.join(m.service.dir, m.service.entry) : '';
     if (boot && fs.existsSync(boot)) {
       const t = fs.readFileSync(boot, 'utf8');
-      if (!t.includes('platform/factory/bootstrap')) warn(`${m.id}：未使用共享 runtime（bootstrap）`);
+      const usesBoot = /platform[\\/]factory[\\/]bootstrap/.test(t)
+        || /'platform',\s*'factory',\s*'bootstrap'/.test(t);
+      if (!usesBoot) warn(`${m.id}：未使用共享 runtime（bootstrap）`);
       else rtVersions.add((t.match(/manifest\.version|v(\d+\.\d+\.\d+)/) || [])[0] || 'v3');
     }
   }

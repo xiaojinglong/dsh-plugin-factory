@@ -1,0 +1,209 @@
+{
+  "validatedAt": "2026-11-15T04:34:00.188Z",
+  "ok": false,
+  "spec": {
+    "id": "seo-content-preflight",
+    "version": "0.1.0",
+    "name": "内容发布前检查",
+    "type": "file",
+    "runtimeRange": "^3.2",
+    "owner": "local",
+    "taskType": "seo_content_preflight",
+    "paramsSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "permissions": {
+      "write": false,
+      "network": [],
+      "browser": false
+    },
+    "service": {
+      "entry": "server.js",
+      "runner": "runner.js"
+    },
+    "mcp": {
+      "serverName": "seo-content-preflight"
+    },
+    "skill": {
+      "name": "seo-content-preflight"
+    },
+    "report": {
+      "generator": "gen-report.mjs"
+    }
+  },
+  "manifest": {
+    "id": "seo-content-preflight",
+    "name": "内容发布前检查",
+    "type": "file",
+    "version": "0.1.0",
+    "port": 49930,
+    "taskType": "seo_content_preflight",
+    "serverName": "seo-content-preflight",
+    "service": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115043357_39b872\\seo-content-preflight\\service",
+      "entry": "server.js",
+      "runner": "runner.js",
+      "dataDir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115043357_39b872\\seo-content-preflight\\service\\data",
+      "startCmd": [
+        "node",
+        [
+          "server.js"
+        ]
+      ]
+    },
+    "runtime": {
+      "write": false,
+      "retentionDays": 1,
+      "token": true,
+      "toolTimeoutMs": 60000,
+      "serviceToken": "77f6e002b254435410403a96111a7c7b"
+    },
+    "mcp": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115043357_39b872\\seo-content-preflight\\mcp"
+    },
+    "skill": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115043357_39b872\\seo-content-preflight\\skills\\seo-content-preflight"
+    },
+    "report": {
+      "generator": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115043357_39b872\\seo-content-preflight\\gen-report.mjs",
+      "output": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115043357_39b872\\seo-content-preflight\\report\\seo-content-preflight-report.html"
+    },
+    "secrets": [],
+    "legacy": false
+  },
+  "checks": [
+    {
+      "name": "schema:plugin.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "exists:service/server.js",
+      "ok": true,
+      "detail": "service/server.js"
+    },
+    {
+      "name": "exists:service/runner.js",
+      "ok": true,
+      "detail": "service/runner.js"
+    },
+    {
+      "name": "exists:mcp/index.js",
+      "ok": true,
+      "detail": "mcp/index.js"
+    },
+    {
+      "name": "exists:mcp/config.json",
+      "ok": true,
+      "detail": "mcp/config.json"
+    },
+    {
+      "name": "exists:skill",
+      "ok": true,
+      "detail": "skills\\seo-content-preflight\\SKILL.md"
+    },
+    {
+      "name": "exists:report",
+      "ok": true,
+      "detail": "gen-report.mjs"
+    },
+    {
+      "name": "exists:fixture",
+      "ok": true,
+      "detail": "fixtures/data.json"
+    },
+    {
+      "name": "mcp:port",
+      "ok": true,
+      "detail": "manifest=49930"
+    },
+    {
+      "name": "skill:name",
+      "ok": true,
+      "detail": "seo-content-preflight"
+    },
+    {
+      "name": "syntax:service/server.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:service/runner.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:mcp/index.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:mcp/smoke.cjs",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:gen-report.mjs",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "sandbox:service",
+      "ok": true,
+      "detail": "node --permission（只读仓库/staging，只写 staging）"
+    },
+    {
+      "name": "staging:health",
+      "ok": true,
+      "detail": "id=seo-content-preflight"
+    },
+    {
+      "name": "staging:submit",
+      "ok": true,
+      "detail": "status=202"
+    },
+    {
+      "name": "staging:done",
+      "ok": true,
+      "detail": "status=done "
+    },
+    {
+      "name": "staging:result",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "staging:dataset",
+      "ok": false,
+      "detail": "task=seo_content_preflight rows=8"
+    },
+    {
+      "name": "sandbox:report",
+      "ok": true,
+      "detail": "node --permission"
+    },
+    {
+      "name": "staging:report",
+      "ok": false,
+      "detail": "exit=1 file:///D:/www/dsh-plugin-factory/factory-kit/report-kit.mjs:19\r\n  `<table class=\"${cls}\"><thead><tr>${headers.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table>`;\r\n                                                                                                "
+    }
+  ],
+  "errors": [
+    "staging:dataset：task=seo_content_preflight rows=8",
+    "staging:report：exit=1 file:///D:/www/dsh-plugin-factory/factory-kit/report-kit.mjs:19\r\n  `<table class=\"${cls}\"><thead><tr>${headers.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table>`;\r\n                                                                                                "
+  ],
+  "datasetPath": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115043357_39b872\\seo-content-preflight\\service\\data\\jobs\\20261115043359-ea36\\seo_content_preflight_dataset.json",
+  "reportPath": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115043357_39b872\\seo-content-preflight\\report\\seo-content-preflight-report.html",
+  "rows": 8,
+  "stderr": "(node:19652) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

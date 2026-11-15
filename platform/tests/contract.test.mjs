@@ -80,6 +80,8 @@ test('SKILL frontmatter name 与 id 一致且含关键章节', () => {
 test('非 legacy 插件使用共享 runtime bootstrap', () => {
   for (const m of manifests.filter((x) => !x.legacy)) {
     const boot = fs.readFileSync(path.join(m.service.dir, m.service.entry), 'utf8');
-    assert.ok(boot.includes('platform/factory/bootstrap'), `${m.id} 未使用共享 runtime`);
+    const usesBoot = /platform[\\/]factory[\\/]bootstrap/.test(boot)
+      || /'platform',\s*'factory',\s*'bootstrap'/.test(boot);
+    assert.ok(usesBoot, `${m.id} 未使用共享 runtime`);
   }
 });

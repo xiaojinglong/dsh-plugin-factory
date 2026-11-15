@@ -1,0 +1,40 @@
+{
+  "id": "promo-channel-roi",
+  "name": "渠道 ROI 与预算再分配",
+  "type": "file",
+  "version": "0.1.0",
+  "port": 51194,
+  "taskType": "promo_channel_roi",
+  "serverName": "promo-channel-roi",
+  "service": {
+    "dir": "D:\\www\\dsh-plugin-factory\\plugins\\promo-channel-roi\\service",
+    "entry": "server.js",
+    "runner": "runner.js",
+    "dataDir": "D:\\www\\dsh-plugin-factory\\plugins\\promo-channel-roi\\service\\data",
+    "startCmd": [
+      "node",
+      [
+        "server.js"
+      ]
+    ]
+  },
+  "runtime": {
+    "write": false,
+    "retentionDays": 1,
+    "token": true,
+    "toolTimeoutMs": 60000,
+    "serviceToken": "2ee7275fc15c65a0fa4181dbc17f61c1"
+  },
+  "mcp": {
+    "dir": "D:\\www\\dsh-plugin-factory\\deployment\\tools\\promo-channel-roi-mcp"
+  },
+  "skill": {
+    "dir": "D:\\www\\dsh-plugin-factory\\deployment\\skills\\promo-channel-roi"
+  },
+  "report": {
+    "generator": "D:\\www\\dsh-plugin-factory\\plugins\\promo-channel-roi\\gen-report.mjs",
+    "output": "D:\\www\\dsh-plugin-factory\\plugins\\promo-channel-roi\\report\\promo-channel-roi-report.html"
+  },
+  "secrets": [],
+  "legacy": false
+}

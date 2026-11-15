@@ -1,0 +1,11 @@
+{
+  "rows": [
+    { "channel": "Google Ads", "spend": 5200, "impressions": 180000, "clicks": 5400, "leads": 210, "orders": 84, "revenue": 12600 },
+    { "channel": "Meta Ads", "spend": 3800, "impressions": 240000, "clicks": 7200, "leads": 180, "orders": 54, "revenue": 8100 },
+    { "channel": "TikTok Ads", "spend": 2600, "impressions": 320000, "clicks": 9600, "leads": 96, "orders": 29, "revenue": 4350 },
+    { "channel": "SEO 自然流量", "spend": 1200, "impressions": 95000, "clicks": 4200, "leads": 168, "orders": 92, "revenue": 13800 },
+    { "channel": "EDM", "spend": 400, "impressions": 28000, "clicks": 1400, "leads": 70, "orders": 35, "revenue": 5250 },
+    { "channel": "联盟营销", "spend": 1500, "impressions": 60000, "clicks": 3000, "leads": 60, "orders": 24, "revenue": 3600 },
+    { "channel": "线下展会", "spend": 6000, "impressions": 8000, "clicks": 400, "leads": 80, "orders": 16, "revenue": 4800 }
+  ]
+}

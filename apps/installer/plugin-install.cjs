@@ -32,6 +32,30 @@ function fail(msg) { const e = new Error(msg); e.code = 'INSTALL'; throw e; }
 function readJson(file) { return JSON.parse(fs.readFileSync(file, 'utf8')); }
 function ts() { return new Date().toISOString().replace(/[:.]/g, '-'); }
 function rel(root, p) { return path.relative(root, p).split(path.sep).join('/'); }
+
+// 兼容旧生成器：安装后的 service 目录比 staging 浅，固定 ../../../../ 会指错根
+function ensurePortableServer(serviceDir) {
+  const file = path.join(serviceDir, 'server.js');
+  if (!fs.existsSync(file)) return false;
+  let src = fs.readFileSync(file, 'utf8');
+  const marker = "path.resolve(__dirname, '..', '..', '..', '..')";
+  if (!src.includes(marker)) return false;
+  const replacement = `const fs = require('node:fs');
+function findRoot(start) {
+  let dir = start;
+  for (;;) {
+    if (fs.existsSync(path.join(dir, 'platform', 'factory', 'bootstrap.js'))) return dir;
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return path.resolve(start, '..', '..', '..', '..');
+}
+const root = process.env.FACTORY_ROOT || findRoot(__dirname);`;
+  src = src.replace(/const root = process\.env\.FACTORY_ROOT \|\| path\.resolve\(__dirname, '\.\.', '\.\.', '\.\.', '\.\.'\);/, replacement);
+  fs.writeFileSync(file, src, 'utf8');
+  return true;
+}
 function stateDir(manifestsDir) { return path.join(manifestsDir, '.installed'); }
 function stateFile(manifestsDir, id) { return path.join(stateDir(manifestsDir), `${id}.json`); }
 
@@ -146,6 +170,7 @@ async function install(opts) {
   const skillDir = path.join(deploymentDir, 'skills', id);
   const manifestFile = path.join(manifestsDir, `${id}.json`);
   if (fs.existsSync(dest) && !opts.force) fail(`插件已存在：${dest}（如需覆盖加 --force）`);
+  const preexisting = { plugin: fs.existsSync(dest), tool: fs.existsSync(toolDir), skill: fs.existsSync(skillDir) };
   fs.mkdirSync(stateDir(manifestsDir), { recursive: true });
 
   const backups = [];
@@ -171,6 +196,7 @@ async function install(opts) {
     fs.cpSync(source, dest, { recursive: true, force: true });
     fs.cpSync(path.join(source, 'mcp'), toolDir, { recursive: true, force: true });
     fs.cpSync(path.join(source, 'skills', id), skillDir, { recursive: true, force: true });
+    ensurePortableServer(path.join(dest, 'service'));
 
     const reportName = manifest.report?.output ? String(manifest.report.output).split(/[\\/]/).pop() : `${id}-report.html`;
     const absManifest = {
@@ -210,9 +236,13 @@ async function install(opts) {
     fs.writeFileSync(stateFile(manifestsDir, id), JSON.stringify(installed, null, 2) + '\n', 'utf8');
     return { ok: true, ...installed };
   } catch (err) {
-    try { fs.rmSync(dest, { recursive: true, force: true }); } catch { /* ignore */ }
-    try { fs.rmSync(toolDir, { recursive: true, force: true }); } catch { /* ignore */ }
-    try { fs.rmSync(skillDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    // 失败回滚：只删除本次新建的路径；原有路径若未成功备份，绝不能删除
+    for (const [kind, p] of [['plugin', dest], ['tool', toolDir], ['skill', skillDir]]) {
+      const hadBackup = backups.some((b) => b.original === p);
+      if (!hadBackup && !preexisting[kind]) {
+        try { fs.rmSync(p, { recursive: true, force: true }); } catch { /* ignore */ }
+      }
+    }
     for (const b of backups) {
       try { if (fs.existsSync(b.backup)) fs.renameSync(b.backup, b.original); } catch { /* ignore */ }
     }

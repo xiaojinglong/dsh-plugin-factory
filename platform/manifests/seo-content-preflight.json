@@ -1,0 +1,40 @@
+{
+  "id": "seo-content-preflight",
+  "name": "内容发布前检查",
+  "type": "file",
+  "version": "0.1.0",
+  "port": 49930,
+  "taskType": "seo_content_preflight",
+  "serverName": "seo-content-preflight",
+  "service": {
+    "dir": "plugins/seo-content-preflight/service",
+    "entry": "server.js",
+    "runner": "runner.js",
+    "dataDir": "plugins/seo-content-preflight/service/data",
+    "startCmd": [
+      "node",
+      [
+        "server.js"
+      ]
+    ]
+  },
+  "runtime": {
+    "write": false,
+    "retentionDays": 1,
+    "token": true,
+    "toolTimeoutMs": 60000,
+    "serviceToken": "77f6e002b254435410403a96111a7c7b"
+  },
+  "mcp": {
+    "dir": "deployment/tools/seo-content-preflight-mcp"
+  },
+  "skill": {
+    "dir": "deployment/skills/seo-content-preflight"
+  },
+  "report": {
+    "generator": "plugins/seo-content-preflight/gen-report.mjs",
+    "output": "plugins/seo-content-preflight/report/seo-content-preflight-report.html"
+  },
+  "secrets": [],
+  "legacy": false
+}

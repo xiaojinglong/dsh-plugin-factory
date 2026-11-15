@@ -1,0 +1,12 @@
+{
+  "rows": [
+    { "url": "/blog/shopee-2026", "title": "2026 Shopee 跨境运营指南：从选品到爆单", "meta_description": "2026 年 Shopee 跨境运营完整指南，覆盖选品、定价、广告与物流，附实操清单。", "h1": 1, "word_count": 1800, "images": 8, "images_missing_alt": 1, "internal_links": 6, "external_links": 3, "keyword": "shopee 运营", "keyword_density": 1.4, "status_code": 200, "sensitive_words": 0 },
+    { "url": "/product/folding-box", "title": "折叠箱", "meta_description": "折叠箱", "h1": 2, "word_count": 180, "images": 3, "images_missing_alt": 3, "internal_links": 0, "external_links": 0, "keyword": "折叠收纳箱", "keyword_density": 0.2, "status_code": 200, "sensitive_words": 0 },
+    { "url": "/blog/old-post", "title": "2019 年的旧文章：跨境物流经验分享与注意事项汇总", "meta_description": "这是一篇 2019 年的旧文章，内容已经过时，但仍然保留在站点上，需要更新或重定向。", "h1": 1, "word_count": 900, "images": 2, "images_missing_alt": 0, "internal_links": 2, "external_links": 8, "keyword": "跨境物流", "keyword_density": 3.8, "status_code": 200, "sensitive_words": 0 },
+    { "url": "/landing/black-friday", "title": "黑五爆款清单｜限时折扣", "meta_description": "黑五精选爆款，限时折扣，库存有限，先到先得。", "h1": 1, "word_count": 650, "images": 12, "images_missing_alt": 4, "internal_links": 4, "external_links": 1, "keyword": "黑五", "keyword_density": 1.8, "status_code": 200, "sensitive_words": 1 },
+    { "url": "/help/refund-policy", "title": "退款政策", "meta_description": "了解退款政策、退货流程与时效。", "h1": 1, "word_count": 1200, "images": 0, "images_missing_alt": 0, "internal_links": 5, "external_links": 0, "keyword": "退款政策", "keyword_density": 1.0, "status_code": 200, "sensitive_words": 0 },
+    { "url": "/blog/broken-link", "title": "选品方法论：从数据到决策", "meta_description": "用数据方法做选品决策，包含关键词、竞品与利润测算。", "h1": 1, "word_count": 1500, "images": 5, "images_missing_alt": 0, "internal_links": 7, "external_links": 2, "keyword": "选品方法论", "keyword_density": 1.2, "status_code": 404, "sensitive_words": 0 },
+    { "url": "/product/charging-pad", "title": "无线充电板 15W 快充 兼容 iPhone 安卓", "meta_description": "15W 无线充电板，兼容 iPhone 与安卓，轻巧便携，适合办公与旅行。", "h1": 1, "word_count": 420, "images": 6, "images_missing_alt": 0, "internal_links": 3, "external_links": 0, "keyword": "无线充电板", "keyword_density": 2.2, "status_code": 200, "sensitive_words": 0 },
+    { "url": "/blog/new-agent", "title": "Agent 闭环重构全栈研发范式", "meta_description": "从 Prompt 到 Agent 闭环，讨论全栈研发范式的变化与落地。", "h1": 1, "word_count": 2200, "images": 4, "images_missing_alt": 0, "internal_links": 9, "external_links": 4, "keyword": "agent 研发", "keyword_density": 0.9, "status_code": 200, "sensitive_words": 0 }
+  ]
+}

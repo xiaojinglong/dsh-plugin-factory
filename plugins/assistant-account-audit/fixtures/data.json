@@ -1,0 +1,14 @@
+{
+  "rows": [
+    { "platform": "Shopee", "account": "shop_sg_01", "owner": "林晓", "admin": true, "two_factor": true, "password_age_days": 45, "last_login_days": 1, "shared": false, "status": "active" },
+    { "platform": "Shopee", "account": "shop_my_02", "owner": "", "admin": true, "two_factor": false, "password_age_days": 200, "last_login_days": 12, "shared": true, "status": "active" },
+    { "platform": "TikTok", "account": "tt_brand_01", "owner": "陈默", "admin": true, "two_factor": false, "password_age_days": 120, "last_login_days": 3, "shared": true, "status": "active" },
+    { "platform": "Google", "account": "ads@company.com", "owner": "赵宁", "admin": true, "two_factor": true, "password_age_days": 30, "last_login_days": 1, "shared": false, "status": "active" },
+    { "platform": "Meta", "account": "bm-company", "owner": "", "admin": true, "two_factor": false, "password_age_days": 400, "last_login_days": 90, "shared": true, "status": "active" },
+    { "platform": "Shopify", "account": "store-admin", "owner": "王悦", "admin": true, "two_factor": true, "password_age_days": 75, "last_login_days": 2, "shared": false, "status": "active" },
+    { "platform": "ERP", "account": "erp_ops_01", "owner": "周舟", "admin": false, "two_factor": false, "password_age_days": 95, "last_login_days": 5, "shared": true, "status": "active" },
+    { "platform": "邮箱", "account": "finance@company.com", "owner": "离职员工", "admin": true, "two_factor": false, "password_age_days": 500, "last_login_days": 120, "shared": true, "status": "active" },
+    { "platform": "广告账户", "account": "agency-partner", "owner": "外部代运营", "admin": true, "two_factor": false, "password_age_days": 60, "last_login_days": 10, "shared": true, "status": "active" },
+    { "platform": "Shopee", "account": "shop_th_03", "owner": "郑楠", "admin": false, "two_factor": true, "password_age_days": 20, "last_login_days": 0, "shared": false, "status": "locked" }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "rows": [
+    { "keyword": "shopee 运营", "volume": 5200, "difficulty": 42, "current_rank": 18, "intent": "commercial", "page": "/blog/shopee-2026", "conversion": 1.8 },
+    { "keyword": "跨境物流 费用", "volume": 3300, "difficulty": 28, "current_rank": 35, "intent": "commercial", "page": "/blog/old-post", "conversion": 1.2 },
+    { "keyword": "折叠收纳箱", "volume": 8800, "difficulty": 55, "current_rank": 9, "intent": "transactional", "page": "/product/folding-box", "conversion": 3.4 },
+    { "keyword": "无线充电板 15w", "volume": 2400, "difficulty": 31, "current_rank": 7, "intent": "transactional", "page": "/product/charging-pad", "conversion": 2.9 },
+    { "keyword": "黑五 爆款", "volume": 12000, "difficulty": 68, "current_rank": 22, "intent": "commercial", "page": "/landing/black-friday", "conversion": 2.1 },
+    { "keyword": "agent 研发", "volume": 900, "difficulty": 25, "current_rank": 4, "intent": "informational", "page": "/blog/new-agent", "conversion": 0.7 },
+    { "keyword": "退款政策", "volume": 1600, "difficulty": 12, "current_rank": 3, "intent": "navigational", "page": "/help/refund-policy", "conversion": 0.4 },
+    { "keyword": "选品 方法论", "volume": 2100, "difficulty": 38, "current_rank": 14, "intent": "informational", "page": "/blog/broken-link", "conversion": 1.1 }
+  ]
+}

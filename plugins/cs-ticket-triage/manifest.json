@@ -1,0 +1,40 @@
+{
+  "id": "cs-ticket-triage",
+  "name": "客服工单分诊",
+  "type": "file",
+  "version": "0.1.0",
+  "port": 55265,
+  "taskType": "cs_ticket_triage",
+  "serverName": "cs-ticket-triage",
+  "service": {
+    "dir": "D:\\www\\dsh-plugin-factory\\plugins\\cs-ticket-triage\\service",
+    "entry": "server.js",
+    "runner": "runner.js",
+    "dataDir": "D:\\www\\dsh-plugin-factory\\plugins\\cs-ticket-triage\\service\\data",
+    "startCmd": [
+      "node",
+      [
+        "server.js"
+      ]
+    ]
+  },
+  "runtime": {
+    "write": false,
+    "retentionDays": 1,
+    "token": true,
+    "toolTimeoutMs": 60000,
+    "serviceToken": "f0da25766a32d3b68d76a7a288177ebb"
+  },
+  "mcp": {
+    "dir": "D:\\www\\dsh-plugin-factory\\deployment\\tools\\cs-ticket-triage-mcp"
+  },
+  "skill": {
+    "dir": "D:\\www\\dsh-plugin-factory\\deployment\\skills\\cs-ticket-triage"
+  },
+  "report": {
+    "generator": "D:\\www\\dsh-plugin-factory\\plugins\\cs-ticket-triage\\gen-report.mjs",
+    "output": "D:\\www\\dsh-plugin-factory\\plugins\\cs-ticket-triage\\report\\cs-ticket-triage-report.html"
+  },
+  "secrets": [],
+  "legacy": false
+}

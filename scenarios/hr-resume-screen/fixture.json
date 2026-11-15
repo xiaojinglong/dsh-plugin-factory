@@ -1,0 +1,21 @@
+{
+  "job": {
+    "title": "跨境运营专员",
+    "must_have": ["Excel", "Shopee", "英语"],
+    "nice_have": ["SQL", "广告投放", "ERP"],
+    "min_years": 2,
+    "max_salary": 12000,
+    "location": "深圳",
+    "slots": ["2026-11-18 10:00", "2026-11-18 14:00", "2026-11-19 10:00", "2026-11-19 15:00"]
+  },
+  "candidates": [
+    { "name": "林晓", "years": 4, "skills": ["Excel", "Shopee", "英语", "SQL", "广告投放"], "salary_expect": 11000, "location": "深圳", "availability": "两周内", "current_company": "A跨境" },
+    { "name": "陈默", "years": 3, "skills": ["Excel", "Shopee", "英语", "ERP"], "salary_expect": 12500, "location": "深圳", "availability": "一个月", "current_company": "B贸易" },
+    { "name": "王悦", "years": 1, "skills": ["Excel", "英语"], "salary_expect": 8000, "location": "深圳", "availability": "随时", "current_company": "C电商" },
+    { "name": "赵宁", "years": 5, "skills": ["Excel", "Shopee", "英语", "SQL", "ERP"], "salary_expect": 15000, "location": "广州", "availability": "两周内", "current_company": "D科技" },
+    { "name": "周舟", "years": 2, "skills": ["Excel", "Shopee", "英语", "广告投放"], "salary_expect": 10000, "location": "深圳", "availability": "随时", "current_company": "E品牌" },
+    { "name": "吴桐", "years": 6, "skills": ["Excel", "Shopee", "英语", "SQL", "ERP", "广告投放"], "salary_expect": 16000, "location": "深圳", "availability": "一个月", "current_company": "F集团" },
+    { "name": "郑楠", "years": 3, "skills": ["Excel", "Shopee", "英语", "广告投放"], "salary_expect": 11800, "location": "东莞", "availability": "两周内", "current_company": "G跨境" },
+    { "name": "孙可", "years": 2, "skills": ["Excel", "Shopee", "英语", "SQL"], "salary_expect": 9500, "location": "深圳", "availability": "随时", "current_company": "H工作室" }
+  ]
+}

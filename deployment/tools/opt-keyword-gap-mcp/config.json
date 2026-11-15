@@ -1,0 +1,12 @@
+{
+  "service": { "baseUrl": "http://127.0.0.1:49721", "token": "", "authHeader": "authorization", "authScheme": "Bearer", "headers": {}, "timeoutMs": 30000 },
+  "polling": { "intervalMs": 1000, "timeoutMs": 60000 },
+  "endpoints": {
+    "submit": { "method": "POST", "path": "/jobs" },
+    "status": { "method": "GET", "path": "/jobs/{taskId}" },
+    "result": { "method": "GET", "path": "/jobs/{taskId}/result" },
+    "verifyQr": { "method": "GET", "path": "/jobs/{taskId}/verify" }
+  },
+  "submitBody": { "taskKey": "task", "paramsKey": "" },
+  "statusMap": { "queued": "queued", "waiting_verify": "waiting_verify", "running": "running", "done": "succeeded", "failed": "failed" }
+}
