@@ -33,11 +33,19 @@
 
 - `D:\www\dshskills` junction 完好；deployment 完好。
 - `platform/manifests` 12 个；`plugins/uat-demo`、`deployment/tools/uat-demo-mcp`、`deployment/skills/uat-demo` 均已移除。
-- 控制面已停止（8780 DOWN）。
+- 控制面：UAT 回滚时已停止；最终为可用已重新启动（见 §5）。
 - UAT 证据保留在 `data/uat/` 与 `data/generator/runs/req_20261115030055_1933c5/`（gitignored）。
 
 ## 4. 未完成 / 说明
 
-- **DSH UI 工具点击**未做：当前 DSH 会话在安装前启动；patch 已含工具、MCP SDK 已验证。若需 UI 验证：重新安装后重开 DSH，确认 `factory-control`/`uat-demo` 工具并调用一次。
+- **DSH UI 工具点击**未做：当前 DSH 会话在安装前启动；patch 已含工具、MCP SDK 已验证。若需 UI 验证：重开 DSH 后确认 `factory-control` 工具并调用一次。
 - 插件 `uat-demo` 是 fixture 样板，不是真实业务实现；已回滚，不留生产插件。
 - 签名未做；发布包仍只有 SHA-256。
+
+## 5. 最终状态（UAT 后保留可用）
+
+- `factory-control` 已重新安装并保留：patch 7104 bytes、`serverName: factory-control` 1 条、无 `uat-demo` 引用。
+- 控制面运行中：`http://127.0.0.1:8780/health` ok（detached PID 8680）。
+- 12 个既有服务全部 UP；`doctor --health` 全绿（warn 1 legacy）。
+- UAT 演示插件已回滚，`plugin-install list` 为空。
+- **DSH 需要重开一次**才能加载新 patch 的 `factory-control` 工具（当前会话在安装前启动）。
