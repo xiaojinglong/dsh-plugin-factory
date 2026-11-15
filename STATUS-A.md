@@ -1,8 +1,8 @@
 # STATUS-A — 生产级冲刺交付状态（A 单机版）
 
-> 更新时间：2026-11-15 13:1x（Asia/Shanghai）
-> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 流水线（58，**未合并 main**）；`feat/prod-a-m4` = M4/M5/M6（79，**未合并 main**）
-> 结论：**M0 100%；M1 ~70%；M2 ~95%（UAT 待 owner）；M3 ~98%；M4 ~60%；M5 ~40%；M6 ~75%。** 未完成项不冒充完成。
+> 更新时间：2026-11-15 14:1x（Asia/Shanghai）
+> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 流水线（58，**未合并 main**）；`feat/prod-a-m4` = M4/M5/M6（80，**未合并 main**）
+> 结论：**M0 100%；M1 ~70%；M2 ~95%（UAT 待 owner）；M3 ~98%；M4 ~60%；M5 ~40%；M6 ~80%。** 未完成项不冒充完成。
 
 ## 1. 总体完成度（按 PLAN-A 里程碑）
 
@@ -14,7 +14,7 @@
 | M3 生成流水线 | **~97%** | 🟡 probe/iframe/登录检测/业务 runner/write_runner/生成/校验/staging/报告/编排/沙箱/金标/失败建议已通；DSH 端到端 UAT、自动修复未完成 |
 | M4 验收与安装 | **~60%** | 🟡 accept + install/uninstall/rollback/upgrade/verify/render/preflight/兼容性检查已通；真实 DSH 安装/UAT、签名未完成 |
 | M5 分发与升级 | **~40%** | 🟡 发布 tarball/校验/release CI/从发布包解包/策略文档；分发渠道/签名/灰度未完成 |
-| M6 硬化与试点 | **~75%** | 🟡 限流/health/恢复/保留/巡检/容量/告警/演练/计划任务已通；真实试点未开始 |
+| M6 硬化与试点 | **~80%** | 🟡 限流/health/恢复/保留/巡检/容量/告警/演练/计划任务/备份保留已通；真实试点未开始 |
 
 > 说明：`PLAN-A.md` 完整周期约 6 周；本轮按生产级标准完成 M0，未用 MVP 替代或降低门禁。
 
