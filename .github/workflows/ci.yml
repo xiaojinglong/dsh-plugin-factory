@@ -22,6 +22,12 @@ jobs:
           cache: npm
       - name: Install (reproducible)
         run: npm ci --ignore-scripts
+      - name: Install Playwright Chromium (Linux)
+        if: runner.os == 'Linux'
+        run: npx playwright install --with-deps chromium
+      - name: Install Playwright Chromium (Windows)
+        if: runner.os == 'Windows'
+        run: npx playwright install chromium
       - name: Syntax check
         run: npm run check
       - name: Tests

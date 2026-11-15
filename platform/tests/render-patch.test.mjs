@@ -21,7 +21,7 @@ test('render：Windows 路径写成正斜杠，YAML 可被 DSH 解析', () => {
   });
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const text = fs.readFileSync(patch, 'utf8');
-  assert.match(text, /args: \["[A-Za-z]:\/[^"]*\/tools\/[^"]+"/);
+  assert.match(text, /args: \["(?:\/|[A-Za-z]:\/)[^"]*\/tools\/[^"]+"/);
   assert.ok(!/args: \["[A-Za-z]:\\/.test(text), 'YAML 双引号内不得出现 Windows 反斜杠路径');
   assert.ok(!/cwd: "[A-Za-z]:\\/.test(text), 'YAML 双引号内不得出现 Windows 反斜杠路径');
   assert.match(text, /serverName: /);
