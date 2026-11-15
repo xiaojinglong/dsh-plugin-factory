@@ -1,0 +1,6 @@
+{
+  "list": "rows",
+  "numbers": ["status", "latency_ms"],
+  "booleans": [],
+  "arrays": []
+}

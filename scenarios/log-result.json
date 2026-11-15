@@ -1,0 +1,13 @@
+{
+  "requestId": "req_20261115060523_b1148b",
+  "pluginDir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115060523_b1148b\\log-anomaly-audit",
+  "total": 9,
+  "anomalies": 4,
+  "summary": {
+    "总日志": 9,
+    "异常日志": 4,
+    "坏行": 0,
+    "涉及服务": 4
+  },
+  "report": "D:\\www\\dsh-plugin-factory\\plugins\\log-anomaly-audit\\report\\log-anomaly-audit-report.html"
+}

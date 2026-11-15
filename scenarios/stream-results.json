@@ -1,0 +1,12 @@
+{
+  "rows": 1000000,
+  "genMs": 5045,
+  "sizeMb": 107,
+  "runMs": 1158,
+  "heapMb": 2,
+  "datasetTotal": 1000000,
+  "anomalies": 1000,
+  "repMs": 151,
+  "reportBytes": 63832,
+  "reportExit": 0
+}

@@ -159,14 +159,14 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 - **合并预演**：已在临时 worktree 将 `feat/prod-a-m4` 合并到 main（无冲突），`npm ci` 后 `check` 191 文件 / `test` 79/79 通过；**main 未实际合并**，见 `docs/32-合并预演.md`。
 - **GitHub Actions**：推送后需确认两个 OS 的 CI 结果（依赖网络与 runner Node 24）。
 
-## 7. 岗位场景扩展（2026-11-15，v3.3.0-scenarios）
+## 7. 岗位场景扩展（2026-11-15，v3.3.5-scenarios）
 
-- 新增 9 个岗位插件（`scenarios/` 源 + `plugins/<id>` 安装）：人事简历筛选、跨境补货、行政资产盘点、客服工单分诊、代码仓库审计、内容发布前检查、关键词机会、渠道 ROI、账号权限审计。
-- 9/9 走完真实链路：`create_request → staging → accept → install → job done → HTML 报告`；证据 `scenarios/scenario-results.json`、报告 `plugins/<id>/report/*.html`。
+- 新增 9 个岗位插件 + 1 个流式日志插件：人事简历筛选、跨境补货、行政资产盘点、客服工单分诊、代码仓库审计、内容发布前检查、关键词机会、渠道 ROI、账号权限审计、1M 日志异常审计。
+- 10/10 走完真实链路；其中 9 个岗位场景 `create_request → staging → accept → install → job done → HTML 报告`，日志场景含 1M NDJSON 流式压测（1158ms/+2MB）。
 - 压测发现并修复 6 个工厂问题：staging 硬编码 2 行、报告 table 参数错误、生成 server 固定路径、install 失败删除原目录、测试硬编码条目数、runtime 检查只认字面路径。
-- 回归：**81/81**，`doctor --health` 全绿（仅 legacy 1 warn）。
-- 岗位矩阵与规则说明：`docs/39-岗位场景插件矩阵.md`；复现命令：`scenarios/README.md`。
-- 剩余：真实业务数据/API、并发/大数据量压测、跨岗位审批流。
+- 回归：**97/97**，`doctor --health` 全绿（仅 legacy 1 warn）。
+- 岗位矩阵与规则说明：`docs/39-岗位场景插件矩阵.md`；压测/CSV/API/1M：`docs/40-场景压测与二期优化.md`。
+- 剩余：真实业务 API/ERP、长时间运行、浏览器类并发、跨岗位审批流。
 
 ## 8. 下一步（已完成的收口项）
 

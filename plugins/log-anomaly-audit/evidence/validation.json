@@ -1,0 +1,206 @@
+{
+  "validatedAt": "2026-11-15T06:05:26.949Z",
+  "ok": true,
+  "spec": {
+    "id": "log-anomaly-audit",
+    "version": "0.1.0",
+    "name": "日志异常审计（流式）",
+    "type": "file",
+    "runtimeRange": "^3.2",
+    "owner": "local",
+    "taskType": "log_anomaly_audit",
+    "paramsSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "permissions": {
+      "write": false,
+      "network": [],
+      "browser": false
+    },
+    "service": {
+      "entry": "server.js",
+      "runner": "runner.js"
+    },
+    "mcp": {
+      "serverName": "log-anomaly-audit"
+    },
+    "skill": {
+      "name": "log-anomaly-audit"
+    },
+    "report": {
+      "generator": "gen-report.mjs"
+    }
+  },
+  "manifest": {
+    "id": "log-anomaly-audit",
+    "name": "日志异常审计（流式）",
+    "type": "file",
+    "version": "0.1.0",
+    "port": 55910,
+    "taskType": "log_anomaly_audit",
+    "serverName": "log-anomaly-audit",
+    "service": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115060523_b1148b\\log-anomaly-audit\\service",
+      "entry": "server.js",
+      "runner": "runner.js",
+      "dataDir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115060523_b1148b\\log-anomaly-audit\\service\\data",
+      "startCmd": [
+        "node",
+        [
+          "server.js"
+        ]
+      ]
+    },
+    "runtime": {
+      "write": false,
+      "retentionDays": 1,
+      "token": true,
+      "toolTimeoutMs": 60000,
+      "serviceToken": "649eb18ee4f88675f93933310ba83448"
+    },
+    "mcp": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115060523_b1148b\\log-anomaly-audit\\mcp"
+    },
+    "skill": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115060523_b1148b\\log-anomaly-audit\\skills\\log-anomaly-audit"
+    },
+    "report": {
+      "generator": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115060523_b1148b\\log-anomaly-audit\\gen-report.mjs",
+      "output": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115060523_b1148b\\log-anomaly-audit\\report\\log-anomaly-audit-report.html"
+    },
+    "secrets": [],
+    "legacy": false
+  },
+  "checks": [
+    {
+      "name": "schema:plugin.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "exists:service/server.js",
+      "ok": true,
+      "detail": "service/server.js"
+    },
+    {
+      "name": "exists:service/runner.js",
+      "ok": true,
+      "detail": "service/runner.js"
+    },
+    {
+      "name": "exists:mcp/index.js",
+      "ok": true,
+      "detail": "mcp/index.js"
+    },
+    {
+      "name": "exists:mcp/config.json",
+      "ok": true,
+      "detail": "mcp/config.json"
+    },
+    {
+      "name": "exists:skill",
+      "ok": true,
+      "detail": "skills\\log-anomaly-audit\\SKILL.md"
+    },
+    {
+      "name": "exists:report",
+      "ok": true,
+      "detail": "gen-report.mjs"
+    },
+    {
+      "name": "exists:fixture",
+      "ok": true,
+      "detail": "fixtures/data.json"
+    },
+    {
+      "name": "mcp:port",
+      "ok": true,
+      "detail": "manifest=55910"
+    },
+    {
+      "name": "skill:name",
+      "ok": true,
+      "detail": "log-anomaly-audit"
+    },
+    {
+      "name": "syntax:service/server.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:service/runner.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:mcp/index.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:mcp/smoke.cjs",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:gen-report.mjs",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "sandbox:service",
+      "ok": true,
+      "detail": "node --permission（只读仓库/staging，只写 staging）"
+    },
+    {
+      "name": "staging:health",
+      "ok": true,
+      "detail": "id=log-anomaly-audit"
+    },
+    {
+      "name": "staging:submit",
+      "ok": true,
+      "detail": "status=202"
+    },
+    {
+      "name": "staging:done",
+      "ok": true,
+      "detail": "status=done "
+    },
+    {
+      "name": "staging:result",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "staging:dataset",
+      "ok": true,
+      "detail": "task=log_anomaly_audit rows=4"
+    },
+    {
+      "name": "sandbox:report",
+      "ok": true,
+      "detail": "node --permission"
+    },
+    {
+      "name": "staging:report",
+      "ok": true,
+      "detail": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115060523_b1148b\\log-anomaly-audit\\report\\log-anomaly-audit-report.html"
+    }
+  ],
+  "errors": [],
+  "datasetPath": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115060523_b1148b\\log-anomaly-audit\\service\\data\\jobs\\20261115060526-a579\\log_anomaly_audit_dataset.json",
+  "reportPath": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115060523_b1148b\\log-anomaly-audit\\report\\log-anomaly-audit-report.html",
+  "rows": 4,
+  "stderr": "(node:9296) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

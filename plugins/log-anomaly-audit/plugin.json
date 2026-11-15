@@ -1,0 +1,40 @@
+{
+  "id": "log-anomaly-audit",
+  "version": "0.1.0",
+  "name": "日志异常审计（流式）",
+  "type": "file",
+  "runtimeRange": "^3.2",
+  "owner": "local",
+  "taskType": "log_anomaly_audit",
+  "paramsSchema": {
+    "type": "object",
+    "properties": {
+      "limit": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "additionalProperties": false
+  },
+  "outputSchema": {
+    "type": "object"
+  },
+  "permissions": {
+    "write": false,
+    "network": [],
+    "browser": false
+  },
+  "service": {
+    "entry": "server.js",
+    "runner": "runner.js"
+  },
+  "mcp": {
+    "serverName": "log-anomaly-audit"
+  },
+  "skill": {
+    "name": "log-anomaly-audit"
+  },
+  "report": {
+    "generator": "gen-report.mjs"
+  }
+}
