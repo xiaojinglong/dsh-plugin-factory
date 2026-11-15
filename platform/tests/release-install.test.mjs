@@ -10,11 +10,11 @@ const require = createRequire(import.meta.url);
 const { packageRelease } = require('../../scripts/package-release.cjs');
 const { installFromRelease, assertSafeEntries } = require('../../scripts/install-from-release.cjs');
 
-test('install-from-release：校验后解包到目标目录；不安全路径拒绝', () => {
+test('install-from-release：校验后解包到目标目录；不安全路径拒绝', async () => {
   const dist = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-a-rel-inst-'));
   packageRelease({ outDir: dist });
   const target = path.join(dist, 'installed');
-  const r = installFromRelease({ releaseDir: dist, to: target });
+  const r = await installFromRelease({ releaseDir: dist, to: target });
   assert.equal(r.ok, true);
   assert.ok(fs.existsSync(path.join(target, 'package.json')));
   assert.ok(fs.existsSync(path.join(target, 'apps', 'control-plane', 'server.cjs')));

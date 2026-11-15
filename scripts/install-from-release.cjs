@@ -4,39 +4,45 @@
 /**
  * scripts/install-from-release.cjs —— 从发布包安装（M5 分发）
  * 用法：node scripts/install-from-release.cjs --release <distDir> --to <targetDir> [--force]
- * 行为：校验 release.json/SHA-256 → 检查 tar 条目安全 → 解包到目标目录（--strip-components=1）。
+ * 行为：校验 release.json/SHA-256 → 检查 tar 条目安全 → 解包到目标目录（strip=1）。
+ * 使用纯 JS tar（跨平台，不依赖系统 tar 对 UTF-8/PAX 的支持）。
  * 不执行 npm ci/不启动服务；后续步骤见 docs/26。
  */
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+const tar = require('tar');
 const { verifyRelease } = require('./verify-release.cjs');
 
-// Windows CI 的 PATH 里常是 Git 的 GNU tar，读不了 npm pack 的 UTF-8/PAX 条目；
-// 优先用 Windows 自带 bsdtar，其它平台用系统 tar。
-function tarBin() {
-  if (process.platform === 'win32') {
-    const p = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'tar.exe');
-    if (fs.existsSync(p)) return p;
-  }
-  return 'tar';
-}
-
-function listEntries(tarball) {
-  const r = spawnSync(tarBin(), ['-tzf', tarball], { encoding: 'utf8', timeout: 60000 });
-  if (r.status !== 0) throw new Error(`无法读取 tar：${(r.stderr || '').slice(0, 300)}`);
-  return String(r.stdout || '').split(/\r?\n/).filter(Boolean);
+async function listEntries(tarball) {
+  const entries = [];
+  await tar.list({
+    file: tarball,
+    onentry: (e) => { entries.push(e.path); },
+  });
+  return entries;
 }
 
 function assertSafeEntries(entries) {
   for (const e of entries) {
-    const p = e.replace(/\\/g, '/');
-    if (p.startsWith('/') || /(^|\/)\.\.(\/|$)/.test(p)) throw new Error(`发布包包含不安全路径：${e}`);
+    const p = String(e).replace(/\\/g, '/');
+    if (p.startsWith('/') || /^[A-Za-z]:/.test(p) || /(^|\/)\.\.(\/|$)/.test(p)) {
+      throw new Error(`发布包包含不安全路径：${e}`);
+    }
   }
 }
 
-function installFromRelease(opts = {}) {
+async function extractTar(tarball, target) {
+  await tar.x({
+    file: tarball,
+    cwd: target,
+    strip: 1,
+    preservePaths: false,
+    filter: (p) => { assertSafeEntries([p]); return true; },
+  });
+}
+
+async function installFromRelease(opts = {}) {
   const releaseDir = path.resolve(opts.releaseDir || opts.release || path.join(__dirname, '..', 'dist'));
   const target = opts.to ? path.resolve(opts.to) : '';
   if (!target) throw new Error('需要 --to <targetDir>');
@@ -44,7 +50,7 @@ function installFromRelease(opts = {}) {
   if (!v.ok) throw new Error(`发布包校验失败：${v.errors.join('; ')}`);
   const meta = JSON.parse(fs.readFileSync(path.join(releaseDir, 'release.json'), 'utf8'));
   const tarball = path.join(releaseDir, meta.tarball);
-  const entries = listEntries(tarball);
+  const entries = await listEntries(tarball);
   assertSafeEntries(entries);
   if (fs.existsSync(target)) {
     const existing = fs.readdirSync(target);
@@ -56,15 +62,16 @@ function installFromRelease(opts = {}) {
     fs.renameSync(target, backup);
   }
   fs.mkdirSync(target, { recursive: true });
-  const r = spawnSync(tarBin(), ['-xzf', tarball, '-C', target, '--strip-components=1'], { encoding: 'utf8', timeout: 120000 });
-  if (r.status !== 0) {
+  try {
+    await extractTar(tarball, target);
+  } catch (err) {
     fs.rmSync(target, { recursive: true, force: true });
-    throw new Error(`解包失败：${(r.stderr || '').slice(0, 500)}`);
+    throw new Error(`解包失败：${err.message}`);
   }
   return { ok: true, to: target, version: meta.version, sha256: meta.sha256, files: entries.length, backup };
 }
 
-function main() {
+async function main() {
   const args = {};
   for (let i = 2; i < process.argv.length; i += 1) {
     const a = process.argv[i];
@@ -72,7 +79,7 @@ function main() {
     const next = process.argv[i + 1];
     if (next && !next.startsWith('--')) { args[a.slice(2)] = next; i += 1; } else args[a.slice(2)] = 'true';
   }
-  try { console.log(JSON.stringify(installFromRelease({ releaseDir: args.release, to: args.to, force: args.force === 'true' }), null, 2)); }
+  try { console.log(JSON.stringify(await installFromRelease({ releaseDir: args.release, to: args.to, force: args.force === 'true' }), null, 2)); }
   catch (err) { console.error(`[install-from-release] ${err.message}`); process.exit(1); }
 }
 
