@@ -102,8 +102,13 @@ test('取消：运行中任务可取消', async () => {
 test('指标接口包含任务统计', async () => {
   const { svc, port } = await bootService();
   try {
-    await jpost(port, '/jobs', { params: {} });
-    await new Promise((r) => setTimeout(r, 500));
+    const sub = await jpost(port, '/jobs', { params: {} });
+    const id = sub.body.jobId;
+    for (let i = 0; i < 50; i += 1) {
+      const s = await jget(port, `/jobs/${id}`);
+      if (['done', 'failed', 'cancelled'].includes(s.body.status)) break;
+      await new Promise((r) => setTimeout(r, 100));
+    }
     const m = await jget(port, '/metrics');
     assert.equal(m.status, 200);
     assert.ok(m.body.jobsByStatus, '缺 jobsByStatus');
