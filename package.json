@@ -18,6 +18,8 @@
     "control-plane:restore": "node apps/control-plane/restore.cjs",
     "health-check": "node scripts/health-check.cjs",
     "pilot-drill": "node scripts/pilot-drill.cjs",
+    "ops:backup": "node scripts/ops-backup.cjs",
+    "ops:schedule": "node scripts/ops-schedule.cjs",
     "factory-control-mcp": "node apps/factory-control-mcp/index.cjs",
     "generate:staging": "node apps/generator/generator.cjs staging",
     "pipeline": "node apps/generator/pipeline.cjs",
