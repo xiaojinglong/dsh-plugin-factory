@@ -159,12 +159,18 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 - **合并预演**：已在临时 worktree 将 `feat/prod-a-m4` 合并到 main（无冲突），`npm ci` 后 `check` 191 文件 / `test` 79/79 通过；**main 未实际合并**，见 `docs/32-合并预演.md`。
 - **GitHub Actions**：推送后需确认两个 OS 的 CI 结果（依赖网络与 runner Node 24）。
 
-## 6. 下一步（按 PLAN-A）
+## 7. 岗位场景扩展（2026-11-15，v3.3.0-scenarios）
 
-1. **M2 UAT（owner）**：真实 DSH 会话执行 `setup.ps1 install` → 确认 `factory-control` 工具出现 → 创建需求单 → 回滚/卸载验收。
-2. **M3 收尾**：DSH 端到端验证（write_runner → pipeline）、自动修复/重试、真实业务凭证安全接入。
-3. **M4 收尾**：真实 install（owner profile/UAT）、签名（owner 密钥）、安装 smoke 扩展。
-4. **M5 收尾**：分发渠道/升级策略、兼容性矩阵、release 校验。
-5. **M1 收尾**：依赖自动安装（`deps-check` 已就绪）、真实干净机 DSH 安装、打包/签名。
-6. **M6**：真实试点（备份/恢复/巡检/演练已就绪，见 `docs/27-M6硬化与试点.md`、`docs/29`）。
-7. M1/M2/M3/M4/M5/M6 闭合前保持分支；合并预演已通过（`docs/32`），但等 owner UAT 后再合并 main；M0 仍是可回滚稳定基线。
+- 新增 9 个岗位插件（`scenarios/` 源 + `plugins/<id>` 安装）：人事简历筛选、跨境补货、行政资产盘点、客服工单分诊、代码仓库审计、内容发布前检查、关键词机会、渠道 ROI、账号权限审计。
+- 9/9 走完真实链路：`create_request → staging → accept → install → job done → HTML 报告`；证据 `scenarios/scenario-results.json`、报告 `plugins/<id>/report/*.html`。
+- 压测发现并修复 6 个工厂问题：staging 硬编码 2 行、报告 table 参数错误、生成 server 固定路径、install 失败删除原目录、测试硬编码条目数、runtime 检查只认字面路径。
+- 回归：**81/81**，`doctor --health` 全绿（仅 legacy 1 warn）。
+- 岗位矩阵与规则说明：`docs/39-岗位场景插件矩阵.md`；复现命令：`scenarios/README.md`。
+- 剩余：真实业务数据/API、并发/大数据量压测、跨岗位审批流。
+
+## 8. 下一步（已完成的收口项）
+
+- A 工程已合并 main、tag `v3.2.0-a2`、GitHub Release/Actions 全绿。
+- 代码签名按 owner 决定不做；B 项目未动。
+- 后续扩展优先做“真实数据接入 + 压测”，而不是继续加 fixture 插件数量。
+

@@ -122,13 +122,14 @@ node cli.cjs secret <id> set K=V  # 凭证加密保存（DPAPI）
 
 | 项 | 状态 |
 |---|---|
-| 插件 | 12 个（8790–8801），全部健康 |
-| MCP/Skill | 12 套，DSH 已加载（`registry.md` 自动生成） |
+| 插件 | **21 个**（12 个原有 + 9 个岗位场景），全部健康 |
+| MCP/Skill | 21 套，DSH patch 由 installer 注入 |
 | 测试 | **81/81** 通过（契约 + runtime + 复杂场景 + 安装器 + 控制面 + MCP + 生成/安装/发布/运维） |
 | 自检 | `doctor --health` 全部通过（仅 legacy 1 条 warn） |
 | 鉴权 | v3 服务 no-token=401 / manifest token=200 |
-| 交付 | `main` + tag `v3.2.0-a1`；最终包 `dist/dsh-plugin-factory-3.2.0.tgz` |
+| 交付 | `main` + tag `v3.3.0-scenarios`；岗位矩阵见 `docs/39` |
 | 真实 UAT | DSH 安装/MCP/pipeline/accept/install/回滚已跑通（`docs/35`） |
+| 岗位场景 | 9/9：人事/跨境/行政/客服/程序员/网站编辑/优化师/推广/账号助理（`scenarios/`） |
 
 ## 六、License
 
