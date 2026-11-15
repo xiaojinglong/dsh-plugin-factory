@@ -15,11 +15,12 @@ async function runJob(job, ctx) {
   const data = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'data.json'), 'utf8'));
   const rows = Array.isArray(data.rows) ? data.rows : [];
   if (!rows.length) throw new Error('工单数据为空');
+  const NOW = data.as_of ? new Date(data.as_of) : new Date();
   ctx.setProgress(`分诊 ${rows.length} 个工单`);
 
   const out = rows.map((r) => {
     const rule = rules.find((x) => x.re.test(`${r.subject} ${r.message}`)) || { intent: '其他', reply: '已收到，我们会尽快人工跟进。' };
-    const age = hours(r.created_at, r.first_reply_at || new Date().toISOString());
+    const age = hours(r.created_at, r.first_reply_at || NOW);
     const limit = SLA[r.priority] || 24;
     const breached = age > limit;
     const angry = /生气|投诉|差评|骗子|垃圾|愤怒|曝光/i.test(`${r.subject} ${r.message}`);
