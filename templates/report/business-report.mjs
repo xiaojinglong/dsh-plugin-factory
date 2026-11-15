@@ -21,6 +21,9 @@ const columns = Array.isArray(extra.columns) && extra.columns.length ? extra.col
 const summary = Array.isArray(extra.summary) ? extra.summary : [];
 const recommendations = Array.isArray(extra.recommendations) ? extra.recommendations : [];
 const conclusion = extra.conclusion || `共处理 ${rows.length} 条记录，详见明细。`;
+const MAX_DISPLAY = 500;
+const displayRows = rows.slice(0, MAX_DISPLAY);
+const truncated = rows.length > MAX_DISPLAY;
 
 const labelOf = (k) => (extra.labels && extra.labels[k]) || k;
 const sevOf = (r) => String(r.severity || r.level || r.status || '').toUpperCase();
@@ -47,7 +50,8 @@ const body = `
   ${sevRows ? `<table><thead><tr><th>级别/状态</th><th>数量</th><th>占比</th></tr></thead><tbody>${sevRows}</tbody></table>` : '<p>无分级字段。</p>'}
 </section>
 <section><h2>四、业务明细</h2>
-  ${table(columns.map(labelOf), rows.map((r) => `<tr>${columns.map((k) => `<td>${esc(typeof r[k] === 'object' ? JSON.stringify(r[k]) : String(r[k] ?? ''))}</td>`).join('')}</tr>`))}
+  ${truncated ? `<p>共 ${rows.length} 行，报告仅展示前 ${MAX_DISPLAY} 行；完整数据见任务 dataset。</p>` : ''}
+  ${table(columns.map(labelOf), displayRows.map((r) => `<tr>${columns.map((k) => `<td>${esc(typeof r[k] === 'object' ? JSON.stringify(r[k]) : String(r[k] ?? ''))}</td>`).join('')}</tr>`))}
 </section>
 <section><h2>五、优化建议</h2><ul>${recommendations.map((r) => `<li>${esc(r)}</li>`).join('') || '<li>按明细逐条处理。</li>'}</ul></section>
 <section><h2>六、限制与未决</h2><ul>

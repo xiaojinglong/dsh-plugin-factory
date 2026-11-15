@@ -130,7 +130,7 @@ node cli.cjs secret <id> set K=V  # 凭证加密保存（DPAPI）
 | 交付 | `main` + tag `v3.3.1-scenarios`；岗位矩阵见 `docs/39` |
 | 真实 UAT | DSH 安装/MCP/pipeline/accept/install/回滚已跑通（`docs/35`） |
 | 岗位场景 | 9/9：人事/跨境/行政/客服/程序员/网站编辑/优化师/推广/账号助理（`scenarios/`） |
-| 压测 | 5k 行 30–61ms；5 并发 25/25 成功；5k 报告 173ms/882KB（`docs/40`） |
+| 压测 | 5k 行 30–61ms；5 并发 25/25 成功；5k 报告 197ms/89KB（明细上限 500 行，`docs/40`） |
 
 ## 六、License
 
