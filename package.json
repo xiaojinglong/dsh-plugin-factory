@@ -25,7 +25,8 @@
     "pipeline": "node apps/generator/pipeline.cjs",
     "install:plugin": "node apps/installer/plugin-install.cjs",
     "release:package": "node scripts/package-release.cjs",
-    "release:verify": "node scripts/verify-release.cjs"
+    "release:verify": "node scripts/verify-release.cjs",
+    "release:install": "node scripts/install-from-release.cjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",
