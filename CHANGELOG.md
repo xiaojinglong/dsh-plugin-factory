@@ -27,10 +27,11 @@
 - M5 发布包：`scripts/package-release.cjs` + `scripts/verify-release.cjs`（npm tarball + SHA-256 + release.json，敏感路径拦截）；`release.yml` CI；`docs/26-M5分发与升级.md`；安装器 runtimeRange 兼容性检查。
 - M6 硬化：控制面 POST 限流、`/health` 就绪、`restore.cjs` 备份恢复、`/admin/prune`/`prune-requests` 保留、`health-check` 巡检+webhook、`pilot-drill` 演练、`ops-backup`/`ops-schedule` 计划任务；`docs/27`、`docs/28`、`docs/29`。
 - M5 分发：`install-from-release.cjs`（校验 SHA-256 + 安全解包）、`docs/30-交付说明与验收索引.md`。
-- 验证：**76/76** 测试。
+- M1：安装器新增 `repair`（重放 render/注入/dshskills，幂等；无状态报错）。
+- 验证：**77/77** 测试。
 
 ### 验证
-- 干净克隆（M0/M1/M2/M3/M4 分支）分别 22/28/44/58/**76** 测试全绿；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP；`npm audit` 0。
+- 干净克隆（M0/M1/M2/M3/M4 分支）分别 22/28/44/58/**77** 测试全绿；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP；`npm audit` 0。
 - 已知未完成：M1 依赖/真实机器、M2 真实 DSH UAT、M3 真实 probe/业务实现/编排、M4–M6；许可证与开源脱敏待 owner 确认；legacy 迁移脚本仍含旧绝对路径（不在产品路径）。
 
 

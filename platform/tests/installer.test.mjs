@@ -114,3 +114,33 @@ test('rollback：从首次安装备份恢复 patch', () => {
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.equal(fs.readFileSync(p.patch, 'utf8'), '# original patch\n');
 });
+
+test('repair：补齐被删除的 factory-control 注入（幂等）；无状态时报错', () => {
+  const t = tmp();
+  const p = paths(t);
+  fs.mkdirSync(p.dshRoot, { recursive: true });
+  fs.mkdirSync(path.dirname(p.patch), { recursive: true });
+  fs.writeFileSync(p.patch, '# original patch\n', 'utf8');
+  const base = ['--dsh-root', p.dshRoot, '--patch', p.patch, '--data-root', p.dataRoot];
+  assert.equal(run(['install', ...base]).status, 0);
+
+  // 破坏：删除 managed block
+  const text = fs.readFileSync(p.patch, 'utf8');
+  const start = text.indexOf('# >>> factory-control');
+  const end = text.indexOf('# <<< factory-control <<<');
+  assert.ok(start >= 0 && end > start);
+  fs.writeFileSync(p.patch, text.slice(0, start) + text.slice(end + '# <<< factory-control <<<'.length), 'utf8');
+  assert.ok(!fs.readFileSync(p.patch, 'utf8').includes('serverName: factory-control'));
+
+  const r1 = run(['repair', ...base]);
+  assert.equal(r1.status, 0, r1.stdout + r1.stderr);
+  const repaired = fs.readFileSync(p.patch, 'utf8');
+  assert.match(repaired, /serverName: factory-control/);
+  assert.equal((repaired.match(/managed by apps\/installer/g) || []).length, 1, 'repair 不应重复注入');
+  assert.equal(run(['repair', ...base]).status, 0, 'repair 应幂等');
+
+  fs.unlinkSync(path.join(p.dataRoot, 'installer', 'state.json'));
+  const r2 = run(['repair', ...base]);
+  assert.notEqual(r2.status, 0);
+  assert.match(r2.stderr, /请先执行 install/);
+});

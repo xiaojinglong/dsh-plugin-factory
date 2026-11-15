@@ -275,6 +275,16 @@ function restoreBackup(state, names) {
   }
 }
 
+async function repair(opts) {
+  if (!fs.existsSync(opts.stateFile)) throw new Error('未找到安装状态，请先执行 install');
+  const res = await check(opts);
+  printCheck(res);
+  if (!res.ok) throw new Error('环境检查未通过，无法 repair');
+  await install(opts, false);
+  console.log('[repair] 已重放 render/注入/dshskills（幂等）；未改插件数据');
+  return { ok: true, patch: opts.patch, dshRoot: opts.dshRoot };
+}
+
 function uninstall(opts) {
   if (!fs.existsSync(opts.stateFile)) throw new Error(`未找到安装状态：${opts.stateFile}`);
   const state = JSON.parse(fs.readFileSync(opts.stateFile, 'utf8'));
@@ -309,9 +319,10 @@ async function main() {
   if (cmd === 'install') { await install(opts, args['dry-run'] === 'true'); return; }
   if (cmd === 'uninstall') { uninstall(opts); return; }
   if (cmd === 'rollback') { rollback(opts); return; }
-  throw new Error(`未知命令：${cmd}（支持 check/install/uninstall/rollback）`);
+  if (cmd === 'repair') { await repair(opts); return; }
+  throw new Error(`未知命令：${cmd}（支持 check/install/uninstall/rollback/repair）`);
 }
 
 main().catch((err) => { console.error(`[installer] ${err.message}`); process.exit(1); });
 
-module.exports = { check, install, uninstall, rollback, options, parse, verifyPatch };
+module.exports = { check, install, uninstall, rollback, repair, options, parse, verifyPatch };

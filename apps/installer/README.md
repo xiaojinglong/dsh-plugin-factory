@@ -53,6 +53,9 @@ node apps/installer/plugin-install.cjs install --source <dir> --root <root> --re
 
 # 回滚 patch（从首次安装备份）
 .\apps\installer\setup.ps1 rollback
+
+# 修复（重放 render/注入/dshskills；保留旧备份，幂等）
+.\apps\installer\setup.ps1 repair
 ```
 
 可选参数：`--dsh-root <dir>`、`--profile <name>`、`--patch <file>`、`--data-root <dir>`、`--control-plane-url <url>`（默认 `http://127.0.0.1:8780`）。测试/演练请显式指定临时目录，避免触碰真实 profile。
