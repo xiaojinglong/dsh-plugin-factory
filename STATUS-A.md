@@ -166,7 +166,8 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 - 压测发现并修复 6 个工厂问题：staging 硬编码 2 行、报告 table 参数错误、生成 server 固定路径、install 失败删除原目录、测试硬编码条目数、runtime 检查只认字面路径。
 - 新增 **Wave 1 5 个 A 类插件**：`git-flow-audit`、`boss-candidate-score`、`product-selection-score`、`ops-daily-audit`、`supplier-quote-compare`；5/5 staging→accept→install→job→报告通过（`docs/43`）。
 - 新增 **Wave 2 趋势选品**：`trend-selection-audit`（Google Trends CSV + 选品工具 CSV），5 候选 → 推荐 3/排除 2；Google Trends 直连 429，采用导出兜底（`docs/44`）。
-- 插件总数 **28**；测试 **105/105**；`doctor --health` 全绿（仅 legacy 1 warn）。
+- 新增 **动作型插件** `excel-status-mark`：无报告，读取订单 xlsx → 生成新 `orders-marked.xlsx` + 变更审计，原文件不动；工厂支持 `effect/outputs`、报告可选、probe 二进制 Excel、result `artifacts`（`docs/46/47`）。
+- 插件总数 **29**；测试 **106/106**；`doctor --health` 全绿（仅 legacy 1 warn）。
 - 岗位矩阵与规则说明：`docs/39-岗位场景插件矩阵.md`；压测/CSV/API/1M：`docs/40-场景压测与二期优化.md`。
 - 剩余：真实业务 API/ERP、长时间运行、浏览器类并发、跨岗位审批流。
 

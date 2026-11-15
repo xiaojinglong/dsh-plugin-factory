@@ -147,15 +147,15 @@ node cli.cjs secret <id> set K=V  # 凭证加密保存（DPAPI）
 
 | 项 | 状态 |
 |---|---|
-| 插件 | **28 个**（12 个原有 + 9 个岗位场景 + 1 个流式日志 + 5 个 Wave 1 + 1 个趋势选品），全部健康 |
-| MCP/Skill | 28 套，DSH patch 由 installer 注入 |
-| 测试 | **105/105** 通过（契约 + runtime + 复杂场景 + 安装器 + 控制面 + MCP + 生成/安装/发布/运维 + 9 岗位场景 + CSV/API 适配器 + 流式日志 + 5 Wave 1 + 趋势选品） |
+| 插件 | **29 个**（12 个原有 + 9 个岗位场景 + 1 个流式日志 + 5 个 Wave 1 + 1 个趋势选品 + 1 个动作型 Excel），全部健康 |
+| MCP/Skill | 29 套，DSH patch 由 installer 注入 |
+| 测试 | **106/106** 通过（契约 + runtime + 复杂场景 + 安装器 + 控制面 + MCP + 生成/安装/发布/运维 + 岗位场景 + CSV/API + 流式 + 趋势 + 动作型 Excel） |
 | 自检 | `doctor --health` 全部通过（仅 legacy 1 条 warn） |
 | 鉴权 | v3 服务 no-token=401 / manifest token=200 |
-| 交付 | `main` + tag `v3.4.1-trend`；岗位矩阵见 `docs/39`，Wave 1/2 见 `docs/43`、`docs/44` |
+| 交付 | `main` + tag `v3.5.0-action`；岗位矩阵见 `docs/39`，动作型见 `docs/47` |
 | 真实 UAT | DSH 安装/MCP/pipeline/accept/install/回滚已跑通（`docs/35`） |
-| 岗位场景 | 9 岗位 + 流式日志 + Wave 1 5 个 + 趋势选品：见 `docs/39`、`docs/41`、`docs/43`、`docs/44` |
-| 压测 | 100k 行 565–1144ms；1M 流式 1158ms/+2MB；20 并发 80/80；报告上限 500 行（`docs/40`） |
+| 岗位场景 | 9 岗位 + 流式日志 + Wave 1 5 个 + 趋势选品 + Excel 动作：见 `docs/39/43/44/47` |
+| 动作型 | `excel-status-mark`：无报告、生成新 xlsx + 审计；报告可选（`docs/46/47`） |
 
 ## 六、License
 

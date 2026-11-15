@@ -1,0 +1,8 @@
+{
+  "requestId": "req_20261115134929_c9680d",
+  "auditPath": "plugins/excel-status-mark/service/data/jobs/20261115134935-114b/excel_status_mark_audit.json",
+  "total": 6,
+  "changed": 6,
+  "file": "plugins/excel-status-mark/service/data/jobs/20261115134935-114b/orders-marked.xlsx",
+  "fileExists": true
+}

@@ -1,0 +1,44 @@
+{
+  "id": "excel-status-mark",
+  "version": "0.1.0",
+  "name": "订单 Excel 状态标记",
+  "type": "file",
+  "effect": "file",
+  "outputs": [
+    "dataset",
+    "file",
+    "audit"
+  ],
+  "runtimeRange": "^3.2",
+  "owner": "local",
+  "taskType": "excel_status_mark",
+  "paramsSchema": {
+    "type": "object",
+    "properties": {
+      "limit": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "additionalProperties": false
+  },
+  "outputSchema": {
+    "type": "object"
+  },
+  "permissions": {
+    "write": true,
+    "network": [],
+    "browser": false
+  },
+  "service": {
+    "entry": "server.js",
+    "runner": "runner.js"
+  },
+  "mcp": {
+    "serverName": "excel-status-mark"
+  },
+  "skill": {
+    "name": "excel-status-mark"
+  },
+  "report": {}
+}

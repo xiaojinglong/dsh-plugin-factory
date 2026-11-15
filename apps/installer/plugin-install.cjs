@@ -67,7 +67,10 @@ function validateSource(sourceDir) {
   const spec = readJson(pluginFile);
   const v = validatePluginSpec(spec);
   if (!v.ok) fail(`plugin.json 校验失败：${v.errors.join('; ')}`);
-  for (const relPath of ['service/server.js', 'service/runner.js', 'gen-report.mjs', 'fixtures/data.json']) {
+  const required = ['service/server.js', 'service/runner.js', 'fixtures/data.json'];
+  const outputs = Array.isArray(spec.outputs) ? spec.outputs : ['dataset', 'report'];
+  if (outputs.includes('report')) required.push('gen-report.mjs');
+  for (const relPath of required) {
     if (!fs.existsSync(path.join(sourceDir, relPath))) fail(`缺少文件：${relPath}`);
   }
   return { spec, manifest: readJson(manifestFile) };
@@ -198,13 +201,14 @@ async function install(opts) {
     fs.cpSync(path.join(source, 'skills', id), skillDir, { recursive: true, force: true });
     ensurePortableServer(path.join(dest, 'service'));
 
+    const hasReport = Array.isArray(spec.outputs) ? spec.outputs.includes('report') : !!manifest.report;
     const reportName = manifest.report?.output ? String(manifest.report.output).split(/[\\/]/).pop() : `${id}-report.html`;
     const absManifest = {
       ...manifest,
       service: { ...manifest.service, dir: path.join(dest, 'service'), dataDir: path.join(dest, 'service', 'data') },
       mcp: { ...manifest.mcp, dir: toolDir },
       skill: { ...manifest.skill, dir: skillDir },
-      report: { ...manifest.report, generator: path.join(dest, 'gen-report.mjs'), output: path.join(dest, 'report', reportName) },
+      report: hasReport ? { ...manifest.report, generator: path.join(dest, 'gen-report.mjs'), output: path.join(dest, 'report', reportName) } : null,
     };
     // 服务运行时读取安装目录下的 manifest.json（绝对路径）
     fs.writeFileSync(path.join(dest, 'manifest.json'), JSON.stringify(absManifest, null, 2) + '\n', 'utf8');
@@ -214,7 +218,7 @@ async function install(opts) {
       service: { ...absManifest.service, dir: rel(root, absManifest.service.dir), dataDir: rel(root, absManifest.service.dataDir) },
       mcp: { ...absManifest.mcp, dir: rel(root, absManifest.mcp.dir) },
       skill: { ...absManifest.skill, dir: rel(root, absManifest.skill.dir) },
-      report: { ...absManifest.report, generator: rel(root, absManifest.report.generator), output: rel(root, absManifest.report.output) },
+      report: hasReport ? { ...absManifest.report, generator: rel(root, absManifest.report.generator), output: rel(root, absManifest.report.output) } : null,
     };
     fs.writeFileSync(manifestFile, JSON.stringify(installedManifest, null, 2) + '\n', 'utf8');
 

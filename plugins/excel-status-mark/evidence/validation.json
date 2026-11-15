@@ -1,0 +1,187 @@
+{
+  "validatedAt": "2026-11-15T13:49:32.647Z",
+  "ok": true,
+  "spec": {
+    "id": "excel-status-mark",
+    "version": "0.1.0",
+    "name": "订单 Excel 状态标记",
+    "type": "file",
+    "effect": "file",
+    "outputs": [
+      "dataset",
+      "file",
+      "audit"
+    ],
+    "runtimeRange": "^3.2",
+    "owner": "local",
+    "taskType": "excel_status_mark",
+    "paramsSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "permissions": {
+      "write": true,
+      "network": [],
+      "browser": false
+    },
+    "service": {
+      "entry": "server.js",
+      "runner": "runner.js"
+    },
+    "mcp": {
+      "serverName": "excel-status-mark"
+    },
+    "skill": {
+      "name": "excel-status-mark"
+    },
+    "report": {}
+  },
+  "manifest": {
+    "id": "excel-status-mark",
+    "name": "订单 Excel 状态标记",
+    "type": "file",
+    "version": "0.1.0",
+    "port": 53394,
+    "taskType": "excel_status_mark",
+    "serverName": "excel-status-mark",
+    "service": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115134929_c9680d\\excel-status-mark\\service",
+      "entry": "server.js",
+      "runner": "runner.js",
+      "dataDir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115134929_c9680d\\excel-status-mark\\service\\data",
+      "startCmd": [
+        "node",
+        [
+          "server.js"
+        ]
+      ]
+    },
+    "runtime": {
+      "write": false,
+      "retentionDays": 1,
+      "token": true,
+      "toolTimeoutMs": 60000,
+      "serviceToken": "986d57a8880cb223c593ab12bfe9e869"
+    },
+    "mcp": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115134929_c9680d\\excel-status-mark\\mcp"
+    },
+    "skill": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115134929_c9680d\\excel-status-mark\\skills\\excel-status-mark"
+    },
+    "report": null,
+    "secrets": [],
+    "legacy": false
+  },
+  "checks": [
+    {
+      "name": "schema:plugin.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "exists:service/server.js",
+      "ok": true,
+      "detail": "service/server.js"
+    },
+    {
+      "name": "exists:service/runner.js",
+      "ok": true,
+      "detail": "service/runner.js"
+    },
+    {
+      "name": "exists:mcp/index.js",
+      "ok": true,
+      "detail": "mcp/index.js"
+    },
+    {
+      "name": "exists:mcp/config.json",
+      "ok": true,
+      "detail": "mcp/config.json"
+    },
+    {
+      "name": "exists:skill",
+      "ok": true,
+      "detail": "skills\\excel-status-mark\\SKILL.md"
+    },
+    {
+      "name": "exists:fixture",
+      "ok": true,
+      "detail": "fixtures/data.json"
+    },
+    {
+      "name": "mcp:port",
+      "ok": true,
+      "detail": "manifest=53394"
+    },
+    {
+      "name": "skill:name",
+      "ok": true,
+      "detail": "excel-status-mark"
+    },
+    {
+      "name": "syntax:service/server.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:service/runner.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:mcp/index.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:mcp/smoke.cjs",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "sandbox:service",
+      "ok": true,
+      "detail": "node --permission（只读仓库/staging，只写 staging）"
+    },
+    {
+      "name": "staging:health",
+      "ok": true,
+      "detail": "id=excel-status-mark"
+    },
+    {
+      "name": "staging:submit",
+      "ok": true,
+      "detail": "status=202"
+    },
+    {
+      "name": "staging:done",
+      "ok": true,
+      "detail": "status=done "
+    },
+    {
+      "name": "staging:result",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "staging:dataset",
+      "ok": true,
+      "detail": "task=excel_status_mark rows=6"
+    }
+  ],
+  "errors": [],
+  "datasetPath": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115134929_c9680d\\excel-status-mark\\service\\data\\jobs\\20261115134931-094a\\excel_status_mark_audit.json",
+  "reportPath": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115134929_c9680d\\excel-status-mark\\report\\excel-status-mark-report.html",
+  "rows": 6,
+  "stderr": "(node:16784) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

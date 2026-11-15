@@ -89,16 +89,19 @@ async function generate(opts) {
   if (fs.existsSync(out) && opts.force) fs.rmSync(out, { recursive: true, force: true });
 
   const version = opts.version || '0.1.0';
+  const outputs = Array.isArray(opts.outputs) && opts.outputs.length ? opts.outputs : ['dataset', 'report'];
+  const needReport = outputs.includes('report');
+  const effect = opts.effect || 'read';
   const spec = {
-    id, version, name: String(opts.name), type, runtimeRange: '^3.2',
+    id, version, name: String(opts.name), type, effect, outputs, runtimeRange: '^3.2',
     owner: String(opts.owner || 'local'), taskType,
     paramsSchema: { type: 'object', properties: { limit: { type: 'integer', minimum: 1 } }, additionalProperties: false },
     outputSchema: { type: 'object' },
-    permissions: { write: false, network: [], browser: type === 'browser' },
+    permissions: { write: ['write', 'message', 'file', 'mixed'].includes(effect), network: [], browser: type === 'browser' },
     service: { entry: 'server.js', runner: 'runner.js' },
     mcp: { serverName: id },
     skill: { name: id },
-    report: { generator: 'gen-report.mjs' },
+    report: needReport ? { generator: 'gen-report.mjs' } : {},
   };
   const v = validatePluginSpec(spec);
   if (!v.ok) fail(`plugin.json 校验失败：${v.errors.join('; ')}`);
@@ -110,16 +113,16 @@ async function generate(opts) {
       dir: path.join(out, 'service'), entry: 'server.js', runner: 'runner.js',
       dataDir: path.join(out, 'service', 'data'), startCmd: ['node', ['server.js']],
     },
-    runtime: { write: false, retentionDays: 1, token: true, toolTimeoutMs: 60000, serviceToken },
+    runtime: { write: ['write', 'message', 'mixed'].includes(effect), retentionDays: 1, token: true, toolTimeoutMs: 60000, serviceToken },
     mcp: { dir: path.join(out, 'mcp') },
     skill: { dir: path.join(out, 'skills', id) },
-    report: { generator: path.join(out, 'gen-report.mjs'), output: path.join(out, 'report', `${id}-report.html`) },
+    report: needReport ? { generator: path.join(out, 'gen-report.mjs'), output: path.join(out, 'report', `${id}-report.html`) } : null,
     secrets: [],
     legacy: false,
   };
 
   fs.mkdirSync(out, { recursive: true });
-  fs.mkdirSync(path.join(out, 'report'), { recursive: true });
+  if (needReport) fs.mkdirSync(path.join(out, 'report'), { recursive: true });
   fs.writeFileSync(path.join(out, 'plugin.json'), JSON.stringify(spec, null, 2) + '\n', 'utf8');
   fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', 'utf8');
 
@@ -141,10 +144,12 @@ async function generate(opts) {
   writeTemplate('mcp/package.json.tmpl', path.join(out, 'mcp', 'package.json'), vars);
   writeTemplate('mcp/smoke.cjs.tmpl', path.join(out, 'mcp', 'smoke.cjs'), vars);
   writeTemplate('skills/SKILL.md.tmpl', path.join(out, 'skills', id, 'SKILL.md'), vars);
-  writeTemplate('report/gen-report.mjs.tmpl', path.join(out, 'gen-report.mjs'), vars);
-  if (opts.reportFile) {
-    const reportSource = fs.readFileSync(path.resolve(opts.reportFile), 'utf8');
-    fs.writeFileSync(path.join(out, 'gen-report.mjs'), reportSource, 'utf8');
+  if (needReport) {
+    writeTemplate('report/gen-report.mjs.tmpl', path.join(out, 'gen-report.mjs'), vars);
+    if (opts.reportFile) {
+      const reportSource = fs.readFileSync(path.resolve(opts.reportFile), 'utf8');
+      fs.writeFileSync(path.join(out, 'gen-report.mjs'), reportSource, 'utf8');
+    }
   }
 
   const mcpShell = fs.readFileSync(MCP_SHELL, 'utf8').replace(/const SERVER_NAME = '[^']+';/, `const SERVER_NAME = '${id}-mcp';`);
@@ -162,7 +167,8 @@ async function generate(opts) {
     fs.writeFileSync(path.join(out, 'fixtures', 'data.json'), JSON.stringify({ rows }, null, 2) + '\n', 'utf8');
   }
 
-  const syntaxFiles = ['service/server.js', 'service/runner.js', 'mcp/index.js', 'mcp/smoke.cjs', 'gen-report.mjs'];
+  const syntaxFiles = ['service/server.js', 'service/runner.js', 'mcp/index.js', 'mcp/smoke.cjs'];
+  if (needReport) syntaxFiles.push('gen-report.mjs');
   const checks = [];
   for (const rel of syntaxFiles) {
     const r = await nodeCheck(path.join(out, rel));
@@ -215,17 +221,23 @@ async function validateDir(dir, opts = {}) {
   const manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
   const v = validatePluginSpec(spec);
   add('schema:plugin.json', v.ok, v.errors.join('; '));
-  for (const [name, rel] of [['service/server.js', 'service/server.js'], ['service/runner.js', 'service/runner.js'], ['mcp/index.js', 'mcp/index.js'], ['mcp/config.json', 'mcp/config.json'], ['skill', path.join('skills', spec.id, 'SKILL.md')], ['report', 'gen-report.mjs'], ['fixture', 'fixtures/data.json']]) {
+  for (const [name, rel] of [['service/server.js', 'service/server.js'], ['service/runner.js', 'service/runner.js'], ['mcp/index.js', 'mcp/index.js'], ['mcp/config.json', 'mcp/config.json'], ['skill', path.join('skills', spec.id, 'SKILL.md')], ['fixture', 'fixtures/data.json']]) {
     add(`exists:${name}`, fs.existsSync(path.join(out, rel)), rel);
   }
+  const outputs = Array.isArray(spec.outputs) && spec.outputs.length ? spec.outputs : ['dataset', 'report'];
+  if (outputs.includes('report')) add('exists:report', fs.existsSync(path.join(out, 'gen-report.mjs')), 'gen-report.mjs');
   const mcpCfg = fs.existsSync(path.join(out, 'mcp', 'config.json')) ? JSON.parse(fs.readFileSync(path.join(out, 'mcp', 'config.json'), 'utf8')) : null;
   add('mcp:port', !!mcpCfg && Number(new URL(mcpCfg.service.baseUrl).port) === manifest.port, `manifest=${manifest.port}`);
   const skill = fs.existsSync(path.join(out, 'skills', spec.id, 'SKILL.md')) ? fs.readFileSync(path.join(out, 'skills', spec.id, 'SKILL.md'), 'utf8') : '';
   add('skill:name', (skill.match(/^name:\s*(\S+)/m) || [])[1] === spec.id, spec.id);
-  for (const rel of ['service/server.js', 'service/runner.js', 'mcp/index.js', 'mcp/smoke.cjs', 'gen-report.mjs']) {
+  for (const rel of ['service/server.js', 'service/runner.js', 'mcp/index.js', 'mcp/smoke.cjs']) {
     if (!fs.existsSync(path.join(out, rel))) continue;
     const r = await nodeCheck(path.join(out, rel));
     add(`syntax:${rel}`, r.ok, r.error || '');
+  }
+  if (outputs.includes('report') && fs.existsSync(path.join(out, 'gen-report.mjs'))) {
+    const r = await nodeCheck(path.join(out, 'gen-report.mjs'));
+    add('syntax:gen-report.mjs', r.ok, r.error || '');
   }
   if (errors.length) {
     fs.mkdirSync(path.join(out, 'evidence'), { recursive: true });
@@ -292,7 +304,7 @@ async function validateDir(dir, opts = {}) {
 
     const reportScript = path.join(out, 'gen-report.mjs');
     const reportFile = path.join(out, 'report', `${spec.id}-report.html`);
-    if (fs.existsSync(reportScript)) {
+    if (outputs.includes('report') && fs.existsSync(reportScript)) {
       const reportArgs = sandbox.buildArgs({ readDirs: [ROOT, out], writeDirs: [out], scriptArgs: [reportScript, datasetPath] });
       const rep = spawnSync(process.execPath, reportArgs, {
         cwd: out, env: { ...process.env, FACTORY_ROOT: ROOT }, encoding: 'utf8', timeout: 30000,
@@ -300,7 +312,7 @@ async function validateDir(dir, opts = {}) {
       add('sandbox:report', sandbox.supportsPermissionModel() && process.env.FACTORY_SANDBOX !== '0', 'node --permission');
       add('staging:report', rep.status === 0 && fs.existsSync(reportFile) && fs.statSync(reportFile).size > 0,
         rep.status === 0 ? reportFile : `exit=${rep.status} ${(rep.stderr || '').slice(0, 300)}`);
-    } else {
+    } else if (outputs.includes('report')) {
       add('staging:report', false, '缺 gen-report.mjs');
     }
   } catch (err) {

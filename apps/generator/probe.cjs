@@ -89,6 +89,10 @@ function summarizeList(list) {
 async function probeFixture(file) {
   const abs = path.resolve(file);
   if (!fs.existsSync(abs)) throw new Error(`fixture 不存在：${abs}`);
+  const ext = path.extname(abs).toLowerCase();
+  if (ext === '.xlsx' || ext === '.xls') {
+    return { kind: 'fixture', source: abs, format: ext.slice(1), bytes: fs.statSync(abs).size, rows: 0 };
+  }
   const data = JSON.parse(fs.readFileSync(abs, 'utf8'));
   const list = Array.isArray(data) ? data : (Array.isArray(data.rows) ? data.rows : []);
   return { kind: 'fixture', source: abs, ...summarizeList(list) };

@@ -14,6 +14,8 @@ const PluginSpecSchema = z.object({
   version: z.string().regex(/^\d+\.\d+\.\d+([-.+].*)?$/, 'version 必须是 semver'),
   name: z.string().min(1).max(100),
   type: z.enum(['api', 'browser', 'file']),
+  effect: z.enum(['read', 'write', 'file', 'message', 'mixed']).default('read'),
+  outputs: z.array(z.string()).default(['dataset', 'report']),
   runtimeRange: z.string().min(1).max(40),
   owner: z.string().min(1).max(64),
   taskType: z.string().regex(/^[a-z][a-z0-9_]*$/, 'taskType 必须是 snake_case'),

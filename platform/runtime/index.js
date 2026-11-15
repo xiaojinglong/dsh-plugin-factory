@@ -212,7 +212,7 @@ function createService(opts) {
     if (job.status !== 'done') return reply.code(409).send({ error: `任务未完成（当前 ${job.status}）`, jobId: job.jobId, status: job.status });
     const files = store.files(job.jobId);
     const main = files.find((f) => f.kind === 'main') || null;
-    return { main, details: files.filter((f) => f.kind === 'detail'), missingItems: store.missing(job.jobId) };
+    return { main, details: files.filter((f) => f.kind === 'detail'), artifacts: files, missingItems: store.missing(job.jobId) };
   });
 
   /* ------------------------- 生命周期 ------------------------- */

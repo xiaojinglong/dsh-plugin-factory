@@ -1,0 +1,113 @@
+{
+  "generatedAt": "2026-11-15T13:49:30.278Z",
+  "template": "m3-fixture-v1",
+  "runnerKind": "custom",
+  "runnerWarnings": [],
+  "spec": {
+    "id": "excel-status-mark",
+    "version": "0.1.0",
+    "name": "订单 Excel 状态标记",
+    "type": "file",
+    "effect": "file",
+    "outputs": [
+      "dataset",
+      "file",
+      "audit"
+    ],
+    "runtimeRange": "^3.2",
+    "owner": "local",
+    "taskType": "excel_status_mark",
+    "paramsSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "permissions": {
+      "write": true,
+      "network": [],
+      "browser": false
+    },
+    "service": {
+      "entry": "server.js",
+      "runner": "runner.js"
+    },
+    "mcp": {
+      "serverName": "excel-status-mark"
+    },
+    "skill": {
+      "name": "excel-status-mark"
+    },
+    "report": {}
+  },
+  "manifest": {
+    "id": "excel-status-mark",
+    "name": "订单 Excel 状态标记",
+    "type": "file",
+    "version": "0.1.0",
+    "port": 53394,
+    "taskType": "excel_status_mark",
+    "serverName": "excel-status-mark",
+    "service": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115134929_c9680d\\excel-status-mark\\service",
+      "entry": "server.js",
+      "runner": "runner.js",
+      "dataDir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115134929_c9680d\\excel-status-mark\\service\\data",
+      "startCmd": [
+        "node",
+        [
+          "server.js"
+        ]
+      ]
+    },
+    "runtime": {
+      "write": false,
+      "retentionDays": 1,
+      "token": true,
+      "toolTimeoutMs": 60000,
+      "serviceToken": "986d57a8880cb223c593ab12bfe9e869"
+    },
+    "mcp": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115134929_c9680d\\excel-status-mark\\mcp"
+    },
+    "skill": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115134929_c9680d\\excel-status-mark\\skills\\excel-status-mark"
+    },
+    "report": null,
+    "secrets": [],
+    "legacy": false
+  },
+  "checks": [
+    {
+      "name": "syntax:service/server.js",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:service/runner.js",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:mcp/index.js",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:mcp/smoke.cjs",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "schema:plugin.json",
+      "ok": true
+    }
+  ]
+}
