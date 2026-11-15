@@ -1,7 +1,23 @@
 # DSH Plugin Factory
 
 > 插件工厂：业务人员描述业务流程 → AI 生成可运行插件（服务 + MCP + Skill + 报告）。
-> 版本 **v3.2** · 2026-11-15 · 项目根：`D:\www\dsh-plugin-factory`（A 单机版）
+> 版本 **v3.4.1** · 2026-11-15 · A 单机版
+
+---
+
+## 零、一条命令安装（新用户）
+
+前置：Node.js >= 24、已安装 DSH。
+
+```powershell
+git clone https://github.com/xiaojinglong/dsh-plugin-factory.git
+cd dsh-plugin-factory
+install.cmd
+```
+
+`install.cmd` 会安装依赖、Chromium、DSH 集成，启动控制面/插件服务并自检；完成后重开 DSH 即可使用。
+
+日常启动/停止：`start-factory.cmd` / `stop-factory.cmd`。
 
 ---
 
