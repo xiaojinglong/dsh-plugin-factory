@@ -1,0 +1,30 @@
+[
+  {
+    "id": "hr-resume-screen",
+    "jobs": 5,
+    "done": 5,
+    "failed": 0,
+    "ms": 601
+  },
+  {
+    "id": "xborder-restock",
+    "jobs": 5,
+    "done": 5,
+    "failed": 0,
+    "ms": 636
+  },
+  {
+    "id": "promo-channel-roi",
+    "jobs": 5,
+    "done": 5,
+    "failed": 0,
+    "ms": 790
+  },
+  {
+    "id": "assistant-account-audit",
+    "jobs": 5,
+    "done": 5,
+    "failed": 0,
+    "ms": 577
+  }
+]

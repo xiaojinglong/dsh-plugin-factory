@@ -1,0 +1,110 @@
+[
+  {
+    "id": "hr-resume-screen",
+    "rows": 1000,
+    "ms": 21,
+    "heapMb": 2
+  },
+  {
+    "id": "hr-resume-screen",
+    "rows": 5000,
+    "ms": 53,
+    "heapMb": 7
+  },
+  {
+    "id": "xborder-restock",
+    "rows": 1000,
+    "ms": 30,
+    "heapMb": 2
+  },
+  {
+    "id": "xborder-restock",
+    "rows": 5000,
+    "ms": 40,
+    "heapMb": -7
+  },
+  {
+    "id": "admin-asset-audit",
+    "rows": 1000,
+    "ms": 17,
+    "heapMb": 4
+  },
+  {
+    "id": "admin-asset-audit",
+    "rows": 5000,
+    "ms": 59,
+    "heapMb": 20
+  },
+  {
+    "id": "cs-ticket-triage",
+    "rows": 1000,
+    "ms": 17,
+    "heapMb": 4
+  },
+  {
+    "id": "cs-ticket-triage",
+    "rows": 5000,
+    "ms": 61,
+    "heapMb": 19
+  },
+  {
+    "id": "dev-repo-audit",
+    "rows": 1000,
+    "ms": 14,
+    "heapMb": 3
+  },
+  {
+    "id": "dev-repo-audit",
+    "rows": 5000,
+    "ms": 37,
+    "heapMb": -14
+  },
+  {
+    "id": "seo-content-preflight",
+    "rows": 1000,
+    "ms": 17,
+    "heapMb": 4
+  },
+  {
+    "id": "seo-content-preflight",
+    "rows": 5000,
+    "ms": 56,
+    "heapMb": -7
+  },
+  {
+    "id": "opt-keyword-gap",
+    "rows": 1000,
+    "ms": 11,
+    "heapMb": 2
+  },
+  {
+    "id": "opt-keyword-gap",
+    "rows": 5000,
+    "ms": 34,
+    "heapMb": 11
+  },
+  {
+    "id": "promo-channel-roi",
+    "rows": 1000,
+    "ms": 12,
+    "heapMb": 2
+  },
+  {
+    "id": "promo-channel-roi",
+    "rows": 5000,
+    "ms": 34,
+    "heapMb": -20
+  },
+  {
+    "id": "assistant-account-audit",
+    "rows": 1000,
+    "ms": 12,
+    "heapMb": 3
+  },
+  {
+    "id": "assistant-account-audit",
+    "rows": 5000,
+    "ms": 39,
+    "heapMb": 14
+  }
+]
