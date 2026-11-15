@@ -133,6 +133,8 @@ function stripMcpBlocks(text) {
 }
 function renderPatch() {
   const list = rawManifests().filter((m) => !m.legacy);
+  // YAML 双引号内反斜杠是转义符；Windows 路径必须用正斜杠，否则 DSH 解析失败并重置 patch
+  const dshToolsYaml = DSH_TOOLS.replace(/\\/g, '/');
   let text = fs.existsSync(PATCH) ? fs.readFileSync(PATCH, 'utf8') : '';
   text = stripMcpBlocks(text);
   const blocks = list.sort((a, b) => a.port - b.port).map((m) => `# ${m.id}（${m.type === 'api' ? 'API' : m.type === 'browser' ? '浏览器' : m.type}${m.runtime?.write ? '·写操作' : ''}，v${m.version}）
@@ -144,8 +146,8 @@ function renderPatch() {
         transport: stdio
         command: node
         toolCallTimeoutMs: ${m.runtime?.toolTimeoutMs || 900000}
-        args: ["${DSH_TOOLS}/${m.id}-mcp/index.js"]
-        cwd: "${DSH_TOOLS}/${m.id}-mcp"
+        args: ["${dshToolsYaml}/${m.id}-mcp/index.js"]
+        cwd: "${dshToolsYaml}/${m.id}-mcp"
         env:
           MCP_SERVICE_BASE_URL: "http://127.0.0.1:${m.port}"
 ${m.runtime?.serviceToken ? `          MCP_SERVICE_TOKEN: "${m.runtime.serviceToken}"\n` : ''}`);

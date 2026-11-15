@@ -1,20 +1,22 @@
 # ACCEPTANCE-A — A 单机版交付验收记录
 
-> 分支：`feat/prod-a-m4`（含 M1/M2/M3 祖先；**未合并 main**）
+> 分支：`feat/prod-a-m4`（A 工程收口；**即将合并 main**）
 > 生成时间：2026-11-15
-> 结论：代码/自动化测试与合并预演通过；真实 DSH UAT、签名、真实试点待 owner。**不冒充完成。**
+> 结论：A 工程/自动化交付收口完成；代码签名、分发渠道、真实业务试点为 owner 外部项。**不冒充完成。**
 
 ## 1. 验证证据
 
 | 项 | 结果 |
 |---|---|
-| 测试 | **80/80**（`npm test`） |
-| 语法检查 | **192 文件通过**（`npm run check`） |
-| 干净克隆 | 80/80（临时克隆 `feat/prod-a-m4`） |
-| 合并预演 | main + M4 自动合并且无冲突；合并后 80/80（见 `docs/32`） |
-| 发布包 | 见 §2（SHA-256） |
+| 测试 | **81/81**（`npm test`） |
+| 语法检查 | **193 文件通过**（`npm run check`） |
+| 干净克隆 | 待最终 tag 后复跑 |
+| 合并预演 | main + M4 自动合并且无冲突（docs/32） |
+| 发布包 | 见 §2（SHA-256，最终 tag 后重建） |
 | 控制面 | health/限流/备份恢复/prune/巡检/演练测试覆盖 |
-| 真实 DSH UAT | **已执行（2026-11-15）**：安装→MCP 9 工具→pipeline→accept→安装插件→smoke→插件任务→**回滚**；patch 原状恢复、12 服务恢复。详见 `docs/35-UAT执行记录.md`。DSH UI 点击待重开验证。 |
+| 真实 DSH UAT | **已执行**：安装→MCP 9 工具→pipeline→accept→安装插件→smoke→插件任务→回滚；patch 原状恢复、12 服务恢复（docs/35）。 |
+| DSH 工具可用 | **已验证**：本会话内 `factory-control.get_request/list_plugins` 实际调用成功；patch YAML 通过解析（docs/36）。 |
+| patch 回归 | 修复 `render` Windows 反斜杠写 YAML 的 bug，新增 `render-patch.test.mjs`。 |
 
 ## 2. 发布包
 
