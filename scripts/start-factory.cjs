@@ -36,6 +36,17 @@ async function health() {
     console.log('[factory] 控制面已在运行 :8780');
   }
 
+  // 启动时做一次控制面备份（失败不阻塞启动）
+  const backup = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'ops-backup.cjs')], { cwd: ROOT, encoding: 'utf8', timeout: 120000 });
+  if (backup.status === 0) {
+    try {
+      const info = JSON.parse((backup.stdout || '').trim().split(/\r?\n/).pop());
+      console.log(`[factory] 已备份控制面：${info.path}`);
+    } catch { console.log('[factory] 控制面备份完成'); }
+  } else {
+    console.log('[factory] 警告：控制面备份失败（不影响启动）');
+  }
+
   const up = spawnSync(process.execPath, [CLI, 'up'], { cwd: ROOT, encoding: 'utf8', timeout: 300000 });
   const lines = `${up.stdout || ''}\n${up.stderr || ''}`.trim().split(/\r?\n/).filter(Boolean);
   for (const line of lines) console.log(line);
