@@ -1,0 +1,67 @@
+[
+  {
+    "id": "git-flow-audit",
+    "requestId": "req_20261115061647_4c9eae",
+    "accept": "ok",
+    "install": "ok",
+    "start": "ok",
+    "job": "done",
+    "dataset": "D:\\www\\dsh-plugin-factory\\plugins\\git-flow-audit\\service\\data\\jobs\\20261115061711-89f6\\git_flow_audit_dataset.json",
+    "rows": 6,
+    "reportExit": 0,
+    "report": "D:\\www\\dsh-plugin-factory\\plugins\\git-flow-audit\\report\\git-flow-audit-report.html",
+    "reportExists": true
+  },
+  {
+    "id": "boss-candidate-score",
+    "requestId": "req_20261115061651_67ce43",
+    "accept": "ok",
+    "install": "ok",
+    "start": "ok",
+    "job": "done",
+    "dataset": "D:\\www\\dsh-plugin-factory\\plugins\\boss-candidate-score\\service\\data\\jobs\\20261115061713-85d6\\boss_candidate_score_dataset.json",
+    "rows": 20,
+    "reportExit": 0,
+    "report": "D:\\www\\dsh-plugin-factory\\plugins\\boss-candidate-score\\report\\boss-candidate-score-report.html",
+    "reportExists": true
+  },
+  {
+    "id": "product-selection-score",
+    "requestId": "req_20261115061654_c7e58f",
+    "accept": "ok",
+    "install": "ok",
+    "start": "ok",
+    "job": "done",
+    "dataset": "D:\\www\\dsh-plugin-factory\\plugins\\product-selection-score\\service\\data\\jobs\\20261115061715-7a45\\product_selection_score_dataset.json",
+    "rows": 10,
+    "reportExit": 0,
+    "report": "D:\\www\\dsh-plugin-factory\\plugins\\product-selection-score\\report\\product-selection-score-report.html",
+    "reportExists": true
+  },
+  {
+    "id": "ops-daily-audit",
+    "requestId": "req_20261115061657_175116",
+    "accept": "ok",
+    "install": "ok",
+    "start": "ok",
+    "job": "done",
+    "dataset": "D:\\www\\dsh-plugin-factory\\plugins\\ops-daily-audit\\service\\data\\jobs\\20261115061717-fbde\\ops_daily_audit_dataset.json",
+    "rows": 9,
+    "reportExit": 0,
+    "report": "D:\\www\\dsh-plugin-factory\\plugins\\ops-daily-audit\\report\\ops-daily-audit-report.html",
+    "reportExists": true
+  },
+  {
+    "id": "supplier-quote-compare",
+    "requestId": "req_20261115061700_02ef1c",
+    "accept": "ok",
+    "install": "ok",
+    "start": "ok",
+    "job": "done",
+    "dataset": "D:\\www\\dsh-plugin-factory\\plugins\\supplier-quote-compare\\service\\data\\jobs\\20261115061719-de52\\supplier_quote_compare_dataset.json",
+    "rows": 4,
+    "reportExit": 0,
+    "report": "D:\\www\\dsh-plugin-factory\\plugins\\supplier-quote-compare\\report\\supplier-quote-compare-report.html",
+    "reportExists": true
+  }
+]

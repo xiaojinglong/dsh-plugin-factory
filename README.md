@@ -122,14 +122,14 @@ node cli.cjs secret <id> set K=V  # 凭证加密保存（DPAPI）
 
 | 项 | 状态 |
 |---|---|
-| 插件 | **22 个**（12 个原有 + 9 个岗位场景 + 1 个流式日志），全部健康 |
-| MCP/Skill | 22 套，DSH patch 由 installer 注入 |
-| 测试 | **97/97** 通过（契约 + runtime + 复杂场景 + 安装器 + 控制面 + MCP + 生成/安装/发布/运维 + 9 岗位场景 + CSV/API 适配器 + 流式日志） |
+| 插件 | **27 个**（12 个原有 + 9 个岗位场景 + 1 个流式日志 + 5 个 Wave 1），全部健康 |
+| MCP/Skill | 27 套，DSH patch 由 installer 注入 |
+| 测试 | **102/102** 通过（契约 + runtime + 复杂场景 + 安装器 + 控制面 + MCP + 生成/安装/发布/运维 + 9 岗位场景 + CSV/API 适配器 + 流式日志 + 5 Wave 1） |
 | 自检 | `doctor --health` 全部通过（仅 legacy 1 条 warn） |
 | 鉴权 | v3 服务 no-token=401 / manifest token=200 |
-| 交付 | `main` + tag `v3.3.5-scenarios`；岗位矩阵见 `docs/39` |
+| 交付 | `main` + tag `v3.4.0-wave1`；岗位矩阵见 `docs/39`，Wave 1 见 `docs/43` |
 | 真实 UAT | DSH 安装/MCP/pipeline/accept/install/回滚已跑通（`docs/35`） |
-| 岗位场景 | 9 个岗位 + 1 个流式日志：人事/跨境/行政/客服/程序员/网站编辑/优化师/推广/账号助理/日志运维（`scenarios/`） |
+| 岗位场景 | 9 个岗位 + 流式日志 + Wave 1 5 个：见 `docs/39`、`docs/41`、`docs/43` |
 | 压测 | 100k 行 565–1144ms；1M 流式 1158ms/+2MB；20 并发 80/80；报告上限 500 行（`docs/40`） |
 
 ## 六、License

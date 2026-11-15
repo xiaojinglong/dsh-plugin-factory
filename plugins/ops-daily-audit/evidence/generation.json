@@ -1,0 +1,117 @@
+{
+  "generatedAt": "2026-11-15T06:16:58.110Z",
+  "template": "m3-fixture-v1",
+  "runnerKind": "custom",
+  "runnerWarnings": [],
+  "spec": {
+    "id": "ops-daily-audit",
+    "version": "0.1.0",
+    "name": "跨境运营日报",
+    "type": "file",
+    "runtimeRange": "^3.2",
+    "owner": "local",
+    "taskType": "ops_daily_audit",
+    "paramsSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "permissions": {
+      "write": false,
+      "network": [],
+      "browser": false
+    },
+    "service": {
+      "entry": "server.js",
+      "runner": "runner.js"
+    },
+    "mcp": {
+      "serverName": "ops-daily-audit"
+    },
+    "skill": {
+      "name": "ops-daily-audit"
+    },
+    "report": {
+      "generator": "gen-report.mjs"
+    }
+  },
+  "manifest": {
+    "id": "ops-daily-audit",
+    "name": "跨境运营日报",
+    "type": "file",
+    "version": "0.1.0",
+    "port": 64903,
+    "taskType": "ops_daily_audit",
+    "serverName": "ops-daily-audit",
+    "service": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061657_175116\\ops-daily-audit\\service",
+      "entry": "server.js",
+      "runner": "runner.js",
+      "dataDir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061657_175116\\ops-daily-audit\\service\\data",
+      "startCmd": [
+        "node",
+        [
+          "server.js"
+        ]
+      ]
+    },
+    "runtime": {
+      "write": false,
+      "retentionDays": 1,
+      "token": true,
+      "toolTimeoutMs": 60000,
+      "serviceToken": "e09c0d15dead95a3eb75dae747414b88"
+    },
+    "mcp": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061657_175116\\ops-daily-audit\\mcp"
+    },
+    "skill": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061657_175116\\ops-daily-audit\\skills\\ops-daily-audit"
+    },
+    "report": {
+      "generator": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061657_175116\\ops-daily-audit\\gen-report.mjs",
+      "output": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061657_175116\\ops-daily-audit\\report\\ops-daily-audit-report.html"
+    },
+    "secrets": [],
+    "legacy": false
+  },
+  "checks": [
+    {
+      "name": "syntax:service/server.js",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:service/runner.js",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:mcp/index.js",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:mcp/smoke.cjs",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:gen-report.mjs",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "schema:plugin.json",
+      "ok": true
+    }
+  ]
+}

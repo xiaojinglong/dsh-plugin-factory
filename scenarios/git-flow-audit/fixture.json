@@ -1,0 +1,11 @@
+{
+  "repo": "demo/dsh-factory",
+  "issues": [
+    { "id": 101, "title": "登录页支持邮箱", "acceptance": "邮箱+密码可登录", "branch": "feat/101-email-login", "commits": ["feat: email login #101"], "pr": { "number": 11, "closes": "#101", "reviewer": "alice" }, "ci": { "test": "pass", "lint": "pass" }, "merged": true, "branch_deleted": true },
+    { "id": 102, "title": "订单列表分页", "acceptance": "", "branch": "feat/102-pagination", "commits": ["feat: pagination #102"], "pr": { "number": 12, "closes": "#102", "reviewer": "bob" }, "ci": { "test": "pass", "lint": "pass" }, "merged": true, "branch_deleted": true },
+    { "id": 103, "title": "导出 CSV", "acceptance": "支持筛选后导出", "branch": "feat/103-export", "commits": ["feat: export #103"], "pr": { "number": 13, "closes": "#103", "reviewer": "alice" }, "ci": { "test": "pass", "lint": "fail" }, "merged": false, "branch_deleted": false },
+    { "id": 104, "title": "库存预警", "acceptance": "低于阈值告警", "branch": "feat/104-stock", "commits": ["feat: stock alert"], "pr": { "number": 14, "closes": "", "reviewer": "carol" }, "ci": { "test": "pass", "lint": "pass" }, "merged": true, "branch_deleted": true },
+    { "id": 105, "title": "退款原因统计", "acceptance": "按原因聚合", "branch": "feat/105-refund", "commits": ["feat: refund stats #105"], "pr": { "number": 15, "closes": "#105", "reviewer": "bob" }, "ci": { "test": "fail", "lint": "pass" }, "merged": true, "branch_deleted": false },
+    { "id": 106, "title": "优惠券校验", "acceptance": "过期/门槛校验", "branch": "feat/106-coupon", "commits": ["feat: coupon #106"], "pr": { "number": 16, "closes": "#106", "reviewer": "alice" }, "ci": { "test": "pass", "lint": "pass" }, "merged": true, "branch_deleted": true }
+  ]
+}

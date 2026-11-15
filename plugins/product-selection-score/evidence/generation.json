@@ -1,0 +1,119 @@
+{
+  "generatedAt": "2026-11-15T06:16:55.052Z",
+  "template": "m3-fixture-v1",
+  "runnerKind": "custom",
+  "runnerWarnings": [
+    "包含网络访问：需在 permissions.network 声明并走 allowlist"
+  ],
+  "spec": {
+    "id": "product-selection-score",
+    "version": "0.1.0",
+    "name": "选品评分",
+    "type": "file",
+    "runtimeRange": "^3.2",
+    "owner": "local",
+    "taskType": "product_selection_score",
+    "paramsSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "permissions": {
+      "write": false,
+      "network": [],
+      "browser": false
+    },
+    "service": {
+      "entry": "server.js",
+      "runner": "runner.js"
+    },
+    "mcp": {
+      "serverName": "product-selection-score"
+    },
+    "skill": {
+      "name": "product-selection-score"
+    },
+    "report": {
+      "generator": "gen-report.mjs"
+    }
+  },
+  "manifest": {
+    "id": "product-selection-score",
+    "name": "选品评分",
+    "type": "file",
+    "version": "0.1.0",
+    "port": 59430,
+    "taskType": "product_selection_score",
+    "serverName": "product-selection-score",
+    "service": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061654_c7e58f\\product-selection-score\\service",
+      "entry": "server.js",
+      "runner": "runner.js",
+      "dataDir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061654_c7e58f\\product-selection-score\\service\\data",
+      "startCmd": [
+        "node",
+        [
+          "server.js"
+        ]
+      ]
+    },
+    "runtime": {
+      "write": false,
+      "retentionDays": 1,
+      "token": true,
+      "toolTimeoutMs": 60000,
+      "serviceToken": "d71189274895a21f91dc763dc38ad583"
+    },
+    "mcp": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061654_c7e58f\\product-selection-score\\mcp"
+    },
+    "skill": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061654_c7e58f\\product-selection-score\\skills\\product-selection-score"
+    },
+    "report": {
+      "generator": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061654_c7e58f\\product-selection-score\\gen-report.mjs",
+      "output": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061654_c7e58f\\product-selection-score\\report\\product-selection-score-report.html"
+    },
+    "secrets": [],
+    "legacy": false
+  },
+  "checks": [
+    {
+      "name": "syntax:service/server.js",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:service/runner.js",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:mcp/index.js",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:mcp/smoke.cjs",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:gen-report.mjs",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "schema:plugin.json",
+      "ok": true
+    }
+  ]
+}

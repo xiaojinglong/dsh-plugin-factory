@@ -1,0 +1,206 @@
+{
+  "validatedAt": "2026-11-15T06:16:54.207Z",
+  "ok": true,
+  "spec": {
+    "id": "boss-candidate-score",
+    "version": "0.1.0",
+    "name": "BOSS 候选人评分",
+    "type": "file",
+    "runtimeRange": "^3.2",
+    "owner": "local",
+    "taskType": "boss_candidate_score",
+    "paramsSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "permissions": {
+      "write": false,
+      "network": [],
+      "browser": false
+    },
+    "service": {
+      "entry": "server.js",
+      "runner": "runner.js"
+    },
+    "mcp": {
+      "serverName": "boss-candidate-score"
+    },
+    "skill": {
+      "name": "boss-candidate-score"
+    },
+    "report": {
+      "generator": "gen-report.mjs"
+    }
+  },
+  "manifest": {
+    "id": "boss-candidate-score",
+    "name": "BOSS 候选人评分",
+    "type": "file",
+    "version": "0.1.0",
+    "port": 54983,
+    "taskType": "boss_candidate_score",
+    "serverName": "boss-candidate-score",
+    "service": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061651_67ce43\\boss-candidate-score\\service",
+      "entry": "server.js",
+      "runner": "runner.js",
+      "dataDir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061651_67ce43\\boss-candidate-score\\service\\data",
+      "startCmd": [
+        "node",
+        [
+          "server.js"
+        ]
+      ]
+    },
+    "runtime": {
+      "write": false,
+      "retentionDays": 1,
+      "token": true,
+      "toolTimeoutMs": 60000,
+      "serviceToken": "247f3d0ccec55fe4ba98058b5cf38ba0"
+    },
+    "mcp": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061651_67ce43\\boss-candidate-score\\mcp"
+    },
+    "skill": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061651_67ce43\\boss-candidate-score\\skills\\boss-candidate-score"
+    },
+    "report": {
+      "generator": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061651_67ce43\\boss-candidate-score\\gen-report.mjs",
+      "output": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061651_67ce43\\boss-candidate-score\\report\\boss-candidate-score-report.html"
+    },
+    "secrets": [],
+    "legacy": false
+  },
+  "checks": [
+    {
+      "name": "schema:plugin.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "exists:service/server.js",
+      "ok": true,
+      "detail": "service/server.js"
+    },
+    {
+      "name": "exists:service/runner.js",
+      "ok": true,
+      "detail": "service/runner.js"
+    },
+    {
+      "name": "exists:mcp/index.js",
+      "ok": true,
+      "detail": "mcp/index.js"
+    },
+    {
+      "name": "exists:mcp/config.json",
+      "ok": true,
+      "detail": "mcp/config.json"
+    },
+    {
+      "name": "exists:skill",
+      "ok": true,
+      "detail": "skills\\boss-candidate-score\\SKILL.md"
+    },
+    {
+      "name": "exists:report",
+      "ok": true,
+      "detail": "gen-report.mjs"
+    },
+    {
+      "name": "exists:fixture",
+      "ok": true,
+      "detail": "fixtures/data.json"
+    },
+    {
+      "name": "mcp:port",
+      "ok": true,
+      "detail": "manifest=54983"
+    },
+    {
+      "name": "skill:name",
+      "ok": true,
+      "detail": "boss-candidate-score"
+    },
+    {
+      "name": "syntax:service/server.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:service/runner.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:mcp/index.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:mcp/smoke.cjs",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:gen-report.mjs",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "sandbox:service",
+      "ok": true,
+      "detail": "node --permission（只读仓库/staging，只写 staging）"
+    },
+    {
+      "name": "staging:health",
+      "ok": true,
+      "detail": "id=boss-candidate-score"
+    },
+    {
+      "name": "staging:submit",
+      "ok": true,
+      "detail": "status=202"
+    },
+    {
+      "name": "staging:done",
+      "ok": true,
+      "detail": "status=done "
+    },
+    {
+      "name": "staging:result",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "staging:dataset",
+      "ok": true,
+      "detail": "task=boss_candidate_score rows=20"
+    },
+    {
+      "name": "sandbox:report",
+      "ok": true,
+      "detail": "node --permission"
+    },
+    {
+      "name": "staging:report",
+      "ok": true,
+      "detail": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061651_67ce43\\boss-candidate-score\\report\\boss-candidate-score-report.html"
+    }
+  ],
+  "errors": [],
+  "datasetPath": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061651_67ce43\\boss-candidate-score\\service\\data\\jobs\\20261115061653-7507\\boss_candidate_score_dataset.json",
+  "reportPath": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115061651_67ce43\\boss-candidate-score\\report\\boss-candidate-score-report.html",
+  "rows": 20,
+  "stderr": "(node:8724) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

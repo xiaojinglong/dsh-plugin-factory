@@ -1,0 +1,33 @@
+{
+  "messages": [
+    { "id": "M1", "buyer": "Aiden", "received_at": "2026-11-15T01:00:00Z", "replied_at": "2026-11-15T01:20:00Z", "content": "物流到哪了" },
+    { "id": "M2", "buyer": "Mira", "received_at": "2026-11-15T02:00:00Z", "replied_at": "", "content": "收到破损商品" },
+    { "id": "M3", "buyer": "Ken", "received_at": "2026-11-14T10:00:00Z", "replied_at": "2026-11-14T10:15:00Z", "content": "发票" },
+    { "id": "M4", "buyer": "Luna", "received_at": "2026-11-14T20:00:00Z", "replied_at": "", "content": "尺码换货" },
+    { "id": "M5", "buyer": "Owen", "received_at": "2026-11-15T03:00:00Z", "replied_at": "2026-11-15T03:05:00Z", "content": "优惠券" }
+  ],
+  "orders": [
+    { "id": "O1", "sku": "SKU-1", "status": "pending", "address_ok": true, "paid_at": "2026-11-14T08:00:00Z" },
+    { "id": "O2", "sku": "SKU-2", "status": "pending", "address_ok": false, "paid_at": "2026-11-14T09:00:00Z" },
+    { "id": "O3", "sku": "SKU-3", "status": "shipped", "address_ok": true, "paid_at": "2026-11-13T09:00:00Z" },
+    { "id": "O4", "sku": "SKU-4", "status": "pending", "address_ok": true, "paid_at": "2026-11-15T01:00:00Z" },
+    { "id": "O5", "sku": "SKU-5", "status": "shipped", "address_ok": true, "paid_at": "2026-11-12T01:00:00Z" }
+  ],
+  "tracking": [
+    { "tracking_no": "TRK1", "last_update_days": 1, "status": "in_transit" },
+    { "tracking_no": "TRK2", "last_update_days": 6, "status": "in_transit" },
+    { "tracking_no": "TRK3", "last_update_days": 2, "status": "delivered" },
+    { "tracking_no": "TRK4", "last_update_days": 9, "status": "in_transit" },
+    { "tracking_no": "TRK5", "last_update_days": 0, "status": "out_for_delivery" }
+  ],
+  "listings": [
+    { "id": "L1", "title": "折叠收纳箱", "changed": true },
+    { "id": "L2", "title": "宠物饮水机", "changed": false }
+  ],
+  "search_terms": [
+    { "term": "cheap box", "spend": 120, "conversions": 0 },
+    { "term": "storage box large", "spend": 80, "conversions": 5 },
+    { "term": "pet water", "spend": 45, "conversions": 0 },
+    { "term": "foldable crate", "spend": 30, "conversions": 2 }
+  ]
+}

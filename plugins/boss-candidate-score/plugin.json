@@ -1,0 +1,40 @@
+{
+  "id": "boss-candidate-score",
+  "version": "0.1.0",
+  "name": "BOSS 候选人评分",
+  "type": "file",
+  "runtimeRange": "^3.2",
+  "owner": "local",
+  "taskType": "boss_candidate_score",
+  "paramsSchema": {
+    "type": "object",
+    "properties": {
+      "limit": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "additionalProperties": false
+  },
+  "outputSchema": {
+    "type": "object"
+  },
+  "permissions": {
+    "write": false,
+    "network": [],
+    "browser": false
+  },
+  "service": {
+    "entry": "server.js",
+    "runner": "runner.js"
+  },
+  "mcp": {
+    "serverName": "boss-candidate-score"
+  },
+  "skill": {
+    "name": "boss-candidate-score"
+  },
+  "report": {
+    "generator": "gen-report.mjs"
+  }
+}

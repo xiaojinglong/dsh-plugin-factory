@@ -1,0 +1,40 @@
+{
+  "id": "product-selection-score",
+  "version": "0.1.0",
+  "name": "选品评分",
+  "type": "file",
+  "runtimeRange": "^3.2",
+  "owner": "local",
+  "taskType": "product_selection_score",
+  "paramsSchema": {
+    "type": "object",
+    "properties": {
+      "limit": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "additionalProperties": false
+  },
+  "outputSchema": {
+    "type": "object"
+  },
+  "permissions": {
+    "write": false,
+    "network": [],
+    "browser": false
+  },
+  "service": {
+    "entry": "server.js",
+    "runner": "runner.js"
+  },
+  "mcp": {
+    "serverName": "product-selection-score"
+  },
+  "skill": {
+    "name": "product-selection-score"
+  },
+  "report": {
+    "generator": "gen-report.mjs"
+  }
+}
