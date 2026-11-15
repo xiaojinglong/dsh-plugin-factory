@@ -11,6 +11,8 @@
     "doctor": "node platform/factory/cli.cjs doctor",
     "render": "node platform/factory/cli.cjs render",
     "check": "node scripts/check-syntax.mjs",
+    "start": "node scripts/start-factory.cjs",
+    "stop": "node scripts/stop-factory.cjs",
     "install:check": "node apps/installer/installer.cjs check",
     "install:dry-run": "node apps/installer/installer.cjs install --dry-run",
     "control-plane": "node apps/control-plane/server.cjs",
