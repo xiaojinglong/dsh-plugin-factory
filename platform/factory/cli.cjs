@@ -309,8 +309,8 @@ function smoke(id) {
 }
 function test() {
   const dir = path.join(ROOT, 'platform', 'tests');
-  const out = execFileSync('node', ['--test', ...fs.readdirSync(dir).filter((f) => f.endsWith('.test.mjs')).map((f) => path.join(dir, f))], { encoding: 'utf8' });
-  console.log(out);
+  // 流式输出，CI 失败时能看到具体用例（不再被 execFileSync 截断）
+  execFileSync('node', ['--test', ...fs.readdirSync(dir).filter((f) => f.endsWith('.test.mjs')).map((f) => path.join(dir, f))], { stdio: 'inherit' });
 }
 function clean() {
   for (const m of manifests()) {
