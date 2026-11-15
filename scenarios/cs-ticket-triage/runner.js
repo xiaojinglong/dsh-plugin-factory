@@ -39,7 +39,7 @@ async function runJob(job, ctx) {
   const breached = out.filter((x) => x.sla_status === '超时');
   const p1 = out.filter((x) => x.severity === 'P1');
   const dataset = {
-    task: 'cs_ticket_triage', fetchedAt: new Date().toISOString(), params: ctx.params || {},
+    task: job.task || 'cs_ticket_triage', fetchedAt: new Date().toISOString(), params: ctx.params || {},
     extra: {
       title: '客服工单分诊',
       columns: ['ticket_id', 'customer', 'channel', 'priority', 'intent', 'severity', 'sla_limit_h', 'first_reply_h', 'sla_status', 'order_value', 'escalate', 'suggested_reply'],

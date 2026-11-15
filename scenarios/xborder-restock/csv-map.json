@@ -1,0 +1,6 @@
+{
+  "list": "rows",
+  "numbers": ["stock", "in_transit", "daily_sales_7d", "lead_time_days", "moq", "unit_cost", "price"],
+  "booleans": [],
+  "arrays": []
+}

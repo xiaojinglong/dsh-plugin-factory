@@ -1,0 +1,6 @@
+{
+  "list": "rows",
+  "numbers": ["h1", "word_count", "images", "images_missing_alt", "internal_links", "external_links", "keyword_density", "status_code", "sensitive_words"],
+  "booleans": [],
+  "arrays": []
+}

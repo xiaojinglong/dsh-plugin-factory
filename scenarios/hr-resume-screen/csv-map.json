@@ -1,0 +1,7 @@
+{
+  "list": "candidates",
+  "numbers": ["years", "salary_expect"],
+  "booleans": [],
+  "arrays": ["skills"],
+  "job": "job.json"
+}

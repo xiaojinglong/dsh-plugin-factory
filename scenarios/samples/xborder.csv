@@ -1,0 +1,6 @@
+sku,name,site,stock,in_transit,daily_sales_7d,lead_time_days,moq,unit_cost,price
+SKU-CSV-1,"折叠箱, 大号",SG,18,0,6.2,21,50,8.5,19.9
+SKU-CSV-2,宠物饮水机,MY,220,0,3.1,14,30,22,59.9
+SKU-CSV-3,硅胶厨房垫,TH,4,0,8.8,18,100,3.2,12.5
+SKU-CSV-4,便携榨汁杯,SG,60,100,5.5,25,50,15,39.9
+SKU-CSV-5,桌面理线器,MY,35,0,1.2,10,100,1.8,6.9

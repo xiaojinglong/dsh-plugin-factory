@@ -34,7 +34,7 @@ async function runJob(job, ctx) {
   const p2 = out.filter((x) => x.severity === 'P2');
   const secrets = out.filter((x) => Number(x.secrets_hits) > 0);
   const dataset = {
-    task: 'dev_repo_audit', fetchedAt: new Date().toISOString(), params: ctx.params || {},
+    task: job.task || 'dev_repo_audit', fetchedAt: new Date().toISOString(), params: ctx.params || {},
     extra: {
       title: '代码仓库健康审计',
       columns: ['path', 'language', 'lines', 'size_kb', 'todos', 'secrets_hits', 'has_test', 'license', 'last_commit_days', 'severity', 'issues', 'action'],

@@ -1,0 +1,6 @@
+{
+  "list": "rows",
+  "numbers": ["lines", "todos", "secrets_hits", "last_commit_days", "size_kb"],
+  "booleans": ["has_test"],
+  "arrays": []
+}

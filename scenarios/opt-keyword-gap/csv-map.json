@@ -1,0 +1,6 @@
+{
+  "list": "rows",
+  "numbers": ["volume", "difficulty", "current_rank", "conversion"],
+  "booleans": [],
+  "arrays": []
+}

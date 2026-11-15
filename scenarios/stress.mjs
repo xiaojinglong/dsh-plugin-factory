@@ -47,7 +47,7 @@ function runOne(id, data) {
 const results = [];
 for (const id of IDS) {
   const base = JSON.parse(fs.readFileSync(path.join(ROOT, 'scenarios', id, 'fixture.json'), 'utf8'));
-  for (const n of [1000, 5000]) {
+  for (const n of [1000, 5000, 50000]) {
     const data = scale(id, base, n);
     const before = process.memoryUsage().heapUsed;
     const t0 = performance.now();
@@ -67,7 +67,7 @@ for (const id of ['hr-resume-screen', 'xborder-restock', 'promo-channel-roi', 'a
   const m = JSON.parse(fs.readFileSync(path.join(ROOT, 'platform', 'manifests', `${id}.json`), 'utf8'));
   const port = m.port; const auth = { Authorization: `Bearer ${m.runtime.serviceToken}`, 'Content-Type': 'application/json' };
   const t0 = performance.now();
-  const subs = await Promise.all(Array.from({ length: 5 }, () => fetch(`http://127.0.0.1:${port}/jobs`, { method: 'POST', headers: auth, body: JSON.stringify({ params: {} }) }).then((r) => r.json())));
+  const subs = await Promise.all(Array.from({ length: 20 }, () => fetch(`http://127.0.0.1:${port}/jobs`, { method: 'POST', headers: auth, body: JSON.stringify({ params: {} }) }).then((r) => r.json())));
   let done = 0; let failed = 0;
   for (const s of subs) {
     let st = null;
@@ -79,7 +79,7 @@ for (const id of ['hr-resume-screen', 'xborder-restock', 'promo-channel-roi', 'a
     if (st?.status === 'done') done += 1; else failed += 1;
   }
   const ms = Math.round(performance.now() - t0);
-  concurrency.push({ id, jobs: 5, done, failed, ms });
+  concurrency.push({ id, jobs: 20, done, failed, ms });
   console.log(`concurrency ${id}: done=${done} failed=${failed} ${ms}ms`);
 }
 fs.writeFileSync(path.join(ROOT, 'scenarios', 'concurrency-results.json'), JSON.stringify(concurrency, null, 2) + '\n', 'utf8');

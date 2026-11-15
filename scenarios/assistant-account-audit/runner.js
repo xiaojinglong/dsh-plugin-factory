@@ -36,7 +36,7 @@ async function runJob(job, ctx) {
   const admin = out.filter((x) => x.admin === '是');
   const shared = out.filter((x) => x.shared === '是');
   const dataset = {
-    task: 'assistant_account_audit', fetchedAt: new Date().toISOString(), params: ctx.params || {},
+    task: job.task || 'assistant_account_audit', fetchedAt: new Date().toISOString(), params: ctx.params || {},
     extra: {
       title: '账号资产与权限审计',
       columns: ['platform', 'account', 'owner', 'admin', 'two_factor', 'password_age_days', 'last_login_days', 'shared', 'status', 'risk', 'severity', 'issues', 'action'],

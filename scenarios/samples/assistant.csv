@@ -1,0 +1,6 @@
+platform,account,owner,admin,two_factor,password_age_days,last_login_days,shared,status
+Shopee,shop_sg_01,林晓,true,true,45,1,false,active
+Shopee,shop_my_02,,true,false,200,12,true,active
+TikTok,tt_brand_01,陈默,true,false,120,3,true,active
+Google,ads@company.com,赵宁,true,true,30,1,false,active
+Meta,bm-company,,true,false,400,90,true,active

@@ -1,0 +1,64 @@
+{
+  "rows": [
+    {
+      "sku": "SKU-CSV-1",
+      "name": "折叠箱, 大号",
+      "site": "SG",
+      "stock": 18,
+      "in_transit": 0,
+      "daily_sales_7d": 6.2,
+      "lead_time_days": 21,
+      "moq": 50,
+      "unit_cost": 8.5,
+      "price": 19.9
+    },
+    {
+      "sku": "SKU-CSV-2",
+      "name": "宠物饮水机",
+      "site": "MY",
+      "stock": 220,
+      "in_transit": 0,
+      "daily_sales_7d": 3.1,
+      "lead_time_days": 14,
+      "moq": 30,
+      "unit_cost": 22,
+      "price": 59.9
+    },
+    {
+      "sku": "SKU-CSV-3",
+      "name": "硅胶厨房垫",
+      "site": "TH",
+      "stock": 4,
+      "in_transit": 0,
+      "daily_sales_7d": 8.8,
+      "lead_time_days": 18,
+      "moq": 100,
+      "unit_cost": 3.2,
+      "price": 12.5
+    },
+    {
+      "sku": "SKU-CSV-4",
+      "name": "便携榨汁杯",
+      "site": "SG",
+      "stock": 60,
+      "in_transit": 100,
+      "daily_sales_7d": 5.5,
+      "lead_time_days": 25,
+      "moq": 50,
+      "unit_cost": 15,
+      "price": 39.9
+    },
+    {
+      "sku": "SKU-CSV-5",
+      "name": "桌面理线器",
+      "site": "MY",
+      "stock": 35,
+      "in_transit": 0,
+      "daily_sales_7d": 1.2,
+      "lead_time_days": 10,
+      "moq": 100,
+      "unit_cost": 1.8,
+      "price": 6.9
+    }
+  ]
+}

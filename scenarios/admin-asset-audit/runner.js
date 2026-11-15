@@ -47,7 +47,7 @@ async function runJob(job, ctx) {
   const p1 = out.filter((x) => x.severity === 'P1');
   const totalCost = out.reduce((s, x) => s + Number(x.cost || 0), 0);
   const dataset = {
-    task: 'admin_asset_audit', fetchedAt: new Date().toISOString(), params: ctx.params || {},
+    task: job.task || 'admin_asset_audit', fetchedAt: new Date().toISOString(), params: ctx.params || {},
     extra: {
       title: '固定资产盘点',
       columns: ['asset_id', 'name', 'category', 'owner', 'location', 'status', 'cost', 'warranty_end', 'last_check', 'severity', 'issues'],

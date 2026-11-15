@@ -49,7 +49,7 @@ async function runJob(job, ctx) {
   }));
   const avg = Math.round(scored.reduce((s, c) => s + c.score, 0) / scored.length);
   const dataset = {
-    task: 'hr_resume_screen', fetchedAt: new Date().toISOString(), params: ctx.params || {},
+    task: job.task || 'hr_resume_screen', fetchedAt: new Date().toISOString(), params: ctx.params || {},
     extra: {
       title: `${jd.title || '岗位'}简历筛选`,
       columns: ['name', 'score', 'decision', 'years', 'missing_must', 'matched_nice', 'salary_expect', 'location', 'interview_slot', 'reason'],

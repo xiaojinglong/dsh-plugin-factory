@@ -9,7 +9,7 @@ const ROOT = path.resolve(import.meta.dirname, '..');
 const require = createRequire(import.meta.url);
 const id = 'xborder-restock';
 const data = JSON.parse(fs.readFileSync(path.join(ROOT, 'scenarios', id, 'fixture.json'), 'utf8'));
-const rows = Array.from({ length: 5000 }, (_, i) => ({ ...(data.rows[i % data.rows.length]), sku: `SKU-${i + 1}` }));
+const rows = Array.from({ length: 50000 }, (_, i) => ({ ...(data.rows[i % data.rows.length]), sku: `SKU-${i + 1}` }));
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-a-report-'));
 fs.mkdirSync(path.join(dir, 'service'), { recursive: true });
 fs.mkdirSync(path.join(dir, 'fixtures'), { recursive: true });
@@ -29,4 +29,4 @@ const r = spawnSync(process.execPath, [path.join(dir, 'gen-report.mjs'), dataset
 const ms = Math.round(performance.now() - t0);
 const report = path.join(dir, 'report', `${path.basename(dir)}-report.html`);
 const bytes = fs.existsSync(report) ? fs.statSync(report).size : 0;
-console.log(JSON.stringify({ id, rows: 5000, exit: r.status, ms, bytes, report: bytes > 0, stderr: (r.stderr || '').slice(0, 300) }, null, 2));
+console.log(JSON.stringify({ id, rows: 50000, exit: r.status, ms, bytes, report: bytes > 0, stderr: (r.stderr || '').slice(0, 300) }, null, 2));

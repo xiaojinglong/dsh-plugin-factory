@@ -33,7 +33,7 @@ async function runJob(job, ctx) {
   const p2 = out.filter((x) => x.priority === 'P2');
   const revenue = out.reduce((s, x) => s + x.est_revenue, 0);
   const dataset = {
-    task: 'opt_keyword_gap', fetchedAt: new Date().toISOString(), params: ctx.params || {},
+    task: job.task || 'opt_keyword_gap', fetchedAt: new Date().toISOString(), params: ctx.params || {},
     extra: {
       title: '关键词机会与内容缺口',
       columns: ['keyword', 'intent', 'volume', 'difficulty', 'current_rank', 'ctr', 'est_clicks', 'est_revenue', 'score', 'priority', 'page', 'action'],

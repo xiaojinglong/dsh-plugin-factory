@@ -42,7 +42,7 @@ async function runJob(job, ctx) {
   const fix = out.filter((x) => x.decision === '修改后发布');
   const avg = Math.round(out.reduce((s, x) => s + x.score, 0) / out.length);
   const dataset = {
-    task: 'seo_content_preflight', fetchedAt: new Date().toISOString(), params: ctx.params || {},
+    task: job.task || 'seo_content_preflight', fetchedAt: new Date().toISOString(), params: ctx.params || {},
     extra: {
       title: '内容发布前检查',
       columns: ['url', 'title', 'title_len', 'meta_len', 'h1', 'word_count', 'images_missing_alt', 'internal_links', 'keyword', 'keyword_density', 'status_code', 'severity', 'score', 'decision', 'issues'],

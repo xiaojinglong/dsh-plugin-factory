@@ -1,30 +1,30 @@
 [
   {
     "id": "hr-resume-screen",
-    "jobs": 5,
-    "done": 5,
+    "jobs": 20,
+    "done": 20,
     "failed": 0,
-    "ms": 601
+    "ms": 2419
   },
   {
     "id": "xborder-restock",
-    "jobs": 5,
-    "done": 5,
+    "jobs": 20,
+    "done": 20,
     "failed": 0,
-    "ms": 636
+    "ms": 2290
   },
   {
     "id": "promo-channel-roi",
-    "jobs": 5,
-    "done": 5,
+    "jobs": 20,
+    "done": 20,
     "failed": 0,
-    "ms": 790
+    "ms": 2509
   },
   {
     "id": "assistant-account-audit",
-    "jobs": 5,
-    "done": 5,
+    "jobs": 20,
+    "done": 20,
     "failed": 0,
-    "ms": 577
+    "ms": 3222
   }
 ]

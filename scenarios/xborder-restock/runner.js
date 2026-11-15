@@ -36,7 +36,7 @@ async function runJob(job, ctx) {
   const p2 = out.filter((x) => x.severity === 'P2');
   const risk = out.reduce((s, x) => s + x.revenue_at_risk, 0);
   const dataset = {
-    task: 'xborder_restock', fetchedAt: new Date().toISOString(), params: ctx.params || {},
+    task: job.task || 'xborder_restock', fetchedAt: new Date().toISOString(), params: ctx.params || {},
     extra: {
       title: '多站点库存补货',
       columns: ['sku', 'site', 'name', 'stock', 'in_transit', 'daily_sales', 'cover_days', 'lead_time', 'reorder_qty', 'severity', 'revenue_at_risk', 'action'],

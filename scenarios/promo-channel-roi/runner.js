@@ -37,7 +37,7 @@ async function runJob(job, ctx) {
   const cut = out.filter((x) => x.severity === 'P1');
   const scale = out.filter((x) => x.action === '加预算');
   const dataset = {
-    task: 'promo_channel_roi', fetchedAt: new Date().toISOString(), params: ctx.params || {},
+    task: job.task || 'promo_channel_roi', fetchedAt: new Date().toISOString(), params: ctx.params || {},
     extra: {
       title: '渠道 ROI 与预算再分配',
       columns: ['channel', 'spend', 'revenue', 'roas', 'roi', 'cac', 'ctr', 'cvr', 'leads', 'orders', 'severity', 'action'],

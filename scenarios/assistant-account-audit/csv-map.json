@@ -1,0 +1,6 @@
+{
+  "list": "rows",
+  "numbers": ["password_age_days", "last_login_days"],
+  "booleans": ["admin", "two_factor", "shared"],
+  "arrays": []
+}

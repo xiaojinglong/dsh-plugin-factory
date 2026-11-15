@@ -1,0 +1,6 @@
+{
+  "list": "rows",
+  "numbers": ["spend", "impressions", "clicks", "leads", "orders", "revenue"],
+  "booleans": [],
+  "arrays": []
+}
