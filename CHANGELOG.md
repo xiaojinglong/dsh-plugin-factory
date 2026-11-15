@@ -29,10 +29,11 @@
 - M5 分发：`install-from-release.cjs`（校验 SHA-256 + 安全解包）、`docs/30-交付说明与验收索引.md`。
 - M1：安装器新增 `repair`（重放 render/注入/dshskills，幂等；无状态报错）。
 - M3：probe HTTP 对 429/5xx 自动重试（默认 2 次，指数退避），提升真实数据源可靠性。
-- 验证：**78/78** 测试。
+- M1：`deps-check`（Node/依赖/Playwright 浏览器/关键文件，`--fix` 仅打印命令）；`docs/31-依赖检查.md`。
+- 验证：**79/79** 测试。
 
 ### 验证
-- 干净克隆（M0/M1/M2/M3/M4 分支）分别 22/28/44/58/**77** 测试全绿；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP；`npm audit` 0。
+- 干净克隆（M0/M1/M2/M3/M4 分支）分别 22/28/44/58/**79** 测试全绿；`doctor --health` 全绿（warn 1 legacy）；12 服务 UP；`npm audit` 0。
 - 已知未完成：M1 依赖/真实机器、M2 真实 DSH UAT、M3 真实 probe/业务实现/编排、M4–M6；许可证与开源脱敏待 owner 确认；legacy 迁移脚本仍含旧绝对路径（不在产品路径）。
 
 

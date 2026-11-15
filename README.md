@@ -47,7 +47,7 @@ D:\www\dsh-plugin-factory\
 │   ├── factory\bootstrap.js   插件启动入口（env + DPAPI 注入）
 │   ├── manifests\<id>.json    12 个插件的单一事实源（仓库相对路径）
 │   ├── secrets\<id>.enc       DPAPI 加密凭证
-│   └── tests\                 78 个测试（M1 安装/卸载/回滚/repair + 控制面 + MCP + 生成/沙箱/浏览器/probe 重试 + 安装/升级/accept + 发布/解包 + 运维/演练）
+│   └── tests\                 79 个测试（M1 安装/repair/依赖检查 + 控制面 + MCP + 生成/沙箱/浏览器/probe 重试 + 安装/升级/accept + 发布/解包 + 运维/演练）
 │
 ├── packages\config\           ★ 统一路径/环境解析（FACTORY_ROOT / FACTORY_DSH_*）
 ├── packages\sdk\              ★ 生成插件契约（zod PluginSpecSchema）

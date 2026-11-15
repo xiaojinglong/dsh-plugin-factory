@@ -1,8 +1,8 @@
 # STATUS-A — 生产级冲刺交付状态（A 单机版）
 
-> 更新时间：2026-11-15 12:4x（Asia/Shanghai）
-> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 流水线（58，**未合并 main**）；`feat/prod-a-m4` = M4/M5/M6（78，**未合并 main**）
-> 结论：**M0 100%；M1 ~65%；M2 ~95%（UAT 待 owner）；M3 ~98%；M4 ~60%；M5 ~40%；M6 ~75%。** 未完成项不冒充完成。
+> 更新时间：2026-11-15 13:1x（Asia/Shanghai）
+> 分支：`main` = M0（`7aad188`，22 测试）；`feat/prod-a-m1` = M1 部分（28）；`feat/prod-a-m2` = M2 代码完成（44）；`feat/prod-a-m3` = M3 流水线（58，**未合并 main**）；`feat/prod-a-m4` = M4/M5/M6（79，**未合并 main**）
+> 结论：**M0 100%；M1 ~70%；M2 ~95%（UAT 待 owner）；M3 ~98%；M4 ~60%；M5 ~40%；M6 ~75%。** 未完成项不冒充完成。
 
 ## 1. 总体完成度（按 PLAN-A 里程碑）
 
@@ -140,7 +140,7 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 
 | 项 | 状态 | 原因 / 下一步 |
 |---|---|---|
-| M1 安装器 + DSH 自动配置 | 🟡 部分（~65%） | 安装/卸载/回滚/`repair` 已通；剩余：依赖自动准备、真实干净机 DSH 验收、打包签名 |
+| M1 安装器 + DSH 自动配置 | 🟡 部分（~70%） | 安装/卸载/回滚/`repair`/依赖检查已通；剩余：依赖自动安装、真实干净机 DSH 验收、打包签名 |
 | M2 本地控制面 + factory-agent | ✅ 代码完成（~95%） | 安装器注入/全链路测试已完成；仅真实 DSH UAT 待 owner 一键执行 |
 | M3 生成流水线 | 🟡 ~97% | probe/iframe/登录检测/业务 runner+write_runner/生成/校验/staging/报告/编排/沙箱/金标/失败建议已通；DSH 端到端 UAT、自动修复未完成 |
 | M4 验收/安装 | 🟡 ~60% | accept + install/uninstall/rollback/upgrade/list/verify/render/preflight/兼容性已通；真实 DSH 安装/UAT、签名未完成 |
