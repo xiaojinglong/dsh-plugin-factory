@@ -4,27 +4,27 @@
     "jobs": 20,
     "done": 20,
     "failed": 0,
-    "ms": 2419
+    "ms": 2452
   },
   {
     "id": "xborder-restock",
     "jobs": 20,
     "done": 20,
     "failed": 0,
-    "ms": 2290
+    "ms": 2526
   },
   {
     "id": "promo-channel-roi",
     "jobs": 20,
     "done": 20,
     "failed": 0,
-    "ms": 2509
+    "ms": 2614
   },
   {
     "id": "assistant-account-audit",
     "jobs": 20,
     "done": 20,
     "failed": 0,
-    "ms": 3222
+    "ms": 2341
   }
 ]
