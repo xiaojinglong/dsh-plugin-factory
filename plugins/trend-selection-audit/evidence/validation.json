@@ -1,0 +1,206 @@
+{
+  "validatedAt": "2026-11-15T06:23:54.334Z",
+  "ok": true,
+  "spec": {
+    "id": "trend-selection-audit",
+    "version": "0.1.0",
+    "name": "趋势选品审计",
+    "type": "file",
+    "runtimeRange": "^3.2",
+    "owner": "local",
+    "taskType": "trend_selection_audit",
+    "paramsSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "permissions": {
+      "write": false,
+      "network": [],
+      "browser": false
+    },
+    "service": {
+      "entry": "server.js",
+      "runner": "runner.js"
+    },
+    "mcp": {
+      "serverName": "trend-selection-audit"
+    },
+    "skill": {
+      "name": "trend-selection-audit"
+    },
+    "report": {
+      "generator": "gen-report.mjs"
+    }
+  },
+  "manifest": {
+    "id": "trend-selection-audit",
+    "name": "趋势选品审计",
+    "type": "file",
+    "version": "0.1.0",
+    "port": 60180,
+    "taskType": "trend_selection_audit",
+    "serverName": "trend-selection-audit",
+    "service": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115062350_ea9449\\trend-selection-audit\\service",
+      "entry": "server.js",
+      "runner": "runner.js",
+      "dataDir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115062350_ea9449\\trend-selection-audit\\service\\data",
+      "startCmd": [
+        "node",
+        [
+          "server.js"
+        ]
+      ]
+    },
+    "runtime": {
+      "write": false,
+      "retentionDays": 1,
+      "token": true,
+      "toolTimeoutMs": 60000,
+      "serviceToken": "087fd4a04d2447fffda19c92aab4b575"
+    },
+    "mcp": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115062350_ea9449\\trend-selection-audit\\mcp"
+    },
+    "skill": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115062350_ea9449\\trend-selection-audit\\skills\\trend-selection-audit"
+    },
+    "report": {
+      "generator": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115062350_ea9449\\trend-selection-audit\\gen-report.mjs",
+      "output": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115062350_ea9449\\trend-selection-audit\\report\\trend-selection-audit-report.html"
+    },
+    "secrets": [],
+    "legacy": false
+  },
+  "checks": [
+    {
+      "name": "schema:plugin.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "exists:service/server.js",
+      "ok": true,
+      "detail": "service/server.js"
+    },
+    {
+      "name": "exists:service/runner.js",
+      "ok": true,
+      "detail": "service/runner.js"
+    },
+    {
+      "name": "exists:mcp/index.js",
+      "ok": true,
+      "detail": "mcp/index.js"
+    },
+    {
+      "name": "exists:mcp/config.json",
+      "ok": true,
+      "detail": "mcp/config.json"
+    },
+    {
+      "name": "exists:skill",
+      "ok": true,
+      "detail": "skills\\trend-selection-audit\\SKILL.md"
+    },
+    {
+      "name": "exists:report",
+      "ok": true,
+      "detail": "gen-report.mjs"
+    },
+    {
+      "name": "exists:fixture",
+      "ok": true,
+      "detail": "fixtures/data.json"
+    },
+    {
+      "name": "mcp:port",
+      "ok": true,
+      "detail": "manifest=60180"
+    },
+    {
+      "name": "skill:name",
+      "ok": true,
+      "detail": "trend-selection-audit"
+    },
+    {
+      "name": "syntax:service/server.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:service/runner.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:mcp/index.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:mcp/smoke.cjs",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:gen-report.mjs",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "sandbox:service",
+      "ok": true,
+      "detail": "node --permission（只读仓库/staging，只写 staging）"
+    },
+    {
+      "name": "staging:health",
+      "ok": true,
+      "detail": "id=trend-selection-audit"
+    },
+    {
+      "name": "staging:submit",
+      "ok": true,
+      "detail": "status=202"
+    },
+    {
+      "name": "staging:done",
+      "ok": true,
+      "detail": "status=done "
+    },
+    {
+      "name": "staging:result",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "staging:dataset",
+      "ok": true,
+      "detail": "task=trend_selection_audit rows=5"
+    },
+    {
+      "name": "sandbox:report",
+      "ok": true,
+      "detail": "node --permission"
+    },
+    {
+      "name": "staging:report",
+      "ok": true,
+      "detail": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115062350_ea9449\\trend-selection-audit\\report\\trend-selection-audit-report.html"
+    }
+  ],
+  "errors": [],
+  "datasetPath": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115062350_ea9449\\trend-selection-audit\\service\\data\\jobs\\20261115062353-fc44\\trend_selection_audit_dataset.json",
+  "reportPath": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115062350_ea9449\\trend-selection-audit\\report\\trend-selection-audit-report.html",
+  "rows": 5,
+  "stderr": "(node:14428) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

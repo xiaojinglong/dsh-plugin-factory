@@ -1,0 +1,119 @@
+{
+  "generatedAt": "2026-11-15T06:23:52.027Z",
+  "template": "m3-fixture-v1",
+  "runnerKind": "custom",
+  "runnerWarnings": [
+    "包含网络访问：需在 permissions.network 声明并走 allowlist"
+  ],
+  "spec": {
+    "id": "trend-selection-audit",
+    "version": "0.1.0",
+    "name": "趋势选品审计",
+    "type": "file",
+    "runtimeRange": "^3.2",
+    "owner": "local",
+    "taskType": "trend_selection_audit",
+    "paramsSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "permissions": {
+      "write": false,
+      "network": [],
+      "browser": false
+    },
+    "service": {
+      "entry": "server.js",
+      "runner": "runner.js"
+    },
+    "mcp": {
+      "serverName": "trend-selection-audit"
+    },
+    "skill": {
+      "name": "trend-selection-audit"
+    },
+    "report": {
+      "generator": "gen-report.mjs"
+    }
+  },
+  "manifest": {
+    "id": "trend-selection-audit",
+    "name": "趋势选品审计",
+    "type": "file",
+    "version": "0.1.0",
+    "port": 60180,
+    "taskType": "trend_selection_audit",
+    "serverName": "trend-selection-audit",
+    "service": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115062350_ea9449\\trend-selection-audit\\service",
+      "entry": "server.js",
+      "runner": "runner.js",
+      "dataDir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115062350_ea9449\\trend-selection-audit\\service\\data",
+      "startCmd": [
+        "node",
+        [
+          "server.js"
+        ]
+      ]
+    },
+    "runtime": {
+      "write": false,
+      "retentionDays": 1,
+      "token": true,
+      "toolTimeoutMs": 60000,
+      "serviceToken": "087fd4a04d2447fffda19c92aab4b575"
+    },
+    "mcp": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115062350_ea9449\\trend-selection-audit\\mcp"
+    },
+    "skill": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115062350_ea9449\\trend-selection-audit\\skills\\trend-selection-audit"
+    },
+    "report": {
+      "generator": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115062350_ea9449\\trend-selection-audit\\gen-report.mjs",
+      "output": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115062350_ea9449\\trend-selection-audit\\report\\trend-selection-audit-report.html"
+    },
+    "secrets": [],
+    "legacy": false
+  },
+  "checks": [
+    {
+      "name": "syntax:service/server.js",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:service/runner.js",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:mcp/index.js",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:mcp/smoke.cjs",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:gen-report.mjs",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "schema:plugin.json",
+      "ok": true
+    }
+  ]
+}
