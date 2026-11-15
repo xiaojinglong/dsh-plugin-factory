@@ -47,7 +47,7 @@ function runOne(id, data) {
 const results = [];
 for (const id of IDS) {
   const base = JSON.parse(fs.readFileSync(path.join(ROOT, 'scenarios', id, 'fixture.json'), 'utf8'));
-  for (const n of [1000, 5000, 50000]) {
+  for (const n of [1000, 5000, 50000, 100000]) {
     const data = scale(id, base, n);
     const before = process.memoryUsage().heapUsed;
     const t0 = performance.now();

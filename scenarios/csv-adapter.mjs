@@ -39,6 +39,10 @@ export function parseCsv(text) {
 }
 
 function cast(rec, map) {
+  return castRecord(rec, map);
+}
+
+export function castRecord(rec, map) {
   const out = {};
   for (const [k, raw] of Object.entries(rec)) {
     let v = raw;

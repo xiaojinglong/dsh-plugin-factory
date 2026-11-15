@@ -2,92 +2,122 @@
   {
     "id": "hr-resume-screen",
     "rows": 1000,
-    "ms": 21,
+    "ms": 24,
     "heapMb": 2
   },
   {
     "id": "hr-resume-screen",
     "rows": 5000,
-    "ms": 54,
+    "ms": 58,
     "heapMb": 7
   },
   {
     "id": "hr-resume-screen",
     "rows": 50000,
-    "ms": 441,
+    "ms": 485,
     "heapMb": 84
+  },
+  {
+    "id": "hr-resume-screen",
+    "rows": 100000,
+    "ms": 937,
+    "heapMb": 153
   },
   {
     "id": "xborder-restock",
     "rows": 1000,
-    "ms": 34,
-    "heapMb": -11
+    "ms": 43,
+    "heapMb": -164
   },
   {
     "id": "xborder-restock",
     "rows": 5000,
-    "ms": 36,
+    "ms": 103,
     "heapMb": 11
   },
   {
     "id": "xborder-restock",
     "rows": 50000,
-    "ms": 328,
-    "heapMb": 53
+    "ms": 364,
+    "heapMb": 55
+  },
+  {
+    "id": "xborder-restock",
+    "rows": 100000,
+    "ms": 759,
+    "heapMb": 135
   },
   {
     "id": "admin-asset-audit",
     "rows": 1000,
-    "ms": 17,
+    "ms": 18,
     "heapMb": 4
   },
   {
     "id": "admin-asset-audit",
     "rows": 5000,
-    "ms": 57,
+    "ms": 61,
     "heapMb": 20
   },
   {
     "id": "admin-asset-audit",
     "rows": 50000,
-    "ms": 551,
-    "heapMb": -56
+    "ms": 594,
+    "heapMb": 51
+  },
+  {
+    "id": "admin-asset-audit",
+    "rows": 100000,
+    "ms": 1122,
+    "heapMb": 155
   },
   {
     "id": "cs-ticket-triage",
     "rows": 1000,
-    "ms": 17,
-    "heapMb": 4
+    "ms": 47,
+    "heapMb": -412
   },
   {
     "id": "cs-ticket-triage",
     "rows": 5000,
-    "ms": 61,
+    "ms": 77,
     "heapMb": 19
   },
   {
     "id": "cs-ticket-triage",
     "rows": 50000,
-    "ms": 520,
-    "heapMb": 63
+    "ms": 601,
+    "heapMb": 67
+  },
+  {
+    "id": "cs-ticket-triage",
+    "rows": 100000,
+    "ms": 1144,
+    "heapMb": 153
   },
   {
     "id": "dev-repo-audit",
     "rows": 1000,
-    "ms": 11,
+    "ms": 16,
     "heapMb": 3
   },
   {
     "id": "dev-repo-audit",
     "rows": 5000,
-    "ms": 35,
+    "ms": 45,
     "heapMb": 13
   },
   {
     "id": "dev-repo-audit",
     "rows": 50000,
-    "ms": 314,
-    "heapMb": 41
+    "ms": 369,
+    "heapMb": 43
+  },
+  {
+    "id": "dev-repo-audit",
+    "rows": 100000,
+    "ms": 730,
+    "heapMb": 150
   },
   {
     "id": "seo-content-preflight",
@@ -98,67 +128,91 @@
   {
     "id": "seo-content-preflight",
     "rows": 5000,
-    "ms": 54,
+    "ms": 52,
     "heapMb": 19
   },
   {
     "id": "seo-content-preflight",
     "rows": 50000,
-    "ms": 479,
-    "heapMb": 106
+    "ms": 539,
+    "heapMb": -490
+  },
+  {
+    "id": "seo-content-preflight",
+    "rows": 100000,
+    "ms": 1121,
+    "heapMb": 205
   },
   {
     "id": "opt-keyword-gap",
     "rows": 1000,
-    "ms": 11,
+    "ms": 12,
     "heapMb": 2
   },
   {
     "id": "opt-keyword-gap",
     "rows": 5000,
-    "ms": 51,
-    "heapMb": -73
+    "ms": 32,
+    "heapMb": 11
   },
   {
     "id": "opt-keyword-gap",
     "rows": 50000,
-    "ms": 291,
-    "heapMb": 59
+    "ms": 307,
+    "heapMb": 22
+  },
+  {
+    "id": "opt-keyword-gap",
+    "rows": 100000,
+    "ms": 628,
+    "heapMb": 54
   },
   {
     "id": "promo-channel-roi",
     "rows": 1000,
-    "ms": 11,
+    "ms": 12,
     "heapMb": 2
   },
   {
     "id": "promo-channel-roi",
     "rows": 5000,
-    "ms": 31,
+    "ms": 36,
     "heapMb": 10
   },
   {
     "id": "promo-channel-roi",
     "rows": 50000,
-    "ms": 265,
-    "heapMb": 14
+    "ms": 267,
+    "heapMb": 21
+  },
+  {
+    "id": "promo-channel-roi",
+    "rows": 100000,
+    "ms": 565,
+    "heapMb": -338
   },
   {
     "id": "assistant-account-audit",
     "rows": 1000,
-    "ms": 13,
+    "ms": 12,
     "heapMb": 3
   },
   {
     "id": "assistant-account-audit",
     "rows": 5000,
-    "ms": 37,
-    "heapMb": 14
+    "ms": 42,
+    "heapMb": -60
   },
   {
     "id": "assistant-account-audit",
     "rows": 50000,
-    "ms": 355,
-    "heapMb": -22
+    "ms": 332,
+    "heapMb": 48
+  },
+  {
+    "id": "assistant-account-audit",
+    "rows": 100000,
+    "ms": 700,
+    "heapMb": 24
   }
 ]
