@@ -1,0 +1,187 @@
+{
+  "validatedAt": "2026-11-15T14:00:29.547Z",
+  "ok": true,
+  "spec": {
+    "id": "api-status-mark",
+    "version": "0.1.0",
+    "name": "API 订单状态标记",
+    "type": "api",
+    "effect": "write",
+    "outputs": [
+      "dataset",
+      "receipt",
+      "audit"
+    ],
+    "runtimeRange": "^3.2",
+    "owner": "local",
+    "taskType": "api_status_mark",
+    "paramsSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "permissions": {
+      "write": true,
+      "network": [],
+      "browser": false
+    },
+    "service": {
+      "entry": "server.js",
+      "runner": "runner.js"
+    },
+    "mcp": {
+      "serverName": "api-status-mark"
+    },
+    "skill": {
+      "name": "api-status-mark"
+    },
+    "report": {}
+  },
+  "manifest": {
+    "id": "api-status-mark",
+    "name": "API 订单状态标记",
+    "type": "api",
+    "version": "0.1.0",
+    "port": 56834,
+    "taskType": "api_status_mark",
+    "serverName": "api-status-mark",
+    "service": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115140027_086a03\\api-status-mark\\service",
+      "entry": "server.js",
+      "runner": "runner.js",
+      "dataDir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115140027_086a03\\api-status-mark\\service\\data",
+      "startCmd": [
+        "node",
+        [
+          "server.js"
+        ]
+      ]
+    },
+    "runtime": {
+      "write": true,
+      "retentionDays": 1,
+      "token": true,
+      "toolTimeoutMs": 60000,
+      "serviceToken": "35c042ba7677f42040255a284f1c0641"
+    },
+    "mcp": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115140027_086a03\\api-status-mark\\mcp"
+    },
+    "skill": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115140027_086a03\\api-status-mark\\skills\\api-status-mark"
+    },
+    "report": null,
+    "secrets": [],
+    "legacy": false
+  },
+  "checks": [
+    {
+      "name": "schema:plugin.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "exists:service/server.js",
+      "ok": true,
+      "detail": "service/server.js"
+    },
+    {
+      "name": "exists:service/runner.js",
+      "ok": true,
+      "detail": "service/runner.js"
+    },
+    {
+      "name": "exists:mcp/index.js",
+      "ok": true,
+      "detail": "mcp/index.js"
+    },
+    {
+      "name": "exists:mcp/config.json",
+      "ok": true,
+      "detail": "mcp/config.json"
+    },
+    {
+      "name": "exists:skill",
+      "ok": true,
+      "detail": "skills\\api-status-mark\\SKILL.md"
+    },
+    {
+      "name": "exists:fixture",
+      "ok": true,
+      "detail": "fixtures/data.json"
+    },
+    {
+      "name": "mcp:port",
+      "ok": true,
+      "detail": "manifest=56834"
+    },
+    {
+      "name": "skill:name",
+      "ok": true,
+      "detail": "api-status-mark"
+    },
+    {
+      "name": "syntax:service/server.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:service/runner.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:mcp/index.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "syntax:mcp/smoke.cjs",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "sandbox:service",
+      "ok": true,
+      "detail": "node --permission（只读仓库/staging，只写 staging）"
+    },
+    {
+      "name": "staging:health",
+      "ok": true,
+      "detail": "id=api-status-mark"
+    },
+    {
+      "name": "staging:submit",
+      "ok": true,
+      "detail": "status=202"
+    },
+    {
+      "name": "staging:done",
+      "ok": true,
+      "detail": "status=done "
+    },
+    {
+      "name": "staging:result",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "staging:dataset",
+      "ok": true,
+      "detail": "task=api_status_mark rows=4"
+    }
+  ],
+  "errors": [],
+  "datasetPath": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115140027_086a03\\api-status-mark\\service\\data\\jobs\\20261115140028-5f82\\api_status_mark_audit.json",
+  "reportPath": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115140027_086a03\\api-status-mark\\report\\api-status-mark-report.html",
+  "rows": 4,
+  "stderr": "(node:11476) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

@@ -1,0 +1,17 @@
+{
+  "requestId": "req_20261115140027_086a03",
+  "total": 4,
+  "calls": 4,
+  "artifacts": [
+    {
+      "kind": "receipt",
+      "file": "api_status_receipt.json",
+      "exists": true
+    },
+    {
+      "kind": "main",
+      "file": "api_status_mark_audit.json",
+      "exists": true
+    }
+  ]
+}

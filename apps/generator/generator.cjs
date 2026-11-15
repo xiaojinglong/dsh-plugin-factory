@@ -283,7 +283,9 @@ async function validateDir(dir, opts = {}) {
     add('staging:health', !!h && h.ok === true, h ? `id=${h.id}` : stderr.slice(0, 300));
     if (!h) throw new Error('生成服务未通过 health');
     const token = manifest.runtime.serviceToken;
-    const sub = await jpost(port, '/jobs', { params: { limit: 2 } }, token);
+    const stagingParams = { limit: 2 };
+    if (['write', 'message', 'mixed'].includes(spec.effect)) stagingParams.dry_run = true;
+    const sub = await jpost(port, '/jobs', { params: stagingParams }, token);
     add('staging:submit', sub.status === 202, `status=${sub.status}`);
     if (sub.status !== 202) throw new Error(`submit 失败：${sub.status}`);
     let final = null;

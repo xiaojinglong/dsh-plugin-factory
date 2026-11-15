@@ -1,0 +1,115 @@
+{
+  "generatedAt": "2026-11-15T14:00:27.740Z",
+  "template": "m3-fixture-v1",
+  "runnerKind": "custom",
+  "runnerWarnings": [
+    "包含网络访问：需在 permissions.network 声明并走 allowlist"
+  ],
+  "spec": {
+    "id": "api-status-mark",
+    "version": "0.1.0",
+    "name": "API 订单状态标记",
+    "type": "api",
+    "effect": "write",
+    "outputs": [
+      "dataset",
+      "receipt",
+      "audit"
+    ],
+    "runtimeRange": "^3.2",
+    "owner": "local",
+    "taskType": "api_status_mark",
+    "paramsSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "permissions": {
+      "write": true,
+      "network": [],
+      "browser": false
+    },
+    "service": {
+      "entry": "server.js",
+      "runner": "runner.js"
+    },
+    "mcp": {
+      "serverName": "api-status-mark"
+    },
+    "skill": {
+      "name": "api-status-mark"
+    },
+    "report": {}
+  },
+  "manifest": {
+    "id": "api-status-mark",
+    "name": "API 订单状态标记",
+    "type": "api",
+    "version": "0.1.0",
+    "port": 56834,
+    "taskType": "api_status_mark",
+    "serverName": "api-status-mark",
+    "service": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115140027_086a03\\api-status-mark\\service",
+      "entry": "server.js",
+      "runner": "runner.js",
+      "dataDir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115140027_086a03\\api-status-mark\\service\\data",
+      "startCmd": [
+        "node",
+        [
+          "server.js"
+        ]
+      ]
+    },
+    "runtime": {
+      "write": true,
+      "retentionDays": 1,
+      "token": true,
+      "toolTimeoutMs": 60000,
+      "serviceToken": "35c042ba7677f42040255a284f1c0641"
+    },
+    "mcp": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115140027_086a03\\api-status-mark\\mcp"
+    },
+    "skill": {
+      "dir": "D:\\www\\dsh-plugin-factory\\data\\generator\\runs\\req_20261115140027_086a03\\api-status-mark\\skills\\api-status-mark"
+    },
+    "report": null,
+    "secrets": [],
+    "legacy": false
+  },
+  "checks": [
+    {
+      "name": "syntax:service/server.js",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:service/runner.js",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:mcp/index.js",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "syntax:mcp/smoke.cjs",
+      "ok": true,
+      "error": ""
+    },
+    {
+      "name": "schema:plugin.json",
+      "ok": true
+    }
+  ]
+}

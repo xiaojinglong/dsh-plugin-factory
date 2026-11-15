@@ -1,0 +1,9 @@
+{
+  "rows": [
+    { "id": "SO-2001", "sku": "SKU-1", "amount": 120, "status": "pending" },
+    { "id": "SO-2002", "sku": "SKU-2", "amount": 35, "status": "pending" },
+    { "id": "SO-2003", "sku": "SKU-3", "amount": 80, "status": "shipped" },
+    { "id": "SO-2004", "sku": "SKU-4", "amount": 250, "status": "pending" },
+    { "id": "SO-2005", "sku": "SKU-5", "amount": 10, "status": "pending" }
+  ]
+}
