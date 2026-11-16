@@ -120,6 +120,19 @@ npm install --omit=dev --ignore-scripts
 
 生成器注入到 `lib/connectors/`；`desktop` 强制要求 `permissions.process`。
 
+### 桌面录制/回放
+
+```powershell
+npm run record -- --seconds 30 --name wechat-flow
+npm run replay -- --file data/recordings/wechat-flow.json --dry-run
+npm run replay -- --file data/recordings/wechat-flow.json
+```
+
+- 录制鼠标移动/左右键/部分键盘事件/前台窗口标题
+- JSON 事件带时间戳
+- 回放前先校验格式；`--dry-run` 只校验
+- 这是入口能力，不是高可靠 RPA：不含图像识别、控件定位、失败恢复
+
 ### 干净安装验证
 
 `npm run verify:clean`：

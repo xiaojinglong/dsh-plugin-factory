@@ -14,6 +14,8 @@
     "benchmark": "node benchmarks/run.cjs",
     "verify:clean": "node scripts/verify-clean-install.cjs",
     "catalog": "node scripts/plugin-catalog.cjs build",
+    "record": "node scripts/desktop-record.cjs",
+    "replay": "node scripts/desktop-replay.cjs",
     "setup": "node install.cjs",
     "start": "node scripts/start-factory.cjs",
     "stop": "node scripts/stop-factory.cjs",
