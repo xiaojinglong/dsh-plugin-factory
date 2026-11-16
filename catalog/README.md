@@ -19,6 +19,22 @@ catalog/plugins.json
 - tools
 - installed
 - zip / requestId
+- sha256 / size
+
+安装前校验：
+
+```powershell
+npm run catalog:install -- --id weixin-xiaopang --dry-run
+npm run catalog:install -- --id weixin-xiaopang
+```
+
+远程目录同一格式：
+
+```powershell
+npm run catalog:install -- --id demo --catalog https://example.com/plugins.json
+```
+
+远程 entry 的 `zip` 可以是相对 URL；安装器会下载到临时目录、校验 SHA-256、再安装。
 
 后续远程市场需要：
 

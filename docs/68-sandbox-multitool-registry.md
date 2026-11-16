@@ -120,6 +120,12 @@ npm install --omit=dev --ignore-scripts
 
 生成器注入到 `lib/connectors/`；`desktop` 强制要求 `permissions.process`。
 
+### 本地/远程目录
+
+`npm run catalog` 生成带 SHA-256 的目录；`npm run catalog:install -- --id <id> [--catalog <file|url>]` 校验后安装。
+
+远程目录格式相同：`zip` 可为相对 URL，安装器下载到临时目录、校验 SHA-256、再调用 dsh-factory。
+
 ### 桌面录制/回放
 
 ```powershell

@@ -3,6 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const registry = require('../packages/plugin-registry');
+const { withChecksum } = require('../packages/catalog');
 
 const ROOT = path.resolve(__dirname, '..');
 const DIR = path.join(ROOT, 'catalog');
@@ -19,7 +20,7 @@ function build() {
   const catalog = {
     generatedAt: new Date().toISOString(),
     count: rows.length,
-    plugins: rows.map((r) => ({
+    plugins: rows.map((r) => withChecksum({
       id: r.id, version: r.version, tools: r.tools, installed: r.installed,
       zip: r.zip, requestId: r.requestId, at: r.at,
     })),
