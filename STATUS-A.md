@@ -171,7 +171,7 @@ npm.cmd test                   → tests 22 / pass 22 / fail 0
 - **MCP Bundle P1**：`export-mcp-bundle.cjs` 支持单插件/全量导出，bundle 结构经测试；POC 已验证安装/激活/真实任务/卸载（`docs/49`、`docs/50`）。
 - **MCP Bundle P2**：`bundle-mode enable/disable` + marker；render/installer/doctor 跳过 bundle-managed 插件；真实迁移/回滚演练通过（`docs/51`）。
 - **MCP Bundle P3**：enable 预检 profile bundle/部署文件/服务健康，失败自动回滚；未装 bundle 直接拒绝（`docs/52`）。
-- **Portable Excel**：原生 Host bundle 安装/调用通过；`export-plugin.cjs` 一键导出 zip + checksum + 禁止项扫描（`docs/55/56`）。
+- **Portable 干净安装**：zip 从工厂外目录安装成功；依赖 vendoring 解决 link 不装依赖问题；`excel_status_mark` 真实处理 6 行（`docs/57`）。
 - 插件总数 **30**；测试 **113/113**；`doctor --health` 全绿（仅 legacy 1 warn）。
 - 岗位矩阵与规则说明：`docs/39-岗位场景插件矩阵.md`；压测/CSV/API/1M：`docs/40-场景压测与二期优化.md`。
 - 剩余：真实业务 API/ERP、长时间运行、浏览器类并发、跨岗位审批流。

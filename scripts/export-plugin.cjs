@@ -7,6 +7,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const { spawnSync } = require('node:child_process');
 const AdmZip = require('adm-zip');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -35,6 +36,22 @@ fs.cpSync(src, staging, {
   filter: (p) => !/[\\/](node_modules|dist|\.git)([\\/]|$)/.test(p),
 });
 
+// 本地目录安装是 link，不会安装依赖；导出时把生产依赖 vendoring 进包，保证 zip 自包含。
+if (args['no-deps'] !== 'true') {
+  const win = process.platform === 'win32';
+  const cmd = win ? process.env.ComSpec : 'npm';
+  const cmdArgs = win
+    ? ['/d', '/s', '/c', 'npm.cmd install --omit=dev --ignore-scripts --no-audit --no-fund']
+    : ['install', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'];
+  const dep = spawnSync(cmd, cmdArgs, { cwd: staging, encoding: 'utf8', timeout: 300000 });
+  if (dep.status !== 0) {
+    console.error(`[export] 依赖安装失败：${(dep.stderr || dep.stdout || dep.error?.message || '').slice(-800)}`);
+    process.exit(1);
+  }
+  // 安装器生成的 lock 可能带本机路径；vendored zip 不需要它。
+  fs.rmSync(path.join(staging, 'package-lock.json'), { force: true });
+}
+
 const FORBIDDEN = [
   { name: 'FACTORY_ROOT', re: /FACTORY_ROOT/ },
   { name: 'serviceToken', re: /serviceToken/ },
@@ -45,6 +62,7 @@ const FORBIDDEN = [
 const findings = [];
 function walk(dir) {
   for (const name of fs.readdirSync(dir)) {
+    if (name === 'node_modules') continue; // 第三方依赖不参与第一方禁止项扫描
     const p = path.join(dir, name);
     const st = fs.statSync(p);
     if (st.isDirectory()) { walk(p); continue; }
