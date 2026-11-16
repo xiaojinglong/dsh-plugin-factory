@@ -19,6 +19,7 @@ const { generate, validateDir } = require('./generator.cjs');
 const { generatePortable, validatePortable } = require('./portable.cjs');
 
 const ROOT = config.FACTORY_ROOT;
+const DEFAULT_TARGET = 'portable-host';
 
 function api(baseUrl, token) {
   const headers = { 'content-type': 'application/json', authorization: `Bearer ${token}` };
@@ -79,7 +80,7 @@ async function runPipeline({ baseUrl = 'http://127.0.0.1:8780', token, requestId
     }
   }
 
-  const portable = String(p.target || 'portable-host') === 'portable-host';
+  const portable = String(p.target || DEFAULT_TARGET) === 'portable-host';
   evidence.probe = await step('probe', async () => {
     const r = (p.fixture || portable)
       ? (p.fixture ? await probe(p) : { kind: 'portable', source: 'generated', rows: 0 })
@@ -172,4 +173,4 @@ async function main() {
 
 if (require.main === module) main();
 
-module.exports = { runPipeline, api };
+module.exports = { runPipeline, api, DEFAULT_TARGET };

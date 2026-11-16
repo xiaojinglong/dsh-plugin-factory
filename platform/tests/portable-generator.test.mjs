@@ -9,6 +9,11 @@ import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const { generatePortable, validatePortable } = require(path.join(ROOT, 'apps', 'generator', 'portable.cjs'));
+const { DEFAULT_TARGET } = require(path.join(ROOT, 'apps', 'generator', 'pipeline.cjs'));
+
+test('新插件默认 target 是 portable-host', () => {
+  assert.equal(DEFAULT_TARGET, 'portable-host');
+});
 
 test('portable-host 生成器：标准 bundle + 校验通过', async () => {
   const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-gen-')), 'demo-portable');
