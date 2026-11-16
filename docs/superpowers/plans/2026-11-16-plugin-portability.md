@@ -1,5 +1,9 @@
 # 插件工厂通用化改造计划
 
+> **2026-11-16 范围更新：** 30 个旧插件不迁移，冻结在 T0，仅保证现有安装/使用；Task 10 取消，其余任务按计划执行。
+>
+> **2026-11-16 Task 1 结果：** Host bundle 安装/激活成功，`portable_ping` 返回 `portable-ok`。安装版 DSH 中 `@deepseek-ai/dsh-tools` 不可解析，零依赖 `ctx.tools.register({...})` 可用；portable bundle 不得无声明 import 该包。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 让插件工厂产出的插件真正可插拔：同一工厂、另一台工厂机器、只有 DSH 的机器、公开下载、一条命令安装，并完成 30 个旧插件迁移。
@@ -207,13 +211,11 @@ assert.match(patch, /name: "@local\/portable-host-spike"/);
 `index.js`：
 
 ```js
-import { defineTool } from '@deepseek-ai/dsh-tools'
-
 export const name = 'portable-host-spike'
 export const inject = ['tools']
 
 export function apply(ctx) {
-  ctx.tools.register(defineTool({
+  ctx.tools.register({
     name: 'portable_ping',
     description: 'Return a fixed portable bundle result.',
     parameters: {},
@@ -222,7 +224,7 @@ export function apply(ctx) {
       render: (_args, value) => [{ type: 'text', text: value }],
     },
     async execute() { return 'portable-ok' },
-  }))
+  })
 }
 ```
 

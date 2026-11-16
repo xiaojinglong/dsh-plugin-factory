@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Portable host spike",
+    "description": "A minimal DSH Host bundle that registers one in-process tool.",
+    "detail": "docs/DETAIL.md"
+  }
+}

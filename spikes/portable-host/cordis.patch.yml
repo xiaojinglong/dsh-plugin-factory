@@ -1,0 +1,3 @@
+- insert:
+    - id: portable-host-spike
+      name: "@local/portable-host-spike"
