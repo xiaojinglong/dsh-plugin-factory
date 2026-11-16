@@ -13,6 +13,8 @@
 > **2026-11-16 Task 8 结果：** 包名 `dsh-plugin-excel-status-mark` 安装/调用通过；导出 zip + checksum + scan；release-portable workflow 已加；详见 `docs/58`。
 >
 > **2026-11-16 Task 9 结果：** `dsh-factory.cjs install zip` 成功；`dsh plugin add` 自动写入 `dsh.profile.bundles`，`--dump-config` 命中；详见 `docs/59`。
+>
+> **2026-11-16 Skill 自动注册：** portable Host 使用 `ctx.skills.register` 自动注册；`skill` 工具加载成功；详见 `docs/60`。
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

@@ -18,8 +18,8 @@
 | 项 | 结果 |
 |---|---|
 | zip | `dist/excel-status-mark-0.1.0.zip` |
-| 大小 | 10,441,638 bytes |
-| sha256 | `428664eb6e44a7e5889a2e7e57f60253910365bd62a561b1f98759b083d9d591` |
+| 大小 | 10,441,905 bytes |
+| sha256 | `a527a368c1cf7b8cb1ef903552bed6d6fd4234fb038e3a2805b4d38828a63adb` |
 | node_modules | 随包存在，含 `exceljs` |
 | 安装 | `application: applied` |
 | 工具调用 | `excel_status_mark` 6 行、6 行变更 |

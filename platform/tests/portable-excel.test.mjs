@@ -19,3 +19,10 @@ test('portable excel-status-mark：标记 6 行且不改输入', async () => {
   assert.ok(fs.existsSync(output));
   assert.ok(fs.statSync(output).size > 0);
 });
+
+test('portable excel-status-mark：注册 skill 与 tool', () => {
+  const text = fs.readFileSync(path.join(ROOT, 'portable-plugins', 'excel-status-mark', 'index.js'), 'utf8');
+  assert.match(text, /ctx\.skills\.register/);
+  assert.match(text, /name: 'excel-status-mark'/);
+  assert.match(text, /ctx\.tools\.register/);
+});
