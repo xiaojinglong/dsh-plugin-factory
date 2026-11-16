@@ -17,7 +17,7 @@ test('render：Windows 路径写成正斜杠，YAML 可被 DSH 解析', () => {
   const tools = path.join(ROOT, 'deployment', 'tools');
   const r = spawnSync(process.execPath, [path.join(ROOT, 'platform', 'factory', 'cli.cjs'), 'render'], {
     cwd: ROOT, encoding: 'utf8', timeout: 120000,
-    env: { ...process.env, FACTORY_DSH_PATCH: patch, FACTORY_DSH_TOOLS: tools, FACTORY_DSH_REGISTRY: path.join(t, 'registry.md') },
+    env: { ...process.env, FACTORY_INCLUDE_TEST_PLUGINS: '1', FACTORY_DSH_PATCH: patch, FACTORY_DSH_TOOLS: tools, FACTORY_DSH_REGISTRY: path.join(t, 'registry.md') },
   });
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const text = fs.readFileSync(patch, 'utf8');
