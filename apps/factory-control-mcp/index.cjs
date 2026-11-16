@@ -13,6 +13,12 @@
 const { McpServer } = require('@modelcontextprotocol/sdk/server/mcp.js');
 const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio.js');
 const { z } = require('zod');
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+
+const ROOT = path.resolve(__dirname, '..', '..');
+const config = require(path.join(ROOT, 'packages', 'config'));
 
 const SERVER_NAME = 'factory-control';
 const SERVER_VERSION = '0.1.0';
@@ -49,6 +55,73 @@ server.registerTool('create_request', {
     idempotency_key: z.string().optional().describe('幂等键（≤120）'),
   },
 }, async ({ brief, params, idempotency_key }) => toText(await call('POST', '/requests', { brief, params }, idempotency_key ? { 'idempotency-key': idempotency_key } : {})));
+
+server.registerTool('create_plugin', {
+  title: '对话创建并导出 portable 插件',
+  description: '一条工具完成：创建需求 → pipeline 生成/校验/导出 zip → 验收 → 可选安装。DSH 根据用户自然语言工作流编写 implSource（ESM export execute(args)），用户不需要手写代码。',
+  inputSchema: {
+    brief: z.string().min(1).max(5000).describe('用户的工作流描述'),
+    pluginId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).describe('kebab-case 插件 id'),
+    name: z.string().min(1).max(100).describe('插件显示名'),
+    toolName: z.string().optional().describe('DSH 工具名，默认由 pluginId 转下划线'),
+    description: z.string().optional().describe('工具描述'),
+    fixture: z.string().optional().describe('可选 fixture 绝对路径；不传则用生成器示例数据'),
+    implSource: z.string().max(200000).optional().describe('可选 ESM 源码，必须 export async function execute(args)；不传则生成 fixture 行数统计样例'),
+    install: z.boolean().optional().default(true).describe('生成后是否安装到当前 DSH profile'),
+    profile: z.string().optional().describe('DSH profile，默认环境 DSH_PROFILE 或 desktop'),
+  },
+}, async ({ brief, pluginId, name, toolName, description, fixture, implSource, install, profile }) => {
+  const created = await call('POST', '/requests', {
+    brief,
+    params: {
+      pluginId, name, target: 'portable-host', toolName, description,
+      ...(fixture ? { fixture } : {}),
+      ...(implSource ? { implSource } : {}),
+    },
+  });
+  const requestId = created.request.id;
+  const pipeline = spawnSync(process.execPath, [path.join(ROOT, 'apps', 'generator', 'pipeline.cjs'), '--request', requestId], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    timeout: 600000,
+    env: { ...process.env, CONTROL_PLANE_TOKEN: TOKEN, CONTROL_PLANE_URL: BASE },
+  });
+  const output = `${pipeline.stdout || ''}\n${pipeline.stderr || ''}`;
+  if (pipeline.status !== 0) throw new Error(`pipeline 失败（exit=${pipeline.status}）：${output.slice(-1200)}`);
+  const match = output.match(/\{[\s\S]*\}\s*$/);
+  if (!match) throw new Error(`pipeline 未返回 JSON：${output.slice(-800)}`);
+  const summary = JSON.parse(match[0]);
+  await call('POST', `/requests/${encodeURIComponent(requestId)}/accept`, {
+    acceptedBy: 'dsh-agent', note: 'portable-host created via DSH natural language',
+  });
+  const staging = summary.evidence?.staging || '';
+  let zip = staging ? path.join(config.FACTORY_DATA_ROOT, staging) : '';
+  if (!zip || !fs.existsSync(zip)) {
+    const dist = path.join(config.FACTORY_DATA_ROOT, 'generator', 'runs', requestId, 'dist');
+    const found = fs.existsSync(dist) ? fs.readdirSync(dist).find((f) => f.endsWith('.zip')) : '';
+    if (found) zip = path.join(dist, found);
+  }
+  let installed = false;
+  let installOutput = '';
+  if (install) {
+    if (!zip || !fs.existsSync(zip)) throw new Error(`导出 zip 不存在：${zip || '(empty)'}`);
+    const profileName = profile || process.env.DSH_PROFILE || 'desktop';
+    const r = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'dsh-factory.cjs'), 'install', zip, '--profile', profileName], {
+      cwd: ROOT, encoding: 'utf8', timeout: 300000, env: { ...process.env },
+    });
+    installOutput = `${r.stdout || ''}${r.stderr || ''}`.slice(-1200);
+    installed = r.status === 0;
+    if (!installed) {
+      return toText({ ok: false, requestId, pluginId, zip, pluginDir: summary.pluginDir, installed: false, error: installOutput });
+    }
+  }
+  return toText({
+    ok: true, requestId, pluginId, toolName: toolName || pluginId.replace(/-/g, '_'),
+    zip, pluginDir: summary.pluginDir, installed, state: 'accepted',
+    next: installed ? '重启 DSH 后工具可见（或等待 HMR）' : '用 dsh-factory 安装 zip，然后重启 DSH',
+    installOutput: installOutput || undefined,
+  });
+});
 
 server.registerTool('get_request', {
   title: '查询需求单',

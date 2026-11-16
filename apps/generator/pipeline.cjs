@@ -104,7 +104,7 @@ async function runPipeline({ baseUrl = 'http://127.0.0.1:8780', token, requestId
       if (!v.ok) throw new Error(`portable 校验失败：${v.errors.join('; ')}`);
       return path.relative(dataRoot, path.join(out, 'evidence', 'validation.json')).split(path.sep).join('/');
     });
-    await step('staging', async () => {
+    evidence.staging = await step('staging', async () => {
       const v = await validatePortable(out);
       if (!v.ok) throw new Error(`portable staging 失败：${v.errors.join('; ')}`);
       const dist = path.join(runDir, 'dist');
