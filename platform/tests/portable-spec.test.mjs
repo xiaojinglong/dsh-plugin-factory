@@ -65,6 +65,14 @@ test('portable spec：多工具 handlers', async () => {
   assert.match(index, /name: "count_values"/);
 });
 
+test('portable spec：拒绝未白名单依赖', () => {
+  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-deps-')), 'dep-demo');
+  assert.throws(() => generatePortable({
+    id: 'dep-demo', name: 'Dep', out,
+    spec: { tools: [{ name: 'dep_demo' }], dependencies: { 'left-pad': '1.3.0' } },
+  }), /白名单/);
+});
+
 test('portable sandbox：用户代码在受限子进程执行', async () => {
   const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-sandbox-')), 'sandbox-demo');
   generatePortable({

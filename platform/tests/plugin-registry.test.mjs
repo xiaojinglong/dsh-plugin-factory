@@ -13,10 +13,13 @@ test('plugin registry：记录版本与安装状态', () => {
   delete require.cache[require.resolve('../../packages/config')];
   delete require.cache[require.resolve('../../packages/plugin-registry')];
   const registry = require('../../packages/plugin-registry');
-  registry.record({ id: 'demo', version: '0.1.0', requestId: 'req_1', tools: ['demo_tool'], installed: false, zip: 'x.zip' });
-  registry.record({ id: 'demo', version: '0.1.1', requestId: 'req_2', tools: ['demo_tool'], installed: true, zip: 'y.zip' });
+  registry.record({ id: 'demo', version: '0.1.0', requestId: 'req_1', tools: ['demo_tool'], installed: true, zip: path.join(data, 'x.zip') });
+  registry.record({ id: 'demo', version: '0.1.1', requestId: 'req_2', tools: ['demo_tool'], installed: true, zip: path.join(data, 'y.zip') });
+  fs.writeFileSync(path.join(data, 'x.zip'), 'x');
+  fs.writeFileSync(path.join(data, 'y.zip'), 'y');
   assert.equal(registry.history('demo').length, 2);
   assert.equal(registry.latest('demo').version, '0.1.1');
+  assert.equal(registry.previous('demo').version, '0.1.0');
   assert.ok(fs.existsSync(path.join(data, 'registry', 'plugins.json')));
   if (old === undefined) delete process.env.FACTORY_DATA_ROOT; else process.env.FACTORY_DATA_ROOT = old;
 });

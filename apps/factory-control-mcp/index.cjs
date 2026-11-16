@@ -153,6 +153,30 @@ server.registerTool('list_registry', {
   inputSchema: { id: z.string().optional().describe('可选插件 id；不传返回最近记录') },
 }, async ({ id }) => toText({ ok: true, plugins: id ? registry.history(id) : registry.list().slice(-50) }));
 
+server.registerTool('rollback_plugin', {
+  title: '回滚插件版本',
+  description: '从注册表选择上一个已安装版本（或指定 version），重新安装到 DSH profile；需要重启 DSH 生效。',
+  inputSchema: {
+    id: z.string().describe('插件 id'),
+    version: z.string().optional().describe('可选指定历史版本；不传则回滚到上一个已安装版本'),
+    profile: z.string().optional().describe('DSH profile，默认环境 DSH_PROFILE 或 desktop'),
+  },
+}, async ({ id, version, profile }) => {
+  const target = registry.previous(id, version);
+  if (!target) return toText({ ok: false, error: `没有可回滚的已安装版本：${id}${version ? `@${version}` : ''}`, history: registry.history(id) });
+  const profileName = profile || process.env.DSH_PROFILE || 'desktop';
+  const r = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'dsh-factory.cjs'), 'install', target.zip, '--profile', profileName], {
+    cwd: ROOT, encoding: 'utf8', timeout: 300000, env: { ...process.env },
+  });
+  const output = `${r.stdout || ''}${r.stderr || ''}`.slice(-1200);
+  if (r.status !== 0) return toText({ ok: false, error: output, target });
+  const row = registry.record({
+    id, version: target.version, requestId: target.requestId, zip: target.zip,
+    pluginDir: target.pluginDir, tools: target.tools, installed: true, rollback: true,
+  });
+  return toText({ ok: true, id, version: target.version, installed: true, row, output, next: '重启 DSH 后生效' });
+});
+
 server.registerTool('get_request', {
   title: '查询需求单',
   description: '按 requestId 查询状态/步骤/证据',

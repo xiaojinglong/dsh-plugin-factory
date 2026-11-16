@@ -1,0 +1,11 @@
+{
+  "note": "Portable plugin dependency allowlist. Add packages here deliberately after review; unknown deps are rejected before install.",
+  "allowed": [
+    "exceljs",
+    "xlsx",
+    "zod",
+    "csv-parse",
+    "fast-xml-parser",
+    "playwright"
+  ]
+}

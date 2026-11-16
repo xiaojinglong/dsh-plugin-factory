@@ -20,6 +20,7 @@ description: 插件工厂 Agent（单机版）：用户在 DSH 对话里描述�
 | `list_plugins` | 先查已有插件，能复用就复用 |
 | `create_plugin` | **主入口**：建需求 → pipeline 生成/校验/导出 zip → 验收 → 可选安装 |
 | `list_registry` | 查看已生成/安装插件的版本、工具、zip |
+| `rollback_plugin` | 回滚到上一个已安装版本，或指定历史 version |
 | `get_request` | 查询 requestId 状态/步骤/证据 |
 | `create_request` | 只建需求单（需要手工推进时用） |
 | `accept_request` | 仅 staging 可验收 |
@@ -33,6 +34,7 @@ description: 插件工厂 Agent（单机版）：用户在 DSH 对话里描述�
   "pluginId": "kebab-case-id",
   "name": "显示名",
   "toolName": "snake_case_tool",
+  "version": "0.1.0",
   "spec": {
     "description": "工具描述",
     "effect": "read",

@@ -50,6 +50,14 @@ npm install --omit=dev --ignore-scripts
 
 `packages/plugin-registry.js` 记录版本/zip/tools/installed；MCP 工具 `list_registry`。
 
+### 版本回滚
+
+`rollback_plugin` 从注册表选择上一个已安装版本（或指定 version），重新调用 `dsh-factory` 安装；实测 profile 链接从 `roll-demo-0.1.1` 回滚到 `0.1.0`。
+
+### 依赖白名单
+
+`config/plugin-deps-allowlist.json`：未列出的依赖在生成阶段拒绝；当前允许 exceljs/xlsx/zod/csv-parse/fast-xml-parser/playwright。
+
 ## 验证
 
 - 测试：**124/124**
@@ -62,7 +70,6 @@ npm install --omit=dev --ignore-scripts
 ## 仍未完成
 
 1. 网络/系统调用真正隔离（需服务形态或 OS sandbox）
-2. 版本回滚（注册表有历史，无回滚执行）
-3. 依赖白名单/供应链扫描
-4. 基准工作流集
-5. 自动修复循环（目前 Agent 读 diagnostics 重试）
+2. 基准工作流集
+3. 自动修复循环（目前 Agent 读 diagnostics 重试）
+4. 真实外部 API/浏览器插件的凭证注入契约

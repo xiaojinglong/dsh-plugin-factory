@@ -25,6 +25,7 @@ const LIB = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(LIB, '..')
 const CHILD = path.join(LIB, 'sandbox-child.mjs')
 const BUILD = path.join(ROOT, 'build.json')
+const NODE = process.env.DSH_PLUGIN_NODE || 'node'
 
 function strings(value, out = []) {
   if (typeof value === 'string') out.push(value)
@@ -60,7 +61,7 @@ export async function runTool({ handler = null, args = {} } = {}) {
   ]
   try {
     return await new Promise((resolve, reject) => {
-      const child = spawn(process.execPath, nodeArgs, { cwd: ROOT, env: childEnv(), stdio: ['ignore', 'pipe', 'pipe'] })
+      const child = spawn(NODE, nodeArgs, { cwd: ROOT, env: childEnv(), stdio: ['ignore', 'pipe', 'pipe'] })
       let out = ''
       let err = ''
       const timer = setTimeout(() => { try { child.kill(); } catch {} reject(new Error('sandbox timeout (30000ms)')) }, 30000)
@@ -131,6 +132,12 @@ function generatePortable(opts) {
   const effect = spec.effect;
   const outputs = spec.outputs;
   const dependencies = spec.dependencies || {};
+  const allowFile = path.join(ROOT, 'config', 'plugin-deps-allowlist.json');
+  if (Object.keys(dependencies).length && fs.existsSync(allowFile)) {
+    const allowed = JSON.parse(fs.readFileSync(allowFile, 'utf8')).allowed || [];
+    const blocked = Object.keys(dependencies).filter((d) => !allowed.includes(d));
+    if (blocked.length) fail(`依赖不在白名单：${blocked.join(', ')}（编辑 config/plugin-deps-allowlist.json 后再试）`);
+  }
 
   for (const d of ['lib', 'fixtures', 'skills', 'locale', 'docs', 'evidence', 'tests']) fs.mkdirSync(path.join(out, d), { recursive: true });
   fs.mkdirSync(path.join(out, 'skills', id), { recursive: true });
@@ -265,11 +272,18 @@ async function validatePortable(dir) {
   }
   const allLib = fs.existsSync(path.join(out, 'lib')) ? fs.readdirSync(path.join(out, 'lib')).filter((f) => f.endsWith('.js') || f.endsWith('.mjs')) : [];
   const userFiles = [implRel, ...allLib.filter((f) => !['sandbox.js', 'sandbox-child.mjs'].includes(f)).map((f) => `lib/${f}`)];
+  const userText = userFiles.map((f) => fs.existsSync(path.join(out, f)) ? fs.readFileSync(path.join(out, f), 'utf8') : '').join('\n');
   const text = ['index.js', 'package.json', 'cordis.patch.yml', ...userFiles].map((f) => fs.existsSync(path.join(out, f)) ? fs.readFileSync(path.join(out, f), 'utf8') : '').join('\n');
   add('no-factory-path', !/FACTORY_ROOT|D:[\\/]www|C:[\\/]Users/.test(text), 'forbidden path');
   add('no-token', !/serviceToken|MCP_SERVICE_TOKEN/.test(text), 'token');
 
   const deps = Object.keys(pkg.dependencies || {});
+  const allowFile = path.join(ROOT, 'config', 'plugin-deps-allowlist.json');
+  if (deps.length && fs.existsSync(allowFile)) {
+    const allowed = JSON.parse(fs.readFileSync(allowFile, 'utf8')).allowed || [];
+    const blocked = deps.filter((d) => !allowed.includes(d));
+    add('deps:allowlist', blocked.length === 0, blocked.length ? `未允许：${blocked.join(', ')}` : deps.join(','));
+  }
   if (deps.length && !fs.existsSync(path.join(out, 'node_modules'))) {
     const win = process.platform === 'win32';
     const cmd = win ? process.env.ComSpec : 'npm';
@@ -280,9 +294,9 @@ async function validatePortable(dir) {
     add('deps:install', r.status === 0, `${deps.join(',')}${r.status === 0 ? '' : `: ${(r.stderr || r.stdout || '').slice(-500)}`}`);
   }
   const perms = spec?.permissions || { filesystem: ['read'], network: [] };
-  if (/\b(require\(['"]node:fs|from ['"]node:fs|require\(['"]fs|from ['"]fs)/.test(text) && !perms.filesystem?.includes('read')) add('permission:fs-read', false, '代码读取文件但未声明 filesystem read');
-  if (/\b(fetch\(|require\(['"](?:node:)?https?|from ['"](?:node:)?https?)/.test(text) && !perms.network?.length) add('permission:network', false, '代码访问网络但未声明 network');
-  if (/\b(child_process|spawn\(|exec\()/.test(text) && !perms.process) add('permission:process', false, '代码启动子进程但未声明 process');
+  if (/\b(require\(['"]node:fs|from ['"]node:fs|require\(['"]fs|from ['"]fs)/.test(userText) && !perms.filesystem?.includes('read')) add('permission:fs-read', false, '代码读取文件但未声明 filesystem read');
+  if (/\b(fetch\(|require\(['"](?:node:)?https?|from ['"](?:node:)?https?)/.test(userText) && !perms.network?.length) add('permission:network', false, '代码访问网络但未声明 network');
+  if (/\b(child_process|spawn\(|exec\()/.test(userText) && !perms.process) add('permission:process', false, '代码启动子进程但未声明 process');
   const testsDir = path.join(out, 'tests');
   const testFiles = fs.existsSync(testsDir) ? fs.readdirSync(testsDir).filter((f) => /\.(test|spec)\.(mjs|js)$/.test(f)) : [];
   if (testFiles.length) {

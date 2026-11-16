@@ -32,5 +32,12 @@ function record(entry) {
 function list() { return load().plugins || []; }
 function latest(id) { return list().filter((p) => p.id === id).slice(-1)[0] || null; }
 function history(id) { return list().filter((p) => p.id === id); }
+function previous(id, version) {
+  const rows = history(id).filter((p) => p.installed && p.zip && fs.existsSync(p.zip));
+  const distinct = [];
+  for (const row of rows) if (!distinct.some((x) => x.version === row.version)) distinct.push(row);
+  if (version) return distinct.find((x) => x.version === version) || null;
+  return distinct.length >= 2 ? distinct[distinct.length - 2] : null;
+}
 
-module.exports = { FILE, record, list, latest, history };
+module.exports = { FILE, record, list, latest, history, previous };
