@@ -1,4 +1,4 @@
-# 63 — Portable 自动生成本地完成 / 远端同步待处理
+# 63 — Portable 自动生成：本地完成 / 远端已修复
 
 ## 本地状态
 
@@ -12,36 +12,28 @@
 - 测试：**118/118**
 - doctor：全绿（legacy warn 1）
 
-## 本地 commit
+## 远端已修复
 
-```text
-08e5a0b feat(portable): default portable-host generation in pipeline
-cd4adbf test(portable): assert default portable-host target
-a4fe2b5 docs: 118 tests after default portable target
-```
+- `main`：`2f88fc5`
+- tag：`v3.8.0-portable-auto`、`v3.8.1-portable-auto`
+- 远端 `apps/generator/pipeline.cjs` 已验证中文正常、包含 `DEFAULT_TARGET`
 
-## 远端问题
+## 坑：Windows credential helper
 
-GitHub push/API 写入持续阻塞；此前 API 提交 `6c5c876` 把中文写成 `??`，不能作为最终版本。
+`git push` 卡住不是登录问题，是本地 `manager-core` / `wincred` helper 卡死。
 
-网络恢复后，用本地正确内容覆盖远端：
+绕过方式：
 
 ```powershell
-git push --force-with-lease origin main
-git push --force origin v3.8.0-portable-auto
+git -c credential.helper= push `
+  https://x-access-token:<token>@github.com/xiaojinglong/dsh-plugin-factory.git main
 ```
 
-如果 tag 已重指本地：
+## 仍待处理
 
-```powershell
-git tag -f v3.8.0-portable-auto a4fe2b5
-git push --force origin v3.8.0-portable-auto
-```
-
-## 不能算“全部完成”的部分
-
-1. 远端 main 仍是损坏提交
-2. 公开仓库 serviceToken 暴露未处理
-3. 真实第二台只装 DSH 的机器未验收
-
-代码侧的工厂改造已完成；发布/安全/实机验收是外部收尾。
+1. **公开仓库 token 暴露**
+   - 主仓库公开后，manifests/deployment 中 serviceToken 可见
+   - Git 历史也有旧 token
+   - 这些是本地服务 token；服务绑定 127.0.0.1，但仍建议轮换或改私有
+2. **真实第二台只装 DSH 的机器**
+3. **CI 最终结果**（push 已触发，但网络读取不稳定）
