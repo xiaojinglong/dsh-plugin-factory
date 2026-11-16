@@ -67,16 +67,20 @@ server.registerTool('create_plugin', {
     description: z.string().optional().describe('工具描述'),
     fixture: z.string().optional().describe('可选 fixture 绝对路径；不传则用生成器示例数据'),
     implSource: z.string().max(200000).optional().describe('可选 ESM 源码，必须 export async function execute(args)；不传则生成 fixture 行数统计样例'),
+    spec: z.record(z.string(), z.any()).optional().describe('可选 Plugin Spec（tools/parameters/permissions/acceptance）；推荐优先使用'),
+    files: z.array(z.object({ path: z.string(), content: z.string().max(200000) })).optional().describe('多文件：lib/*、tests/*、fixtures/*'),
     install: z.boolean().optional().default(true).describe('生成后是否安装到当前 DSH profile'),
     profile: z.string().optional().describe('DSH profile，默认环境 DSH_PROFILE 或 desktop'),
   },
-}, async ({ brief, pluginId, name, toolName, description, fixture, implSource, install, profile }) => {
+}, async ({ brief, pluginId, name, toolName, description, fixture, implSource, spec, files, install, profile }) => {
   const created = await call('POST', '/requests', {
     brief,
     params: {
       pluginId, name, target: 'portable-host', toolName, description,
       ...(fixture ? { fixture } : {}),
       ...(implSource ? { implSource } : {}),
+      ...(spec ? { spec } : {}),
+      ...(files ? { files } : {}),
     },
   });
   const requestId = created.request.id;
@@ -87,7 +91,19 @@ server.registerTool('create_plugin', {
     env: { ...process.env, CONTROL_PLANE_TOKEN: TOKEN, CONTROL_PLANE_URL: BASE },
   });
   const output = `${pipeline.stdout || ''}\n${pipeline.stderr || ''}`;
-  if (pipeline.status !== 0) throw new Error(`pipeline 失败（exit=${pipeline.status}）：${output.slice(-1200)}`);
+  if (pipeline.status !== 0) {
+    let diagnostics = null;
+    try {
+      const f = path.join(config.FACTORY_DATA_ROOT, 'generator', 'runs', requestId, 'failure.json');
+      if (fs.existsSync(f)) diagnostics = JSON.parse(fs.readFileSync(f, 'utf8'));
+    } catch { /* ignore */ }
+    return toText({
+      ok: false, requestId, pluginId,
+      error: output.slice(-1500),
+      diagnostics,
+      next: '根据 diagnostics 修复 spec/files 后重新调用 create_plugin；不要跳过测试',
+    });
+  }
   const match = output.match(/\{[\s\S]*\}\s*$/);
   if (!match) throw new Error(`pipeline 未返回 JSON：${output.slice(-800)}`);
   const summary = JSON.parse(match[0]);

@@ -32,13 +32,23 @@ description: 插件工厂 Agent（单机版）：用户在 DSH 对话里描述�
   "pluginId": "kebab-case-id",
   "name": "显示名",
   "toolName": "snake_case_tool",
-  "description": "工具描述",
-  "fixture": "可选，绝对路径",
-  "implSource": "可选，ESM 源码",
-  "install": true,
-  "profile": "desktop"
+  "spec": {
+    "description": "工具描述",
+    "effect": "read",
+    "permissions": { "filesystem": ["read"], "network": [] },
+    "tools": [{ "name": "snake_case_tool", "parameters": {} }],
+    "acceptance": ["可验收条件"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "..." },
+    { "path": "tests/impl.test.mjs", "content": "..." }
+  ],
+  "install": true
 }
 ```
+
+`files` 只允许 `lib/`、`tests/`、`fixtures/`；`index.js`/`package.json`/`cordis.patch.yml` 由工厂生成。  
+`tests/*.test.mjs` 会在打包前真实执行。
 
 ## 3. 对话流程
 
@@ -50,24 +60,39 @@ description: 插件工厂 Agent（单机版）：用户在 DSH 对话里描述�
    - 凭证/登录态
    - 不做什么/边界
 2. **查重**：`list_plugins` 只用于确认工厂资产；当前 30 个旧插件是**测试产物，默认不在 DSH patch 中，不能当作可用工具推荐**。新流程默认创建 portable 插件。
-3. **生成实现**：你编写 ESM `implSource`：
+3. **生成实现**：你编写 spec + 多文件实现 + 测试：
 
 ```js
+// files 里的 lib/impl.js
 export async function execute(args = {}) {
   // 用户工作流的真实实现
   return { ok: true, result: {} }
 }
 ```
 
+```js
+// files 里的 tests/impl.test.mjs
+import test from 'node:test'
+import assert from 'node:assert'
+import { execute } from '../lib/impl.js'
+
+test('acceptance', async () => {
+  assert.ok((await execute({})).ok)
+})
+```
+
    - 不访问网络/凭证时最简单
    - 需要 API/文件时，从 `args` 拿参数，失败给出明确错误
    - 不把 token/密码写进源码
-4. **调用 `create_plugin`**：`install: true`（默认），等返回。
+   - 权限必须写进 spec；不能声明未使用的网络/文件权限
+4. **调用 `create_plugin`**：传 `spec`、`files`、`install: true`。
+   - 返回 `ok:false` 时，读 `diagnostics`，修 `spec/files` 后重试
+   - 最多 3 次；不要绕过测试
 5. **交付**：告诉用户：
    - 插件名、工具名
    - zip 路径、requestId
-   - 是否需要重启 DSH（安装后通常需要）
-   - 真实限制（凭证/数据源/外部账号）
+   - 是否需要重启 DSH
+   - 真实限制
 6. **验证**：重启后让用户在新会话里调用工具，或用 MCP 工具跑一次真实输入。
 
 ## 4. 用户话术示例

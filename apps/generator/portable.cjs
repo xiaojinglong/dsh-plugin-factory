@@ -3,6 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { normalizeSpec, legacySpec } = require('../../packages/plugin-spec');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 
@@ -36,13 +37,18 @@ function generatePortable(opts) {
   if (!name) fail('缺少 name');
   const out = path.resolve(opts.out || path.join(ROOT, 'portable-plugins', id));
   fs.rmSync(out, { recursive: true, force: true });
+  const spec = opts.spec
+    ? normalizeSpec({ ...opts.spec, id, name })
+    : legacySpec({ id, name, toolName: opts.toolName, description: opts.description, effect: opts.effect, outputs: opts.outputs });
   const pkgName = `dsh-plugin-${id}`;
-  const toolName = opts.toolName || id.replace(/-/g, '_');
-  const description = String(opts.description || `${name} portable DSH plugin`);
-  const effect = opts.effect || 'read';
-  const outputs = Array.isArray(opts.outputs) ? opts.outputs : ['dataset', 'audit'];
+  const tool = spec.tools[0];
+  const toolName = tool.name;
+  const description = spec.description;
+  const effect = spec.effect;
+  const outputs = spec.outputs;
+  const dependencies = spec.dependencies || {};
 
-  for (const d of ['lib', 'fixtures', 'skills', 'locale', 'docs', 'evidence']) fs.mkdirSync(path.join(out, d), { recursive: true });
+  for (const d of ['lib', 'fixtures', 'skills', 'locale', 'docs', 'evidence', 'tests']) fs.mkdirSync(path.join(out, d), { recursive: true });
   fs.mkdirSync(path.join(out, 'skills', id), { recursive: true });
   const fixture = opts.fixture ? path.resolve(opts.fixture) : '';
   if (fixture) {
@@ -59,6 +65,17 @@ function generatePortable(opts) {
     fs.writeFileSync(implFile, String(opts.implSource), 'utf8');
   } else {
     fs.writeFileSync(implFile, implSource(false), 'utf8');
+  }
+
+  // 多文件：仅允许 lib/、tests/、fixtures/；index/package/patch 由生成器拥有
+  const extraFiles = Array.isArray(opts.files) ? opts.files : [];
+  for (const f of extraFiles) {
+    const rel = String(f.path || '').replace(/\\/g, '/');
+    if (!rel || path.posix.isAbsolute(rel) || rel.split('/').includes('..')) fail(`非法文件路径：${rel}`);
+    if (!/^(lib|tests|fixtures)\//.test(rel)) fail(`文件只允许放在 lib/tests/fixtures：${rel}`);
+    const target = path.join(out, rel);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, String(f.content ?? ''), 'utf8');
   }
 
   const skillFile = path.join(out, 'skills', id, 'SKILL.md');
@@ -86,11 +103,9 @@ export function apply(ctx) {
   ctx.tools.register({
     name: ${JSON.stringify(toolName)},
     description: ${JSON.stringify(description)},
-    parameters: {
-      input_path: { type: 'string', required: false, description: 'Optional JSON input; defaults to bundled fixture' },
-    },
+    parameters: ${JSON.stringify(tool.parameters, null, 6)},
     output: {
-      schema: { type: 'object' },
+      schema: ${JSON.stringify(tool.output)},
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
     async execute(args) { return execute(args) },
@@ -101,9 +116,10 @@ export function apply(ctx) {
   const pkg = {
     name: pkgName, version: opts.version || '0.1.0', private: false, type: 'module',
     description, license: 'Apache-2.0', effect, outputs,
+    ...(Object.keys(dependencies).length ? { dependencies } : {}),
     repository: { type: 'git', url: 'git+https://github.com/xiaojinglong/dsh-plugin-factory.git', directory: `portable-plugins/${id}` },
     exports: { '.': './index.js', './locale/*.json': './locale/*.json', './icon': './icon.svg' },
-    files: ['cordis.patch.yml', 'index.js', 'lib', 'skills', 'README.md', 'LICENSE', 'locale', 'docs', 'icon.svg'],
+    files: ['cordis.patch.yml', 'index.js', 'lib', 'skills', 'tests', 'fixtures', 'README.md', 'LICENSE', 'locale', 'docs', 'icon.svg'],
     engines: { node: '>=24' },
     dsh: { bundle: { patch: './cordis.patch.yml' } },
   };
@@ -116,10 +132,11 @@ export function apply(ctx) {
   const license = path.join(ROOT, 'LICENSE');
   if (fs.existsSync(license)) fs.copyFileSync(license, path.join(out, 'LICENSE'));
   fs.writeFileSync(path.join(out, 'build.json'), JSON.stringify({
-    generatedAt: new Date().toISOString(), target: 'portable-host', id, name, toolName, effect, outputs,
+    generatedAt: new Date().toISOString(), target: 'portable-host', id, name, toolName, effect, outputs, spec,
+    files: extraFiles.map((f) => String(f.path).replace(/\\/g, '/')),
   }, null, 2) + '\n', 'utf8');
   fs.writeFileSync(path.join(out, 'evidence', 'generation.json'), JSON.stringify({
-    generatedAt: new Date().toISOString(), target: 'portable-host', spec: { id, name, toolName, effect, outputs }, files: fs.readdirSync(out),
+    generatedAt: new Date().toISOString(), target: 'portable-host', spec, files: fs.readdirSync(out),
   }, null, 2) + '\n', 'utf8');
   return { out, packageName: pkgName, toolName, id, name };
 }
@@ -147,9 +164,29 @@ async function validatePortable(dir) {
     const r = await nodeCheck(path.join(out, f));
     add(`syntax:${f}`, r.ok, r.error);
   }
-  const text = ['index.js', 'lib/impl.js', 'package.json', 'cordis.patch.yml'].map((f) => fs.existsSync(path.join(out, f)) ? fs.readFileSync(path.join(out, f), 'utf8') : '').join('\n');
+  const text = ['index.js', 'lib/impl.js', 'package.json', 'cordis.patch.yml'].map((f) => fs.existsSync(path.join(out, f)) ? fs.readFileSync(path.join(out, f), 'utf8') : '')
+    .concat(fs.existsSync(path.join(out, 'lib')) ? fs.readdirSync(path.join(out, 'lib')).filter((f) => f.endsWith('.js')).map((f) => fs.readFileSync(path.join(out, 'lib', f), 'utf8')) : [])
+    .join('\n');
   add('no-factory-path', !/FACTORY_ROOT|D:[\\/]www|C:[\\/]Users/.test(text), 'forbidden path');
   add('no-token', !/serviceToken|MCP_SERVICE_TOKEN/.test(text), 'token');
+
+  let spec = null;
+  if (fs.existsSync(path.join(out, 'build.json'))) {
+    try { spec = JSON.parse(fs.readFileSync(path.join(out, 'build.json'), 'utf8')).spec; } catch { /* ignore */ }
+  }
+  const perms = spec?.permissions || { filesystem: ['read'], network: [] };
+  if (/\b(require\(['"]node:fs|from ['"]node:fs|require\(['"]fs|from ['"]fs)/.test(text) && !perms.filesystem?.includes('read')) add('permission:fs-read', false, '代码读取文件但未声明 filesystem read');
+  if (/\b(fetch\(|require\(['"](?:node:)?https?|from ['"](?:node:)?https?)/.test(text) && !perms.network?.length) add('permission:network', false, '代码访问网络但未声明 network');
+  if (/\b(child_process|spawn\(|exec\()/.test(text) && !perms.process) add('permission:process', false, '代码启动子进程但未声明 process');
+
+  const testsDir = path.join(out, 'tests');
+  const testFiles = fs.existsSync(testsDir) ? fs.readdirSync(testsDir).filter((f) => /\.(test|spec)\.(mjs|js)$/.test(f)) : [];
+  if (testFiles.length) {
+    const r = spawnSync(process.execPath, ['--test', ...testFiles.map((f) => path.join('tests', f))], {
+      cwd: out, encoding: 'utf8', timeout: 120000, env: { ...process.env, FACTORY_ROOT: ROOT },
+    });
+    add('tests:node', r.status === 0, r.status === 0 ? `${testFiles.length} files` : `${r.stdout || ''}${r.stderr || ''}`.slice(-800));
+  }
   fs.mkdirSync(path.join(out, 'evidence'), { recursive: true });
   fs.writeFileSync(path.join(out, 'evidence', 'validation.json'), JSON.stringify({ validatedAt: new Date().toISOString(), ok: errors.length === 0, checks, errors }, null, 2) + '\n', 'utf8');
   return { ok: errors.length === 0, errors, checks };
