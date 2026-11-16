@@ -15,9 +15,10 @@ cd dsh-plugin-factory
 install.cmd
 ```
 
-`install.cmd` 会安装依赖、Chromium、DSH 集成，启动控制面/插件服务并自检；完成后重开 DSH 即可使用。
+`install.cmd` 会安装依赖、Chromium、DSH 集成，启动控制面并自检；默认**不启动 30 个测试插件**。完成后重开 DSH 即可使用。  
+需要测试插件时：`start-factory.cmd --with-plugins`。
 
-日常启动/停止：`start-factory.cmd` / `stop-factory.cmd`。
+日常启动/停止：`start-factory.cmd` / `stop-factory.cmd`。Linux/macOS 用 `./install.sh`、`./start-factory.sh`、`./stop-factory.sh`。
 
 ---
 

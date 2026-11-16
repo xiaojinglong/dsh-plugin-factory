@@ -23,6 +23,8 @@ const profile = String(args.profile || process.env.FACTORY_DSH_PROFILE || 'deskt
 const dshHome = process.env.DSH_HOME || path.join(os.homedir(), '.dsh');
 const profileDir = path.join(dshHome, 'profiles', profile);
 const checkOnly = args.check === 'true';
+const forceInstall = args['force-install'] === 'true';
+const withPlugins = args['with-plugins'] === 'true';
 
 function log(msg) { console.log(msg); }
 function fail(msg) { console.error(`\n[install] 失败：${msg}`); process.exit(1); }
@@ -47,10 +49,23 @@ if (!fs.existsSync(profileDir)) {
   fail(`找不到 DSH profile：${profileDir}\n已发现 profile：${profiles.join(', ') || '无'}\n请先安装 DSH，或用 --profile <name> 指定`);
 }
 log(`[install] DSH profile：${profileDir}`);
-if (checkOnly) {
-  log('\n[install] 检查通过（未安装/未启动）。移除 --check 执行完整安装。');
+const installerState = path.join(ROOT, 'data', 'installer', 'state.json');
+const patchFile = path.join(profileDir, 'cordis.patch.yml');
+const installed = fs.existsSync(installerState) && fs.existsSync(patchFile);
+if ((checkOnly || installed) && !forceInstall) {
+  log(installed ? '\n[install] 已安装：跳过 npm/Playwright/安装器/自启，只做检测' : '\n[install] 未安装：只做环境检查');
+  run('检查 DSH 环境', process.execPath, [path.join(ROOT, 'apps', 'installer', 'installer.cjs'), 'check', '--profile', profile]);
+  if (installed) {
+    run('静态自检', process.execPath, [path.join(ROOT, 'platform', 'factory', 'cli.cjs'), 'doctor']);
+    log('[install] 检测完成，未重新安装。');
+    log('[install] 平滑启动/重启：start-factory.cmd');
+    log('[install] 需要 30 个测试插件：start-factory.cmd --with-plugins');
+  } else {
+    log('[install] 检查通过（未安装/未启动）。移除 --check 执行完整安装。');
+  }
   process.exit(0);
 }
+if (forceInstall) log('\n[install] --force-install：强制走完整安装');
 
 // 2) 依赖
 const fastify = path.join(ROOT, 'node_modules', 'fastify', 'package.json');
@@ -83,8 +98,11 @@ run('安装/修复 DSH 集成', process.execPath, [path.join(ROOT, 'apps', 'inst
 
 // 5) 启动
 if (args['no-start'] !== 'true') {
-  run('启动控制面与服务', process.execPath, [path.join(ROOT, 'scripts', 'start-factory.cjs')]);
-  run('健康检查', process.execPath, [path.join(ROOT, 'platform', 'factory', 'cli.cjs'), 'doctor', '--health']);
+  const startArgs = [path.join(ROOT, 'scripts', 'start-factory.cjs')];
+  if (withPlugins) startArgs.push('--with-plugins');
+  run('启动控制面' + (withPlugins ? '与测试插件' : '（不启动 30 个测试插件）'), process.execPath, startArgs);
+  run('静态自检', process.execPath, [path.join(ROOT, 'platform', 'factory', 'cli.cjs'), 'doctor']);
+  if (withPlugins) run('健康检查', process.execPath, [path.join(ROOT, 'platform', 'factory', 'cli.cjs'), 'doctor', '--health']);
 }
 
 // 6) 登录自启（可用 --no-autostart 跳过）
@@ -94,5 +112,6 @@ if (args['no-autostart'] !== 'true') {
 
 log('\n[install] 完成。');
 log('下一步：重开一次 DSH，然后直接对 AI 说你要做什么。');
-log('示例：用 git-flow-audit 审计这个仓库');
-log('日常启动：双击 start-factory.cmd；停止：stop-factory.cmd');
+log('默认只启动控制面，不启动 30 个测试插件。');
+log('需要测试插件：start-factory.cmd --with-plugins');
+log('日常启动：start-factory.cmd；停止：stop-factory.cmd');

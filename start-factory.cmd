@@ -1,4 +1,4 @@
 @echo off
 cd /d "%~dp0"
-node scripts\start-factory.cjs
+node scripts\start-factory.cjs %*
 pause
