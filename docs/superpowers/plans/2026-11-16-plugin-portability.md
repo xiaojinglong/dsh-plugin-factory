@@ -3,6 +3,8 @@
 > **2026-11-16 范围更新：** 30 个旧插件不迁移，冻结在 T0，仅保证现有安装/使用；Task 10 取消，其余任务按计划执行。
 >
 > **2026-11-16 Task 1 结果：** Host bundle 安装/激活成功，`portable_ping` 返回 `portable-ok`。安装版 DSH 中 `@deepseek-ai/dsh-tools` 不可解析，零依赖 `ctx.tools.register({...})` 可用；portable bundle 不得无声明 import 该包。
+>
+> **2026-11-16 Task 5 结果：** `portable-plugins/excel-status-mark` 安装成功，`excel_status_mark` 真实处理 6 行；无服务/端口/工厂路径；详见 `docs/55`。
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -389,12 +391,12 @@ node --test platform/tests/portable-runtime.test.mjs
 
 - [ ] **Step 2：实现**
 
-把 `scenarios/excel-status-mark/runner.js` 的 Excel 逻辑移入 `lib/mark.js`，`index.js` 用 `defineTool` 注册 `excel_status_mark`：
+把 `scenarios/excel-status-mark/runner.js` 的 Excel 逻辑移入 `lib/mark.js`，`index.js` 用 raw tool 对象注册 `excel_status_mark`：
 
 ```js
 export const inject = ['tools']
 export function apply(ctx) {
-  ctx.tools.register(defineTool({
+  ctx.tools.register({
     name: 'excel_status_mark',
     description: 'Mark order statuses in an xlsx and return the new file path.',
     parameters: {
@@ -405,7 +407,7 @@ export function apply(ctx) {
     async execute(args) {
       return markWorkbook(args.input_path, args.output_path)
     },
-  }))
+  })
 }
 ```
 

@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Excel status mark",
+    "description": "Mark order statuses in an xlsx and write a new file without modifying the input.",
+    "detail": "docs/DETAIL.md"
+  }
+}

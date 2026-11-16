@@ -1,0 +1,11 @@
+{
+  "name": "@local/excel-status-mark-portable",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./index.js", "./locale/*.json": "./locale/*.json", "./icon": "./icon.svg" },
+  "files": ["cordis.patch.yml", "index.js", "lib", "skills", "README.md", "LICENSE", "locale", "docs", "icon.svg"],
+  "dependencies": { "exceljs": "^4.4.0" },
+  "engines": { "node": ">=24" },
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+}
