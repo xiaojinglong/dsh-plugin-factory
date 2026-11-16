@@ -19,10 +19,10 @@ dist/excel-status-mark-0.1.0.scan.json       # 禁止项扫描
 
 | 项 | 结果 |
 |---|---|
-| zip 大小 | 8812 bytes |
-| sha256 | `8b69143dc17bc0efdfb11748a727bb67846e6818c77a0e9f3909c0114d686f4c` |
+| zip 大小 | 10,441,638 bytes（含 vendored exceljs） |
+| sha256 | `428664eb6e44a7e5889a2e7e57f60253910365bd62a561b1f98759b083d9d591` |
 | 扫描 | ✅ 0 findings |
-| 内容 | package.json, cordis.patch.yml, index.js, lib, skills, README, LICENSE, locale, docs, icon |
+| 内容 | package.json, cordis.patch.yml, index.js, lib, skills, README, LICENSE, locale, docs, icon, node_modules |
 
 ## 安装
 
