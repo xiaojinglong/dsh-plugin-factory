@@ -5,6 +5,8 @@
 > **2026-11-16 Task 1 结果：** Host bundle 安装/激活成功，`portable_ping` 返回 `portable-ok`。安装版 DSH 中 `@deepseek-ai/dsh-tools` 不可解析，零依赖 `ctx.tools.register({...})` 可用；portable bundle 不得无声明 import 该包。
 >
 > **2026-11-16 Task 5 结果：** `portable-plugins/excel-status-mark` 安装成功，`excel_status_mark` 真实处理 6 行；无服务/端口/工厂路径；详见 `docs/55`。
+>
+> **2026-11-16 Task 6 结果：** `export-plugin.cjs` 生成 zip/checksum/scan；zip 8.8KB，禁止项 0；详见 `docs/56`。
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
