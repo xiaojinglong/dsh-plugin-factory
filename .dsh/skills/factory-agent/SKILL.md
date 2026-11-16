@@ -49,7 +49,7 @@ description: 插件工厂 Agent（单机版）：用户在 DSH 对话里描述�
    - 是否需要写外部系统（需要确认）
    - 凭证/登录态
    - 不做什么/边界
-2. **查重**：`list_plugins`。已有 `git-flow-audit`、`excel-status-mark` 等能覆盖就复用，不新建。
+2. **查重**：`list_plugins` 只用于确认工厂资产；当前 30 个旧插件是**测试产物，默认不在 DSH patch 中，不能当作可用工具推荐**。新流程默认创建 portable 插件。
 3. **生成实现**：你编写 ESM `implSource`：
 
 ```js

@@ -7,6 +7,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const config = require('../../packages/config');
+const testArtifacts = require('../../packages/test-artifacts');
 
 const ROOT = config.FACTORY_ROOT;
 const MAN = config.MANIFEST_DIR;
@@ -59,14 +60,15 @@ test('MCP config 端口与 manifest 一致', () => {
   }
 });
 
-test('patch 包含全部非 legacy 插件条目', {
+test('patch 包含非测试、非 legacy 插件条目', {
   skip: fs.existsSync(PATCH) ? false : `当前环境没有 DSH patch（${PATCH}），仅校验 manifest 契约`,
 }, () => {
   const text = fs.readFileSync(PATCH, 'utf8');
-  for (const m of manifests.filter((x) => !x.legacy)) {
+  for (const m of manifests.filter((x) => !x.legacy && !testArtifacts.isTestArtifact(x.id))) {
     assert.ok(text.includes(`- id: mcp-${m.id}`), `${m.id} 缺 patch 条目`);
     assert.ok(text.includes(`"http://127.0.0.1:${m.port}"`), `${m.id} 缺端口`);
   }
+  for (const id of testArtifacts.ids()) assert.ok(!text.includes(`- id: mcp-${id}`), `${id} 不应在默认 patch`);
 });
 
 test('SKILL frontmatter name 与 id 一致且含关键章节', () => {

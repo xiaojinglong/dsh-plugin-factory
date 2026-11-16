@@ -24,6 +24,7 @@ const { ensureToken: ensureControlPlaneToken } = require('../control-plane/serve
 
 const ROOT = config.FACTORY_ROOT;
 const serviceTokens = require(path.join(ROOT, 'packages', 'service-tokens'));
+const testArtifacts = require(path.join(ROOT, 'packages', 'test-artifacts'));
 const DEPLOY = path.join(ROOT, 'deployment');
 const CLI = path.join(ROOT, 'platform', 'factory', 'cli.cjs');
 const MANIFEST_DIR = path.join(ROOT, 'platform', 'manifests');
@@ -72,7 +73,7 @@ function readManifests() {
   return fs.readdirSync(MANIFEST_DIR).filter((f) => f.endsWith('.json')).sort()
     .map((f) => JSON.parse(fs.readFileSync(path.join(MANIFEST_DIR, f), 'utf8')));
 }
-function nonLegacy() { return readManifests().filter((m) => !m.legacy).map((m) => serviceTokens.apply(m)); }
+function nonLegacy() { return readManifests().filter((m) => !m.legacy && !testArtifacts.isTestArtifact(m.id)).map((m) => serviceTokens.apply(m)); }
 
 /* -------------------- factory-control MCP 注入（managed block） -------------------- */
 const FC_START = '# >>> factory-control (managed by apps/installer) >>>';
@@ -184,7 +185,7 @@ function backupFile(file, dir, name) {
 function verifyPatch(patchFile, manifests) {
   const text = fs.readFileSync(patchFile, 'utf8');
   for (const m of manifests) {
-    if (bundleManaged(m.id)) continue; // DSH plugin manager 负责注册
+    if (bundleManaged(m.id) || testArtifacts.isTestArtifact(m.id)) continue;
     if (!text.includes(`- id: mcp-${m.id}`)) throw new Error(`patch 缺少条目 mcp-${m.id}`);
     if (!text.includes(`"http://127.0.0.1:${m.port}"`)) throw new Error(`patch 缺少端口 ${m.port}`);
     if (m.runtime && m.runtime.serviceToken && !text.includes(m.runtime.serviceToken)) throw new Error(`patch 缺少 ${m.id} token`);

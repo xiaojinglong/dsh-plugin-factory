@@ -16,6 +16,7 @@ const { spawn, execFileSync } = require('node:child_process');
 const net = require('node:net');
 const config = require('../../packages/config');
 const serviceTokens = require('../../packages/service-tokens');
+const testArtifacts = require('../../packages/test-artifacts');
 
 const ROOT = config.FACTORY_ROOT;
 const PLUGIN_DIR = config.MANIFEST_DIR;
@@ -134,11 +135,14 @@ function stripMcpBlocks(text) {
     result.push(line);
   }
   // 清理历史 render 追加的"插件注释行"（形如 `# <id>（API，v3.0.0）`），避免每次 render 重复累积
-  const kept = result.filter((line) => !/^#\s*[a-z0-9-]+（[^）]*v\d+\.\d+\.\d+[^）]*）\s*$/.test(line));
+  const kept = result.filter((line) => !/^#\s*[a-z0-9-]+（[^）]*v\d+\.\d+\.\d+[^）]*）\s*$/.test(line)
+    && !/^# >>> factory-control/.test(line)
+    && !/^# <<< factory-control/.test(line));
   return kept.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
 }
 function renderPatch() {
-  const all = rawManifests().filter((m) => !m.legacy).map((m) => serviceTokens.apply(m));
+  const includeTestArtifacts = process.env.FACTORY_INCLUDE_TEST_PLUGINS === '1';
+  const all = rawManifests().filter((m) => !m.legacy && (includeTestArtifacts || !testArtifacts.isTestArtifact(m.id))).map((m) => serviceTokens.apply(m));
   const list = all.filter((m) => !bundleManaged(m.id));
   // YAML 双引号内反斜杠是转义符；Windows 路径必须用正斜杠，否则 DSH 解析失败并重置 patch
   const dshToolsYaml = DSH_TOOLS.replace(/\\/g, '/');
@@ -222,7 +226,7 @@ async function doctor(withHealth) {
   // patch 一致性（bundle-managed 插件由 DSH plugin manager 注册，不要求 patch 条目）
   if (fs.existsSync(PATCH)) {
     const text = fs.readFileSync(PATCH, 'utf8');
-    for (const m of list.filter((x) => !x.legacy)) {
+    for (const m of list.filter((x) => !x.legacy && !testArtifacts.isTestArtifact(x.id))) {
       if (bundleManaged(m.id)) {
         info(`${m.id}：bundle-managed（跳过 patch 校验）`);
         continue;
@@ -235,6 +239,7 @@ async function doctor(withHealth) {
   // 健康
   if (withHealth) {
     for (const m of list) {
+      if (testArtifacts.isTestArtifact(m.id)) continue;
       const h = await health(m.port);
       if (!h) bad(`${m.id}：:${m.port} 不健康`);
       else if (!m.legacy && h.id !== m.id) bad(`${m.id}：健康检查返回 id=${h.id}`);
@@ -251,7 +256,7 @@ async function doctor(withHealth) {
   }
   // 运行时单一来源
   const rtVersions = new Set();
-  for (const m of list.filter((x) => !x.legacy)) {
+  for (const m of list.filter((x) => !x.legacy && !testArtifacts.isTestArtifact(x.id))) {
     const boot = m.service?.dir && m.service?.entry ? path.join(m.service.dir, m.service.entry) : '';
     if (boot && fs.existsSync(boot)) {
       const t = fs.readFileSync(boot, 'utf8');

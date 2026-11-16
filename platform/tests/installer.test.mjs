@@ -9,6 +9,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const config = require('../../packages/config');
+const testArtifacts = require('../../packages/test-artifacts');
 const ROOT = config.FACTORY_ROOT;
 const INSTALLER = path.join(ROOT, 'apps', 'installer', 'installer.cjs');
 
@@ -52,11 +53,11 @@ test('install：注入 patch/registry、建立 dshskills 链接、幂等', () =>
   assert.equal(r1.status, 0, r1.stdout + r1.stderr);
   const patch1 = fs.readFileSync(p.patch, 'utf8');
   assert.match(patch1, /# original patch/);
-  assert.match(patch1, /- id: mcp-bulk-sync/);
+  assert.doesNotMatch(patch1, /- id: mcp-bulk-sync/);
   const businessCount = fs.readdirSync(path.join(ROOT, 'platform', 'manifests'))
     .filter((f) => f.endsWith('.json'))
     .map((f) => JSON.parse(fs.readFileSync(path.join(ROOT, 'platform', 'manifests', f), 'utf8')))
-    .filter((m) => !m.legacy).length;
+    .filter((m) => !m.legacy && !testArtifacts.isTestArtifact(m.id)).length;
   assert.equal((patch1.match(/- id: mcp-/g) || []).length, businessCount + 1, '业务条目 + 1 个 factory-control');
   assert.match(patch1, /- id: mcp-factory-control/);
   assert.match(patch1, /serverName: factory-control/);
