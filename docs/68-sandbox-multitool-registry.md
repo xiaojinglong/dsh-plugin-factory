@@ -24,11 +24,16 @@ Host index.js
 
 ### 网络边界
 
-Node permission 不限制网络。当前策略：
+`permissions.network` 必须声明目标 host。沙箱在用户代码加载前注入 `sandbox-network.cjs`：
 
-- spec 必须声明 `permissions.network`
-- 静态检查拒绝未声明的 `fetch/http`
-- **网络不是内核级隔离**，需要后续服务形态/OS 沙箱
+- 未声明 network：`fetch`/`net.connect`/`http(s).request`/`dns.lookup` 被拒绝
+- 已声明：只允许列出的 host
+- 这是**策略层拦截**，不是内核级网络隔离；仍需要后续服务形态/OS sandbox
+
+测试：
+
+- 未声明 network → `network blocked`
+- 声明 `127.0.0.1` → 本地 HTTP 请求成功
 
 ### 多工具
 

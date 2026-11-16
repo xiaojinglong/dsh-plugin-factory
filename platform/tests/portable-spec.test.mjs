@@ -113,3 +113,34 @@ test('portable sandbox：只注入声明凭证', async () => {
   delete process.env.DSH_TEST_KEY;
   await assert.rejects(() => mod.runTool({ args: {} }), /缺少凭证/);
 });
+
+test('portable sandbox：未声明网络被拦截', async () => {
+  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-net-deny-')), 'net-deny');
+  generatePortable({
+    id: 'net-deny', name: 'Net Deny', out,
+    spec: { description: 'Net deny.', permissions: { filesystem: [], network: [] }, tools: [{ name: 'net_deny' }] },
+    files: [{ path: 'lib/impl.js', content: "export async function execute() { return { ok: await fetch('http://127.0.0.1:9').then(() => true).catch(() => false) } }\n" }],
+  });
+  const mod = await import(`${pathToFileURL(path.join(out, 'lib', 'sandbox.js')).href}?t=${Date.now()}`);
+  await assert.rejects(() => mod.runTool({ args: {} }), /network blocked/i);
+});
+
+test('portable sandbox：允许声明的网络目标', async () => {
+  const http = await import('node:http');
+  const server = http.createServer((req, res) => res.end('allowed'));
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const port = server.address().port;
+  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-net-ok-')), 'net-ok');
+  generatePortable({
+    id: 'net-ok', name: 'Net OK', out,
+    spec: { description: 'Net ok.', permissions: { filesystem: [], network: ['127.0.0.1'] }, tools: [{ name: 'net_ok' }] },
+    files: [{ path: 'lib/impl.js', content: "export async function execute(args) { return { text: await (await fetch(args.url)).text() } }\n" }],
+  });
+  try {
+    const mod = await import(`${pathToFileURL(path.join(out, 'lib', 'sandbox.js')).href}?t=${Date.now()}`);
+    const result = await mod.runTool({ args: { url: `http://127.0.0.1:${port}/` } });
+    assert.equal(result.text, 'allowed');
+  } finally {
+    server.close();
+  }
+});

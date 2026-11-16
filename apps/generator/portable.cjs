@@ -6,6 +6,7 @@ const { spawnSync } = require('node:child_process');
 const { normalizeSpec, legacySpec } = require('../../packages/plugin-spec');
 
 const ROOT = path.resolve(__dirname, '..', '..');
+const NETWORK_GUARD = path.join(__dirname, 'templates', 'sandbox-network.cjs');
 
 function fail(msg) { throw new Error(msg); }
 function safeId(id) { return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id); }
@@ -24,6 +25,7 @@ import { fileURLToPath } from 'node:url'
 const LIB = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(LIB, '..')
 const CHILD = path.join(LIB, 'sandbox-child.mjs')
+const GUARD = path.join(LIB, 'sandbox-network.cjs')
 const BUILD = path.join(ROOT, 'build.json')
 const NODE = process.env.DSH_PLUGIN_NODE || 'node'
 
@@ -38,6 +40,7 @@ function childEnv(spec = {}) {
   const env = {}
   for (const k of keep) if (process.env[k]) env[k] = process.env[k]
   for (const c of spec.credentials || []) if (c.env && process.env[c.env]) env[c.env] = process.env[c.env]
+  env.DSH_SANDBOX_NETWORK = (spec.permissions?.network || []).join(',')
   return env
 }
 
@@ -53,11 +56,12 @@ export async function runTool({ handler = null, args = {} } = {}) {
   const reqFile = path.join(dataRoot, \`req-\${process.pid}-\${Date.now()}.json\`)
   fs.writeFileSync(reqFile, JSON.stringify({ handler, args, multi: !!handler }), 'utf8')
 
-  const read = new Set([ROOT, CHILD, reqFile])
+  const read = new Set([ROOT, CHILD, GUARD, reqFile])
   for (const s of strings(args)) if (path.isAbsolute(s)) read.add(s)
   const write = new Set()
   if (perms.filesystem?.includes('write') && typeof args.output_path === 'string' && path.isAbsolute(args.output_path)) write.add(args.output_path)
   const nodeArgs = [
+    '--require', GUARD,
     '--permission',
     ...[...read].map((p) => \`--allow-fs-read=\${p}\`),
     ...[...write].map((p) => \`--allow-fs-write=\${p}\`),
@@ -175,6 +179,7 @@ function generatePortable(opts) {
   }
   fs.writeFileSync(path.join(out, 'lib', 'sandbox.js'), sandboxSource(), 'utf8');
   fs.writeFileSync(path.join(out, 'lib', 'sandbox-child.mjs'), sandboxChildSource(), 'utf8');
+  fs.copyFileSync(NETWORK_GUARD, path.join(out, 'lib', 'sandbox-network.cjs'));
 
   const tools = spec.tools;
   const multi = tools.length > 1;
@@ -269,8 +274,8 @@ async function validatePortable(dir) {
   const implRel = multi ? 'lib/handlers.js' : 'lib/impl.js';
   add('package:name', /^dsh-plugin-[a-z0-9-]+$/.test(pkg.name || ''), pkg.name || '');
   add('package:bundle', pkg.dsh && pkg.dsh.bundle && pkg.dsh.bundle.patch === './cordis.patch.yml', JSON.stringify(pkg.dsh || {}));
-  for (const f of ['cordis.patch.yml', 'index.js', implRel, 'lib/sandbox.js', 'lib/sandbox-child.mjs', 'build.json', 'skills', 'fixtures/data.json']) add(`exists:${f}`, fs.existsSync(path.join(out, f)), f);
-  for (const f of ['index.js', implRel, 'lib/sandbox.js', 'lib/sandbox-child.mjs']) {
+  for (const f of ['cordis.patch.yml', 'index.js', implRel, 'lib/sandbox.js', 'lib/sandbox-child.mjs', 'lib/sandbox-network.cjs', 'build.json', 'skills', 'fixtures/data.json']) add(`exists:${f}`, fs.existsSync(path.join(out, f)), f);
+  for (const f of ['index.js', implRel, 'lib/sandbox.js', 'lib/sandbox-child.mjs', 'lib/sandbox-network.cjs']) {
     if (!fs.existsSync(path.join(out, f))) continue;
     const r = await nodeCheck(path.join(out, f));
     add(`syntax:${f}`, r.ok, r.error);

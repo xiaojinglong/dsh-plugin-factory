@@ -90,6 +90,7 @@ test('acceptance', async () => {
    - 需要 API/文件时，从 `args` 拿参数，失败给出明确错误
    - 不把 token/密码写进源码
    - 外部凭据只能通过 spec.credentials 声明 env；沙箱只注入声明的 env，缺失 required 会失败
+   - 网络目标必须写进 spec.permissions.network；沙箱守卫拦截未声明的 fetch/net/http/dns
    - 权限必须写进 spec；不能声明未使用的网络/文件权限
 4. **调用 `create_plugin`**：传 `spec`、`files`、`install: true`。
    - 返回 `ok:false` 时，读 `diagnostics`，修 `spec/files` 后重试
