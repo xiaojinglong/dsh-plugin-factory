@@ -78,12 +78,28 @@ function generatePortable(opts) {
     fs.writeFileSync(target, String(f.content ?? ''), 'utf8');
   }
 
+  const tools = spec.tools;
+  const multi = tools.length > 1;
+  if (multi && !fs.existsSync(path.join(out, 'lib', 'handlers.js'))) fail('多工具插件必须在 files 中提供 lib/handlers.js');
+  if (!multi && !fs.existsSync(path.join(out, 'lib', 'impl.js'))) fail('单工具插件缺少 lib/impl.js');
+
+  const importLine = multi ? "import { handlers } from './lib/handlers.js'" : "import { execute } from './lib/impl.js'";
+  const registrations = tools.map((t) => `  ctx.tools.register({
+    name: ${JSON.stringify(t.name)},
+    description: ${JSON.stringify(t.description)},
+    parameters: ${JSON.stringify(t.parameters, null, 6)},
+    output: {
+      schema: ${JSON.stringify(t.output)},
+      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+    },
+    async execute(args) { return ${multi ? `handlers[${JSON.stringify(t.handler)}](args)` : 'execute(args)'} },
+  })`).join('\n');
   const skillFile = path.join(out, 'skills', id, 'SKILL.md');
-  fs.writeFileSync(skillFile, `# ${name}\n\nUse \`${toolName}\` for this portable DSH plugin.\n\n${description}\n`, 'utf8');
+  fs.writeFileSync(skillFile, `# ${name}\n\n${description}\n\nTools:\n${tools.map((t) => `- \`${t.name}\`: ${t.description}`).join('\n')}\n`, 'utf8');
   fs.writeFileSync(path.join(out, 'index.js'), `import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { execute } from './lib/impl.js'
+${importLine}
 
 const SKILL_FILE = fileURLToPath(new URL('./skills/${id}/SKILL.md', import.meta.url))
 
@@ -100,16 +116,7 @@ export function apply(ctx) {
     resourceBase: { kind: 'directory', path: path.dirname(SKILL_FILE) },
     invocation: { modelInvocable: true, userInvocable: false },
   })
-  ctx.tools.register({
-    name: ${JSON.stringify(toolName)},
-    description: ${JSON.stringify(description)},
-    parameters: ${JSON.stringify(tool.parameters, null, 6)},
-    output: {
-      schema: ${JSON.stringify(tool.output)},
-      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
-    },
-    async execute(args) { return execute(args) },
-  })
+${registrations}
 }
 `, 'utf8');
 
@@ -156,23 +163,35 @@ async function validatePortable(dir) {
   const pkgFile = path.join(out, 'package.json');
   if (!fs.existsSync(pkgFile)) return { ok: false, errors: ['缺少 package.json'], checks };
   const pkg = JSON.parse(fs.readFileSync(pkgFile, 'utf8'));
+  let spec = null;
+  if (fs.existsSync(path.join(out, 'build.json'))) {
+    try { spec = JSON.parse(fs.readFileSync(path.join(out, 'build.json'), 'utf8')).spec; } catch { /* ignore */ }
+  }
+  const multi = Array.isArray(spec?.tools) && spec.tools.length > 1;
+  const implRel = multi ? 'lib/handlers.js' : 'lib/impl.js';
   add('package:name', /^dsh-plugin-[a-z0-9-]+$/.test(pkg.name || ''), pkg.name || '');
   add('package:bundle', pkg.dsh && pkg.dsh.bundle && pkg.dsh.bundle.patch === './cordis.patch.yml', JSON.stringify(pkg.dsh || {}));
-  for (const f of ['cordis.patch.yml', 'index.js', 'lib/impl.js', 'skills', 'fixtures/data.json']) add(`exists:${f}`, fs.existsSync(path.join(out, f)), f);
-  for (const f of ['index.js', 'lib/impl.js']) {
+  for (const f of ['cordis.patch.yml', 'index.js', implRel, 'skills', 'fixtures/data.json']) add(`exists:${f}`, fs.existsSync(path.join(out, f)), f);
+  for (const f of ['index.js', implRel]) {
     if (!fs.existsSync(path.join(out, f))) continue;
     const r = await nodeCheck(path.join(out, f));
     add(`syntax:${f}`, r.ok, r.error);
   }
-  const text = ['index.js', 'lib/impl.js', 'package.json', 'cordis.patch.yml'].map((f) => fs.existsSync(path.join(out, f)) ? fs.readFileSync(path.join(out, f), 'utf8') : '')
+  const text = ['index.js', implRel, 'package.json', 'cordis.patch.yml'].map((f) => fs.existsSync(path.join(out, f)) ? fs.readFileSync(path.join(out, f), 'utf8') : '')
     .concat(fs.existsSync(path.join(out, 'lib')) ? fs.readdirSync(path.join(out, 'lib')).filter((f) => f.endsWith('.js')).map((f) => fs.readFileSync(path.join(out, 'lib', f), 'utf8')) : [])
     .join('\n');
   add('no-factory-path', !/FACTORY_ROOT|D:[\\/]www|C:[\\/]Users/.test(text), 'forbidden path');
   add('no-token', !/serviceToken|MCP_SERVICE_TOKEN/.test(text), 'token');
 
-  let spec = null;
-  if (fs.existsSync(path.join(out, 'build.json'))) {
-    try { spec = JSON.parse(fs.readFileSync(path.join(out, 'build.json'), 'utf8')).spec; } catch { /* ignore */ }
+  const deps = Object.keys(pkg.dependencies || {});
+  if (deps.length && !fs.existsSync(path.join(out, 'node_modules'))) {
+    const win = process.platform === 'win32';
+    const cmd = win ? process.env.ComSpec : 'npm';
+    const cmdArgs = win
+      ? ['/d', '/s', '/c', 'npm.cmd install --omit=dev --ignore-scripts --no-audit --no-fund']
+      : ['install', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'];
+    const r = spawnSync(cmd, cmdArgs, { cwd: out, encoding: 'utf8', timeout: 300000 });
+    add('deps:install', r.status === 0, `${deps.join(',')}${r.status === 0 ? '' : `: ${(r.stderr || r.stdout || '').slice(-500)}`}`);
   }
   const perms = spec?.permissions || { filesystem: ['read'], network: [] };
   if (/\b(require\(['"]node:fs|from ['"]node:fs|require\(['"]fs|from ['"]fs)/.test(text) && !perms.filesystem?.includes('read')) add('permission:fs-read', false, '代码读取文件但未声明 filesystem read');

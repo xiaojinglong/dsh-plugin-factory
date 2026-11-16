@@ -19,6 +19,7 @@ const { spawnSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const config = require(path.join(ROOT, 'packages', 'config'));
+const registry = require(path.join(ROOT, 'packages', 'plugin-registry'));
 
 const SERVER_NAME = 'factory-control';
 const SERVER_VERSION = '0.1.0';
@@ -64,6 +65,7 @@ server.registerTool('create_plugin', {
     pluginId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).describe('kebab-case 插件 id'),
     name: z.string().min(1).max(100).describe('插件显示名'),
     toolName: z.string().optional().describe('DSH 工具名，默认由 pluginId 转下划线'),
+    version: z.string().optional().describe('语义化版本，默认 0.1.0'),
     description: z.string().optional().describe('工具描述'),
     fixture: z.string().optional().describe('可选 fixture 绝对路径；不传则用生成器示例数据'),
     implSource: z.string().max(200000).optional().describe('可选 ESM 源码，必须 export async function execute(args)；不传则生成 fixture 行数统计样例'),
@@ -72,11 +74,11 @@ server.registerTool('create_plugin', {
     install: z.boolean().optional().default(true).describe('生成后是否安装到当前 DSH profile'),
     profile: z.string().optional().describe('DSH profile，默认环境 DSH_PROFILE 或 desktop'),
   },
-}, async ({ brief, pluginId, name, toolName, description, fixture, implSource, spec, files, install, profile }) => {
+}, async ({ brief, pluginId, name, toolName, version, description, fixture, implSource, spec, files, install, profile }) => {
   const created = await call('POST', '/requests', {
     brief,
     params: {
-      pluginId, name, target: 'portable-host', toolName, description,
+      pluginId, name, target: 'portable-host', toolName, version, description,
       ...(fixture ? { fixture } : {}),
       ...(implSource ? { implSource } : {}),
       ...(spec ? { spec } : {}),
@@ -131,13 +133,25 @@ server.registerTool('create_plugin', {
       return toText({ ok: false, requestId, pluginId, zip, pluginDir: summary.pluginDir, installed: false, error: installOutput });
     }
   }
+  const toolNames = spec?.tools?.map((t) => t.name) || [toolName || pluginId.replace(/-/g, '_')];
+  const reg = registry.record({
+    id: pluginId, version: version || '0.1.0', requestId, zip, pluginDir: summary.pluginDir,
+    tools: toolNames, installed,
+  });
   return toText({
     ok: true, requestId, pluginId, toolName: toolName || pluginId.replace(/-/g, '_'),
-    zip, pluginDir: summary.pluginDir, installed, state: 'accepted',
+    version: version || '0.1.0', zip, pluginDir: summary.pluginDir, installed, state: 'accepted',
+    tools: toolNames, registry: reg,
     next: installed ? '重启 DSH 后工具可见（或等待 HMR）' : '用 dsh-factory 安装 zip，然后重启 DSH',
     installOutput: installOutput || undefined,
   });
 });
+
+server.registerTool('list_registry', {
+  title: '插件注册表',
+  description: '列出本机生成/安装过的插件版本、工具、zip、是否安装',
+  inputSchema: { id: z.string().optional().describe('可选插件 id；不传返回最近记录') },
+}, async ({ id }) => toText({ ok: true, plugins: id ? registry.history(id) : registry.list().slice(-50) }));
 
 server.registerTool('get_request', {
   title: '查询需求单',

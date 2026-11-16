@@ -19,17 +19,22 @@ function normalizeSpec(input = {}) {
   const toolsIn = Array.isArray(input.tools) && input.tools.length
     ? input.tools
     : [{ name: input.toolName || id.replace(/-/g, '_'), description: input.description || name }];
+  const multi = toolsIn.length > 1;
   const tools = toolsIn.map((t, i) => {
     const name = String(t.name || '').trim();
     if (!TOOL.test(name)) errors.push(`spec.tools[${i}].name 必须是 snake_case`);
     const description = String(t.description || `${name} tool`).trim();
+    const handler = String(t.handler || (multi ? name : 'execute')).trim();
+    if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(handler)) errors.push(`spec.tools[${i}].handler 必须是合法函数名`);
     const parameters = t.parameters && typeof t.parameters === 'object' && !Array.isArray(t.parameters)
       ? t.parameters
       : { input_path: { type: 'string', required: false, description: 'Optional input path' } };
     const output = t.output && typeof t.output === 'object' ? t.output : { type: 'object' };
-    return { name, description, parameters, output };
+    return { name, description, handler, parameters, output };
   });
-  if (tools.length > 1) errors.push('当前 portable 生成器只支持一个 tool；多工具将在下一阶段支持');
+  const handlers = tools.map((t) => t.handler);
+  if (new Set(handlers).size !== handlers.length) errors.push('spec.tools[].handler 必须唯一');
+  if (!multi && tools[0].handler !== 'execute') errors.push('单工具插件 handler 必须是 execute');
 
   const permissionsIn = input.permissions || {};
   const permissions = {

@@ -39,3 +39,28 @@ test('portable spec：拒绝越界文件路径', () => {
     files: [{ path: '../escape.js', content: '' }],
   }), /非法文件路径/);
 });
+
+test('portable spec：多工具 handlers', async () => {
+  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-multi-')), 'multi-demo');
+  generatePortable({
+    id: 'multi-demo', name: 'Multi Demo', out,
+    spec: {
+      description: 'Multi tool demo.',
+      permissions: { filesystem: ['read'], network: [] },
+      tools: [
+        { name: 'sum_values', handler: 'sum', description: 'Sum values.', parameters: {} },
+        { name: 'count_values', handler: 'count', description: 'Count values.', parameters: {} },
+      ],
+      acceptance: ['two tools'],
+    },
+    files: [
+      { path: 'lib/handlers.js', content: "export const handlers = { async sum() { return { total: 30 } }, async count() { return { total: 2 } } }\n" },
+      { path: 'tests/handlers.test.mjs', content: "import test from 'node:test'\nimport assert from 'node:assert'\nimport { handlers } from '../lib/handlers.js'\ntest('handlers', async () => { assert.equal((await handlers.sum()).total, 30); assert.equal((await handlers.count()).total, 2) })\n" },
+    ],
+  });
+  const v = await validatePortable(out);
+  assert.equal(v.ok, true, JSON.stringify(v.errors));
+  const index = fs.readFileSync(path.join(out, 'index.js'), 'utf8');
+  assert.match(index, /handlers\["sum"\]/);
+  assert.match(index, /name: "count_values"/);
+});

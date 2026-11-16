@@ -19,6 +19,7 @@ description: 插件工厂 Agent（单机版）：用户在 DSH 对话里描述�
 |---|---|
 | `list_plugins` | 先查已有插件，能复用就复用 |
 | `create_plugin` | **主入口**：建需求 → pipeline 生成/校验/导出 zip → 验收 → 可选安装 |
+| `list_registry` | 查看已生成/安装插件的版本、工具、zip |
 | `get_request` | 查询 requestId 状态/步骤/证据 |
 | `create_request` | 只建需求单（需要手工推进时用） |
 | `accept_request` | 仅 staging 可验收 |
@@ -48,7 +49,8 @@ description: 插件工厂 Agent（单机版）：用户在 DSH 对话里描述�
 ```
 
 `files` 只允许 `lib/`、`tests/`、`fixtures/`；`index.js`/`package.json`/`cordis.patch.yml` 由工厂生成。  
-`tests/*.test.mjs` 会在打包前真实执行。
+`tests/*.test.mjs` 会在打包前真实执行。  
+多工具时 `spec.tools` 每项必须有唯一 `handler`，并提交 `lib/handlers.js` 导出 `handlers = { <handler>: fn }`。
 
 ## 3. 对话流程
 
