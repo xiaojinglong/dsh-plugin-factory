@@ -24,8 +24,8 @@
 | 层级 | 说明 | 用途 |
 |---|---|---|
 | T0 | 现有 `plugins/<id>` + service + installer patch | 旧插件冻结/本地开发 |
-| T1 | `portable-host`：DSH 原生 bundle，`apply(ctx)` + `ctx.tools.register(...)`（可用 raw object；不要假设 `@deepseek-ai/dsh-tools` 一定可解析） | 新插件默认 |
-| T2 | `portable-mcp`：自包含 MCP/Host wrapper | 必须独立进程的复杂插件 |
+| T1 | `portable-host`：DSH 原生 bundle，`apply(ctx)` + `ctx.tools.register(...)`（可用 raw object；不要假设 `@deepseek-ai/dsh-tools` 一定可解析） | 新插件默认（pipeline 默认 target） |
+| T2 | `portable-mcp`：自包含 MCP/Host wrapper | 必须独立进程的复杂插件/旧流程显式 `target: "mcp"` |
 | T3 | 公开包：npm/GitHub + README/LICENSE/checksum | 任意人下载 |
 
 ## 验收

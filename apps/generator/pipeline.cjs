@@ -12,9 +12,13 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 const config = require('../../packages/config');
 const { probe } = require('./probe.cjs');
 const { generate, validateDir } = require('./generator.cjs');
+const { generatePortable, validatePortable } = require('./portable.cjs');
+
+const ROOT = config.FACTORY_ROOT;
 
 function api(baseUrl, token) {
   const headers = { 'content-type': 'application/json', authorization: `Bearer ${token}` };
@@ -75,12 +79,49 @@ async function runPipeline({ baseUrl = 'http://127.0.0.1:8780', token, requestId
     }
   }
 
+  const portable = String(p.target || 'portable-host') === 'portable-host';
   evidence.probe = await step('probe', async () => {
-    const r = await probe(p);
+    const r = (p.fixture || portable)
+      ? (p.fixture ? await probe(p) : { kind: 'portable', source: 'generated', rows: 0 })
+      : await probe(p);
     const file = path.join(runDir, 'probe.json');
     fs.writeFileSync(file, JSON.stringify(r, null, 2) + '\n', 'utf8');
     return path.relative(dataRoot, file).split(path.sep).join('/');
   });
+
+  if (portable) {
+    const out = path.join(runDir, pluginId);
+    await step('generate', async () => {
+      generatePortable({
+        id: pluginId, name, out, fixture: p.fixture, toolName: p.toolName, description: p.description,
+        effect: p.effect, outputs: p.outputs, implFile: p.implFile, implSource: p.implSource,
+      });
+      return path.relative(dataRoot, path.join(out, 'evidence', 'generation.json')).split(path.sep).join('/');
+    });
+    await step('validate', async () => {
+      const v = await validatePortable(out);
+      if (!v.ok) throw new Error(`portable 校验失败：${v.errors.join('; ')}`);
+      return path.relative(dataRoot, path.join(out, 'evidence', 'validation.json')).split(path.sep).join('/');
+    });
+    await step('staging', async () => {
+      const v = await validatePortable(out);
+      if (!v.ok) throw new Error(`portable staging 失败：${v.errors.join('; ')}`);
+      const dist = path.join(runDir, 'dist');
+      const r = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'export-plugin.cjs'), '--id', pluginId, '--source', out, '--out', dist], {
+        cwd: ROOT, encoding: 'utf8', timeout: 300000,
+      });
+      if (r.status !== 0) throw new Error(`portable 导出失败：${(r.stderr || r.stdout || '').slice(-800)}`);
+      const zip = fs.readdirSync(dist).find((f) => f.endsWith('.zip'));
+      return path.relative(dataRoot, path.join(dist, zip)).split(path.sep).join('/');
+    });
+    const finalPortable = await cli.get(`/requests/${encodeURIComponent(requestId)}`);
+    const summaryPortable = {
+      ok: true, requestId, target: 'portable-host', pluginDir: out, evidence,
+      state: finalPortable.request.state, steps: finalPortable.request.steps.map((s) => ({ step: s.step, status: s.status })),
+    };
+    fs.writeFileSync(path.join(runDir, 'pipeline.json'), JSON.stringify(summaryPortable, null, 2) + '\n', 'utf8');
+    return summaryPortable;
+  }
 
   const gen = await step('generate', async () => {
     const out = path.join(runDir, pluginId);

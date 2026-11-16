@@ -103,7 +103,7 @@ module.exports = { runJob };`, 'utf8');
   try {
     const created = await (await fetch(`${base}/requests`, {
       method: 'POST', headers: H,
-      body: JSON.stringify({ brief: '流水线生成', params: { pluginId: 'pipe-demo', name: '流水线演示', type: 'api', fixture, runnerFile } }),
+      body: JSON.stringify({ brief: '流水线生成', params: { pluginId: 'pipe-demo', name: '流水线演示', type: 'api', target: 'mcp', fixture, runnerFile } }),
     })).json();
     const requestId = created.request.id;
     const out = await runPipeline({ baseUrl: base, token, requestId, dataRoot });
@@ -294,7 +294,7 @@ test('pipeline 失败：写 failure.json 与修复建议', async () => {
   try {
     const created = await (await fetch(`${base}/requests`, {
       method: 'POST', headers: H,
-      body: JSON.stringify({ brief: '缺少数据源', params: { pluginId: 'fail-demo', name: '失败演示', type: 'api' } }),
+      body: JSON.stringify({ brief: '缺少数据源', params: { pluginId: 'fail-demo', name: '失败演示', type: 'api', target: 'mcp' } }),
     })).json();
     const requestId = created.request.id;
     await assert.rejects(() => runPipeline({ baseUrl: base, token, requestId, dataRoot }), /缺少勘探参数/);

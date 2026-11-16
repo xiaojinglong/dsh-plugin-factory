@@ -75,6 +75,15 @@ function readPkg(dir) {
   return pkg;
 }
 
+function profileComposed(profileName, pkgName) {
+  if (!pkgName) return false;
+  try {
+    const file = path.join(process.env.USERPROFILE || os.homedir(), '.dsh', 'profiles', profileName, 'package.json');
+    const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return !!(data.dependencies || {})[pkgName] && (data.dsh?.profile?.bundles || []).includes(pkgName);
+  } catch { return false; }
+}
+
 try {
   const resolved = resolveTarget(targetArg);
   const pkg = fs.existsSync(resolved.target) && fs.statSync(resolved.target).isDirectory() ? readPkg(resolved.target) : null;
@@ -85,8 +94,7 @@ try {
     throw new Error(`dsh plugin add 失败（exit=${install.status}）`);
   }
   console.log((install.stdout || '').trim().split('\n').slice(-4).join('\n'));
-  const dump = runDsh(['--profile', profile, '--dump-config']);
-  const hit = dump.status === 0 && dump.stdout.includes(resolved.target) || (pkg && dump.stdout.includes(pkg.name));
+  const hit = profileComposed(profile, pkg?.name);
   console.log(JSON.stringify({ ok: true, profile, target: resolved.target, package: pkg?.name || null, extracted: resolved.extracted, composed: !!hit }, null, 2));
   console.log('[dsh-factory] 完成。请重开 DSH 使 bundle 生效。');
 } catch (err) {
