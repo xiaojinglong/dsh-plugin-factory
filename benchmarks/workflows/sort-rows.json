@@ -1,0 +1,14 @@
+{
+  "id": "sort-rows",
+  "name": "Sort Rows",
+  "spec": {
+    "description": "Sort rows by a numeric field.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [{ "name": "sort_rows", "description": "Sort rows.", "parameters": {} }],
+    "acceptance": ["sorts ascending"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "export async function execute(args = {}) {\n  const rows = [...(args.rows || [])].sort((a, b) => Number(a[args.key]) - Number(b[args.key]))\n  return { rows }\n}\n" },
+    { "path": "tests/impl.test.mjs", "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('sort', async () => {\n  const r = await execute({ key: 'n', rows: [{ n: 3 }, { n: 1 }, { n: 2 }] })\n  assert.deepEqual(r.rows.map((x) => x.n), [1, 2, 3])\n})\n" }
+  ]
+}

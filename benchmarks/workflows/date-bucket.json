@@ -1,0 +1,14 @@
+{
+  "id": "date-bucket",
+  "name": "Date Bucket",
+  "spec": {
+    "description": "Count ISO dates by month.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [{ "name": "date_bucket", "description": "Bucket dates.", "parameters": {} }],
+    "acceptance": ["counts months"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "export async function execute(args = {}) {\n  const buckets = {}\n  for (const d of args.dates || []) { const k = String(d).slice(0, 7); buckets[k] = (buckets[k] || 0) + 1 }\n  return { buckets }\n}\n" },
+    { "path": "tests/impl.test.mjs", "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('buckets', async () => {\n  const r = await execute({ dates: ['2026-01-01', '2026-01-02', '2026-02-01'] })\n  assert.deepEqual(r.buckets, { '2026-01': 2, '2026-02': 1 })\n})\n" }
+  ]
+}

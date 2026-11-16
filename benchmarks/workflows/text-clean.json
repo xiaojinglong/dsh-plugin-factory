@@ -1,0 +1,14 @@
+{
+  "id": "text-clean",
+  "name": "Text Clean",
+  "spec": {
+    "description": "Normalize whitespace and case.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [{ "name": "text_clean", "description": "Clean text.", "parameters": {} }],
+    "acceptance": ["normalizes text"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "export async function execute(args = {}) {\n  const text = String(args.text || '').trim().replace(/\\s+/g, ' ').toLowerCase()\n  return { text }\n}\n" },
+    { "path": "tests/impl.test.mjs", "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('clean', async () => { assert.equal((await execute({ text: '  Hello   WORLD ' })).text, 'hello world') })\n" }
+  ]
+}

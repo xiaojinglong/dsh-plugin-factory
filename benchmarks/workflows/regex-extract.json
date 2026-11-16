@@ -1,0 +1,14 @@
+{
+  "id": "regex-extract",
+  "name": "Regex Extract",
+  "spec": {
+    "description": "Extract email addresses.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [{ "name": "regex_extract", "description": "Extract emails.", "parameters": {} }],
+    "acceptance": ["extracts emails"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "export async function execute(args = {}) {\n  const found = String(args.text || '').match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi) || []\n  return { emails: [...new Set(found.map((x) => x.toLowerCase()))] }\n}\n" },
+    { "path": "tests/impl.test.mjs", "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('emails', async () => {\n  const r = await execute({ text: 'a@b.com and A@B.com and c@d.cn' })\n  assert.deepEqual(r.emails, ['a@b.com', 'c@d.cn'])\n})\n" }
+  ]
+}

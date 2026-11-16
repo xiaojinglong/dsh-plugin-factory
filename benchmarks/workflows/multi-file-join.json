@@ -1,0 +1,14 @@
+{
+  "id": "multi-file-join",
+  "name": "Multi File Join",
+  "spec": {
+    "description": "Join lines from two text files.",
+    "permissions": { "filesystem": ["read"], "network": [] },
+    "tools": [{ "name": "multi_file_join", "description": "Join files.", "parameters": {} }],
+    "acceptance": ["joins lines"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "import fs from 'node:fs'\nexport async function execute(args = {}) {\n  if (!args.a || !args.b) throw new Error('a and b required')\n  const a = fs.readFileSync(args.a, 'utf8').trim().split(/\\r?\\n/)\n  const b = fs.readFileSync(args.b, 'utf8').trim().split(/\\r?\\n/)\n  return { lines: a.map((x, i) => x + (b[i] || '')) }\n}\n" },
+    { "path": "tests/impl.test.mjs", "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport fs from 'node:fs'\nimport os from 'node:os'\nimport path from 'node:path'\nimport { execute } from '../lib/impl.js'\ntest('join', async () => {\n  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'bench-join-'))\n  const a = path.join(d, 'a.txt'); const b = path.join(d, 'b.txt')\n  fs.writeFileSync(a, 'a\\nb\\n'); fs.writeFileSync(b, '1\\n2\\n')\n  assert.deepEqual((await execute({ a, b })).lines, ['a1', 'b2'])\n})\n" }
+  ]
+}

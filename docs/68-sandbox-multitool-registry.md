@@ -88,12 +88,9 @@ npm install --omit=dev --ignore-scripts
 
 `benchmarks/workflows/*.json` + `npm run benchmark`：
 
-- sum-json
-- csv-filter
-- multi-tool
-- write-report
+- 20 个工作流：JSON/CSV、文本、排序、去重、统计、正则、日期、错误契约、多文件、多工具、写入、渲染等
 
-当前 4/4 通过。
+当前 **20/20 通过**。
 
 ## 验证
 
@@ -107,6 +104,6 @@ npm install --omit=dev --ignore-scripts
 ## 仍未完成
 
 1. 网络/系统调用 OS 级隔离（当前是策略守卫）
-2. 20 个真实工作流基准集（当前 4 个）
-3. 真实外部 API/浏览器插件的凭证配置 UI
-4. 工厂侧完全自主修复（当前 DSH Agent 调 repair_plugin）
+2. 真实外部 API/浏览器插件的凭证配置 UI
+3. 工厂侧完全自主修复（当前 DSH Agent 调 repair_plugin）
+4. 复杂服务形态插件（浏览器/队列/长任务）

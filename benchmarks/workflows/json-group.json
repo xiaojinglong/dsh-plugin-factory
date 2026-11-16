@@ -1,0 +1,14 @@
+{
+  "id": "json-group",
+  "name": "JSON Group",
+  "spec": {
+    "description": "Group rows by a field and count.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [{ "name": "json_group", "description": "Group rows.", "parameters": {} }],
+    "acceptance": ["counts groups"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "export async function execute(args = {}) {\n  const groups = {}\n  for (const r of args.rows || []) groups[r.group] = (groups[r.group] || 0) + 1\n  return { groups }\n}\n" },
+    { "path": "tests/impl.test.mjs", "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('group', async () => {\n  const r = await execute({ rows: [{ group: 'a' }, { group: 'a' }, { group: 'b' }] })\n  assert.deepEqual(r.groups, { a: 2, b: 1 })\n})\n" }
+  ]
+}

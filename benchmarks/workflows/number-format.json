@@ -1,0 +1,14 @@
+{
+  "id": "number-format",
+  "name": "Number Format",
+  "spec": {
+    "description": "Format numbers with fixed decimals.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [{ "name": "number_format", "description": "Format number.", "parameters": {} }],
+    "acceptance": ["fixed decimals"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "export async function execute(args = {}) {\n  const n = Number(args.value)\n  if (Number.isNaN(n)) throw new Error('value must be numeric')\n  return { text: n.toFixed(Number(args.digits ?? 2)) }\n}\n" },
+    { "path": "tests/impl.test.mjs", "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('format', async () => { assert.equal((await execute({ value: 1.2, digits: 3 })).text, '1.200') })\n" }
+  ]
+}

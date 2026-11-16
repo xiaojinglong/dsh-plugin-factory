@@ -1,0 +1,14 @@
+{
+  "id": "percent-change",
+  "name": "Percent Change",
+  "spec": {
+    "description": "Compute percent change.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [{ "name": "percent_change", "description": "Percent change.", "parameters": {} }],
+    "acceptance": ["percent"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "export async function execute(args = {}) {\n  const a = Number(args.from); const b = Number(args.to)\n  if (!a) throw new Error('from must be non-zero')\n  return { percent: ((b - a) / a) * 100 }\n}\n" },
+    { "path": "tests/impl.test.mjs", "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('percent', async () => { assert.equal((await execute({ from: 100, to: 120 })).percent, 20) })\n" }
+  ]
+}

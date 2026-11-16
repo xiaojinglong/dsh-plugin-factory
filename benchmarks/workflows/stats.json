@@ -1,0 +1,14 @@
+{
+  "id": "stats",
+  "name": "Stats",
+  "spec": {
+    "description": "Compute count/mean/min/max.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [{ "name": "stats", "description": "Compute stats.", "parameters": {} }],
+    "acceptance": ["returns stats"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "export async function execute(args = {}) {\n  const v = (args.values || []).map(Number).filter((x) => !Number.isNaN(x))\n  if (!v.length) return { count: 0 }\n  return { count: v.length, mean: v.reduce((a, b) => a + b, 0) / v.length, min: Math.min(...v), max: Math.max(...v) }\n}\n" },
+    { "path": "tests/impl.test.mjs", "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('stats', async () => {\n  const r = await execute({ values: [1, 2, 3] })\n  assert.equal(r.mean, 2); assert.equal(r.min, 1); assert.equal(r.max, 3)\n})\n" }
+  ]
+}

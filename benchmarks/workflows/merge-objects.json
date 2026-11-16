@@ -1,0 +1,14 @@
+{
+  "id": "merge-objects",
+  "name": "Merge Objects",
+  "spec": {
+    "description": "Merge object list, later wins.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [{ "name": "merge_objects", "description": "Merge objects.", "parameters": {} }],
+    "acceptance": ["merges"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "export async function execute(args = {}) {\n  const out = {}\n  for (const o of args.objects || []) Object.assign(out, o)\n  return { value: out }\n}\n" },
+    { "path": "tests/impl.test.mjs", "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('merge', async () => {\n  const r = await execute({ objects: [{ a: 1 }, { b: 2 }, { a: 3 }] })\n  assert.deepEqual(r.value, { a: 3, b: 2 })\n})\n" }
+  ]
+}

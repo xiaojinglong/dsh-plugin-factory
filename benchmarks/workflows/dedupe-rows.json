@@ -1,0 +1,14 @@
+{
+  "id": "dedupe-rows",
+  "name": "Dedupe Rows",
+  "spec": {
+    "description": "Keep the first row for each id.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [{ "name": "dedupe_rows", "description": "Dedupe rows.", "parameters": {} }],
+    "acceptance": ["removes duplicate ids"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "export async function execute(args = {}) {\n  const seen = new Set()\n  const rows = []\n  for (const r of args.rows || []) { if (seen.has(r.id)) continue; seen.add(r.id); rows.push(r) }\n  return { rows, removed: (args.rows || []).length - rows.length }\n}\n" },
+    { "path": "tests/impl.test.mjs", "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('dedupe', async () => {\n  const r = await execute({ rows: [{ id: 1 }, { id: 1 }, { id: 2 }] })\n  assert.equal(r.rows.length, 2); assert.equal(r.removed, 1)\n})\n" }
+  ]
+}

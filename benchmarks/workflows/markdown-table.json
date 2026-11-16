@@ -1,0 +1,14 @@
+{
+  "id": "markdown-table",
+  "name": "Markdown Table",
+  "spec": {
+    "description": "Render rows as a markdown table.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [{ "name": "markdown_table", "description": "Render table.", "parameters": {} }],
+    "acceptance": ["table text"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "export async function execute(args = {}) {\n  const rows = args.rows || []\n  if (!rows.length) return { text: '' }\n  const cols = Object.keys(rows[0])\n  const line = (r) => '| ' + cols.map((c) => r[c] ?? '').join(' | ') + ' |'\n  const text = [line(Object.fromEntries(cols.map((c) => [c, c]))), '| ' + cols.map(() => '---').join(' | ') + ' |', ...rows.map(line)].join('\\n')\n  return { text }\n}\n" },
+    { "path": "tests/impl.test.mjs", "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('table', async () => {\n  const r = await execute({ rows: [{ a: 1, b: 2 }] })\n  assert.match(r.text, /\\| a \\| b \\|/)\n})\n" }
+  ]
+}

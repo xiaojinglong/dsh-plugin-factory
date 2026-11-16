@@ -1,0 +1,14 @@
+{
+  "id": "error-contract",
+  "name": "Error Contract",
+  "spec": {
+    "description": "Reject missing input with a clear error.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [{ "name": "error_contract", "description": "Require value.", "parameters": {} }],
+    "acceptance": ["throws on missing value"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "export async function execute(args = {}) {\n  if (args.value == null) throw new Error('value required')\n  return { value: args.value }\n}\n" },
+    { "path": "tests/impl.test.mjs", "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('contract', async () => {\n  assert.deepEqual(await execute({ value: 1 }), { value: 1 })\n  await assert.rejects(() => execute({}), /value required/)\n})\n" }
+  ]
+}

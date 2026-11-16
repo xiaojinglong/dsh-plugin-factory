@@ -1,0 +1,14 @@
+{
+  "id": "validate-schema",
+  "name": "Validate Schema",
+  "spec": {
+    "description": "Validate required fields.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [{ "name": "validate_schema", "description": "Validate fields.", "parameters": {} }],
+    "acceptance": ["reports missing fields"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "export async function execute(args = {}) {\n  const missing = (args.required || []).filter((k) => args.data == null || args.data[k] == null)\n  return { ok: missing.length === 0, missing }\n}\n" },
+    { "path": "tests/impl.test.mjs", "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('schema', async () => {\n  assert.equal((await execute({ required: ['a', 'b'], data: { a: 1 } })).ok, false)\n  assert.equal((await execute({ required: ['a'], data: { a: 1 } })).ok, true)\n})\n" }
+  ]
+}

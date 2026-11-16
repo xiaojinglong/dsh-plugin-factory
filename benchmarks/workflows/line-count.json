@@ -1,0 +1,14 @@
+{
+  "id": "line-count",
+  "name": "Line Count",
+  "spec": {
+    "description": "Count non-empty lines.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [{ "name": "line_count", "description": "Count lines.", "parameters": {} }],
+    "acceptance": ["counts non-empty lines"]
+  },
+  "files": [
+    { "path": "lib/impl.js", "content": "export async function execute(args = {}) {\n  const lines = String(args.text || '').split(/\\r?\\n/).map((x) => x.trim()).filter(Boolean)\n  return { count: lines.length }\n}\n" },
+    { "path": "tests/impl.test.mjs", "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('lines', async () => { assert.equal((await execute({ text: 'a\\n\\nb\\n' })).count, 2) })\n" }
+  ]
+}
