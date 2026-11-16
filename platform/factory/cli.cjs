@@ -15,6 +15,7 @@ const path = require('node:path');
 const { spawn, execFileSync } = require('node:child_process');
 const net = require('node:net');
 const config = require('../../packages/config');
+const serviceTokens = require('../../packages/service-tokens');
 
 const ROOT = config.FACTORY_ROOT;
 const PLUGIN_DIR = config.MANIFEST_DIR;
@@ -45,7 +46,7 @@ function rawManifests() {
 }
 /** 读取并解析为绝对路径（用于运行/校验，不修改磁盘） */
 function manifests() {
-  return rawManifests().map((m) => config.resolveManifest(m));
+  return rawManifests().map((m) => serviceTokens.apply(config.resolveManifest(m)));
 }
 function writeRegistry(list) {
   const rows = list.sort((a, b) => a.port - b.port);
@@ -137,7 +138,7 @@ function stripMcpBlocks(text) {
   return kept.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
 }
 function renderPatch() {
-  const all = rawManifests().filter((m) => !m.legacy);
+  const all = rawManifests().filter((m) => !m.legacy).map((m) => serviceTokens.apply(m));
   const list = all.filter((m) => !bundleManaged(m.id));
   // YAML 双引号内反斜杠是转义符；Windows 路径必须用正斜杠，否则 DSH 解析失败并重置 patch
   const dshToolsYaml = DSH_TOOLS.replace(/\\/g, '/');
@@ -281,7 +282,7 @@ async function up(onlyId) {
     fs.mkdirSync(logDir, { recursive: true });
     const out = fs.openSync(path.join(logDir, 'service.out.log'), 'a');
     const err = fs.openSync(path.join(logDir, 'service.err.log'), 'a');
-    const child = spawn(cmd[0], cmd[1], { cwd: m.service.dir, detached: true, stdio: ['ignore', out, err], windowsHide: true });
+    const child = spawn(cmd[0], cmd[1], { cwd: m.service.dir, env: { ...process.env, SERVICE_TOKEN: m.runtime?.serviceToken || '' }, detached: true, stdio: ['ignore', out, err], windowsHide: true });
     child.unref();
     fs.writeFileSync(pidFile(m.id), String(child.pid), 'utf8');
     let h = null;
@@ -315,7 +316,10 @@ function smoke(id) {
   if (!fs.existsSync(f)) { bad(`${id}：smoke.cjs 不存在`); process.exit(1); }
   const man = manifests().find((m) => m.id === id) || {};
   const env = { ...process.env };
-  if (man.runtime && man.runtime.serviceToken) env.MCP_SERVICE_TOKEN = man.runtime.serviceToken;
+  if (man.runtime && man.runtime.serviceToken) {
+    env.MCP_SERVICE_TOKEN = man.runtime.serviceToken;
+    env.SERVICE_TOKEN = man.runtime.serviceToken;
+  }
   console.log(execFileSync('node', ['smoke.cjs'], { cwd: dir, encoding: 'utf8', env }));
   ok(`${id} 冒烟通过`);
 }

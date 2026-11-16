@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 'use strict';
-// scripts/verify-service-tokens.cjs —— 校验所有插件的健康 + 401/200
+// scripts/verify-service-tokens.cjs —— 校验所有插件的健康 + 401/200（读 token overlay）
 const fs = require('node:fs');
 const path = require('node:path');
 const config = require(path.join(__dirname, '..', 'packages', 'config'));
+const serviceTokens = require(path.join(__dirname, '..', 'packages', 'service-tokens'));
 
 async function status(port, token) {
   try {
@@ -13,7 +14,7 @@ async function status(port, token) {
 }
 (async () => {
   const dir = config.MANIFEST_DIR;
-  const rows = fs.readdirSync(dir).filter((f) => f.endsWith('.json')).sort().map((f) => JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')));
+  const rows = fs.readdirSync(dir).filter((f) => f.endsWith('.json')).sort().map((f) => JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'))).map(serviceTokens.apply);
   const bad = [];
   for (const m of rows) {
     if (!m.runtime?.serviceToken) continue;

@@ -11,6 +11,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawnSync } = require('node:child_process');
 const config = require(path.join(__dirname, '..', 'packages', 'config'));
+const serviceTokens = require(path.join(__dirname, '..', 'packages', 'service-tokens'));
 
 const ROOT = config.FACTORY_ROOT;
 const MANIFESTS = config.MANIFEST_DIR;
@@ -55,22 +56,18 @@ for (const p of plan) {
     fs.copyFileSync(p.installed, dst2);
   }
 }
+if (fs.existsSync(serviceTokens.FILE)) {
+  fs.mkdirSync(path.join(backup, 'overlay'), { recursive: true });
+  fs.copyFileSync(serviceTokens.FILE, path.join(backup, 'overlay', 'service-tokens.json'));
+}
 if (fs.existsSync(config.DSH_PATCH)) {
   fs.mkdirSync(path.join(backup, 'profile'), { recursive: true });
   fs.copyFileSync(config.DSH_PATCH, path.join(backup, 'profile', 'cordis.patch.yml'));
 }
 
-function writeToken(file, token) {
-  const m = JSON.parse(fs.readFileSync(file, 'utf8'));
-  if (!m.runtime?.serviceToken) return;
-  m.runtime.serviceToken = token;
-  fs.writeFileSync(file, JSON.stringify(m, null, 2) + '\n', 'utf8');
-}
-for (const p of plan) {
-  const token = crypto.randomBytes(16).toString('hex');
-  writeToken(p.platform, token);
-  if (p.installed) writeToken(p.installed, token);
-}
+const nextTokens = {};
+for (const p of plan) nextTokens[p.id] = crypto.randomBytes(16).toString('hex');
+serviceTokens.setMany(nextTokens);
 
 function run(cmd, cmdArgs, timeout = 300000) {
   const r = spawnSync(cmd, cmdArgs, { cwd: ROOT, encoding: 'utf8', timeout });
@@ -84,7 +81,7 @@ function restart() {
   const down = run(process.execPath, [path.join(ROOT, 'platform', 'factory', 'cli.cjs'), 'down', ...(only ? [only] : [])], 120000);
   if (down.status !== 0) throw new Error(`停止失败：${down.out.slice(-500)}`);
   return (async () => {
-    const list = plan.map((p) => JSON.parse(fs.readFileSync(p.platform, 'utf8')));
+    const list = plan.map((p) => serviceTokens.apply(JSON.parse(fs.readFileSync(p.platform, 'utf8'))));
     for (let i = 0; i < 30; i += 1) {
       let upCount = 0;
       for (const m of list) {
@@ -107,7 +104,7 @@ async function status(port, token) {
 async function verify() {
   const bad = [];
   for (const p of plan) {
-    const m = JSON.parse(fs.readFileSync(p.platform, 'utf8'));
+    const m = serviceTokens.apply(JSON.parse(fs.readFileSync(p.platform, 'utf8')));
     let healthy = false;
     let no = 0;
     let yes = 0;
@@ -135,6 +132,8 @@ function restore() {
       if (fs.existsSync(src)) fs.copyFileSync(src, file);
     }
   }
+  const overlay = path.join(backup, 'overlay', 'service-tokens.json');
+  if (fs.existsSync(overlay)) fs.copyFileSync(overlay, serviceTokens.FILE);
   const patch = path.join(backup, 'profile', 'cordis.patch.yml');
   if (fs.existsSync(patch)) fs.copyFileSync(patch, config.DSH_PATCH);
 }
