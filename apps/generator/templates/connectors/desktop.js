@@ -1,5 +1,19 @@
 import { spawn } from 'node:child_process';
+import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const RECORDING = path.join(HERE, '..', 'recordings', 'flow.json');
+const REPLAY_PS1 = path.join(HERE, 'desktop-replay.ps1');
+
+export function loadRecording() {
+  return JSON.parse(fs.readFileSync(RECORDING, 'utf8'));
+}
+
+export async function replayRecording(options = {}) {
+  return runPowerShell(REPLAY_PS1, ['-In', RECORDING, '-Speed', String(options.speed || 1)], options);
+}
 
 export function runPowerShell(scriptPath, args = [], options = {}) {
   const ps = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');

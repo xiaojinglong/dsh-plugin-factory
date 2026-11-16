@@ -134,6 +134,22 @@ npm run replay -- --file data/recordings/wechat-flow.json --dry-run
 npm run replay -- --file data/recordings/wechat-flow.json
 ```
 
+录制也可以随插件打包：
+
+```json
+{
+  "spec": { "connectors": ["desktop"], "permissions": { "process": true, "filesystem": ["read"] } },
+  "recording": "D:/recordings/wechat-flow.json"
+}
+```
+
+生成器会写入 `recordings/flow.json`，desktop 连接器提供：
+
+```js
+loadRecording()
+replayRecording({ speed: 1 })
+```
+
 - 录制鼠标移动/左右键/部分键盘事件/前台窗口标题
 - JSON 事件带时间戳
 - 回放前先校验格式；`--dry-run` 只校验

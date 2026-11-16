@@ -130,10 +130,11 @@ server.registerTool('create_plugin', {
     implSource: z.string().max(200000).optional().describe('可选 ESM 源码，必须 export async function execute(args)；不传则生成 fixture 行数统计样例'),
     spec: z.record(z.string(), z.any()).optional().describe('可选 Plugin Spec（tools/parameters/permissions/acceptance）；推荐优先使用'),
     files: z.array(z.object({ path: z.string(), content: z.string().max(200000) })).optional().describe('多文件：lib/*、tests/*、fixtures/*'),
+    recording: z.string().optional().describe('可选桌面录制 JSON 路径；需要 spec.connectors=["desktop"]'),
     install: z.boolean().optional().default(true).describe('生成后是否安装到当前 DSH profile'),
     profile: z.string().optional().describe('DSH profile，默认环境 DSH_PROFILE 或 desktop'),
   },
-}, async ({ brief, pluginId, name, toolName, version, description, fixture, implSource, spec, files, install, profile }) => {
+}, async ({ brief, pluginId, name, toolName, version, description, fixture, implSource, spec, files, recording, install, profile }) => {
   const created = await call('POST', '/requests', {
     brief,
     params: {
@@ -142,6 +143,7 @@ server.registerTool('create_plugin', {
       ...(implSource ? { implSource } : {}),
       ...(spec ? { spec } : {}),
       ...(files ? { files } : {}),
+      ...(recording ? { recording } : {}),
     },
   });
   const requestId = created.request.id;

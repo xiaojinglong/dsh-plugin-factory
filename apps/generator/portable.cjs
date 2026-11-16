@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { normalizeSpec, legacySpec } = require('../../packages/plugin-spec');
+const { loadRecording } = require('../../packages/recording');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const NETWORK_GUARD = path.join(__dirname, 'templates', 'sandbox-network.cjs');
@@ -191,6 +192,16 @@ function generatePortable(opts) {
     fs.mkdirSync(path.join(out, 'lib', 'connectors'), { recursive: true });
     fs.copyFileSync(src, path.join(out, 'lib', 'connectors', `${name}.js`));
   }
+  if (spec.connectors?.includes('desktop')) {
+    fs.copyFileSync(path.join(ROOT, 'scripts', 'desktop-replay.ps1'), path.join(out, 'lib', 'connectors', 'desktop-replay.ps1'));
+  }
+  const recordingPath = opts.recording ? path.resolve(opts.recording) : '';
+  if (recordingPath) {
+    if (!spec.connectors?.includes('desktop')) fail('recording 只能配合 connectors:["desktop"] 使用');
+    const rec = loadRecording(recordingPath);
+    fs.mkdirSync(path.join(out, 'recordings'), { recursive: true });
+    fs.writeFileSync(path.join(out, 'recordings', 'flow.json'), JSON.stringify(rec, null, 2) + '\n', 'utf8');
+  }
 
   const tools = spec.tools;
   const multi = tools.length > 1;
@@ -240,7 +251,7 @@ ${registrations}
     ...(Object.keys(dependencies).length ? { dependencies } : {}),
     repository: { type: 'git', url: 'git+https://github.com/xiaojinglong/dsh-plugin-factory.git', directory: `portable-plugins/${id}` },
     exports: { '.': './index.js', './locale/*.json': './locale/*.json', './icon': './icon.svg' },
-    files: ['cordis.patch.yml', 'index.js', 'lib', 'skills', 'tests', 'fixtures', 'build.json', 'README.md', 'LICENSE', 'locale', 'docs', 'icon.svg'],
+    files: ['cordis.patch.yml', 'index.js', 'lib', 'skills', 'tests', 'fixtures', 'recordings', 'build.json', 'README.md', 'LICENSE', 'locale', 'docs', 'icon.svg'],
     engines: { node: '>=24' },
     dsh: { bundle: { patch: './cordis.patch.yml' }, requires: spec.requires || { platform: 'any', apps: [], desktop: false } },
   };
@@ -254,7 +265,7 @@ ${registrations}
   if (fs.existsSync(license)) fs.copyFileSync(license, path.join(out, 'LICENSE'));
   fs.writeFileSync(path.join(out, 'build.json'), JSON.stringify({
     generatedAt: new Date().toISOString(), target: 'portable-host', id, name, toolName, effect, outputs, spec,
-    files: extraFiles.map((f) => String(f.path).replace(/\\/g, '/')),
+    files: extraFiles.map((f) => String(f.path).replace(/\\/g, '/')), recording: recordingPath ? 'recordings/flow.json' : null,
   }, null, 2) + '\n', 'utf8');
   fs.writeFileSync(path.join(out, 'evidence', 'generation.json'), JSON.stringify({
     generatedAt: new Date().toISOString(), target: 'portable-host', spec, files: fs.readdirSync(out),

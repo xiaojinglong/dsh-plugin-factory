@@ -96,7 +96,7 @@ async function runPipeline({ baseUrl = 'http://127.0.0.1:8780', token, requestId
       generatePortable({
         id: pluginId, name, out, fixture: p.fixture, toolName: p.toolName, description: p.description,
         effect: p.effect, outputs: p.outputs, implFile: p.implFile, implSource: p.implSource,
-        spec: p.spec, files: p.files, version: p.version,
+        spec: p.spec, files: p.files, version: p.version, recording: p.recording,
       });
       return path.relative(dataRoot, path.join(out, 'evidence', 'generation.json')).split(path.sep).join('/');
     });

@@ -92,6 +92,26 @@ test('portable spec：file 连接器注入并通过校验', async () => {
   assert.equal(v.ok, true, JSON.stringify(v.errors));
 });
 
+test('portable spec：desktop 录制注入插件', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'portable-rec-'));
+  const rec = path.join(dir, 'rec.json');
+  fs.writeFileSync(rec, JSON.stringify({ name: 'demo', durationMs: 100, events: [{ t: 0, type: 'mouse_move', x: 1, y: 2 }] }), 'utf8');
+  const out = path.join(dir, 'rec-demo');
+  generatePortable({
+    id: 'rec-demo', name: 'Rec Demo', out, recording: rec,
+    spec: {
+      permissions: { filesystem: ['read'], network: [], process: true },
+      requires: { platform: 'win32', desktop: true },
+      connectors: ['desktop'],
+      tools: [{ name: 'rec_demo' }],
+    },
+  });
+  assert.ok(fs.existsSync(path.join(out, 'recordings', 'flow.json')));
+  assert.ok(fs.existsSync(path.join(out, 'lib', 'connectors', 'desktop-replay.ps1')));
+  const v = await validatePortable(out);
+  assert.equal(v.ok, true, JSON.stringify(v.errors));
+});
+
 test('portable spec：desktop 连接器要求 process 权限', () => {
   const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-conn-bad-')), 'conn-bad');
   assert.throws(() => generatePortable({
