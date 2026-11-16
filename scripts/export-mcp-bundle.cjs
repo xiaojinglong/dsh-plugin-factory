@@ -29,7 +29,7 @@ function makeBundle(id, opts = {}) {
   const manifestFile = path.join(manifestsDir, `${id}.json`);
   if (!fs.existsSync(manifestFile)) throw new Error(`找不到 manifest：${manifestFile}`);
   const m = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
-  if (m.legacy) return null;
+  if (m.legacy && args['include-legacy'] !== 'true') return null;
   const serverName = opts.serverName || `${id}-bundle`;
   const out = path.resolve(opts.out || path.join(outRoot, `${id}-mcp-bundle`));
   const toolDir = path.resolve(ROOT, 'deployment', 'tools', `${id}-mcp`);
