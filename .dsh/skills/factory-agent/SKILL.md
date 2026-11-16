@@ -19,6 +19,7 @@ description: 插件工厂 Agent（单机版）：用户在 DSH 对话里描述�
 |---|---|
 | `list_plugins` | 先查已有插件，能复用就复用 |
 | `create_plugin` | **主入口**：建需求 → pipeline 生成/校验/导出 zip → 验收 → 可选安装 |
+| `repair_plugin` | 复用失败 requestId，覆盖 spec/files 重跑；attempt 最多 3 次 |
 | `list_registry` | 查看已生成/安装插件的版本、工具、zip |
 | `rollback_plugin` | 回滚到上一个已安装版本，或指定历史 version |
 | `get_request` | 查询 requestId 状态/步骤/证据 |
@@ -93,7 +94,7 @@ test('acceptance', async () => {
    - 网络目标必须写进 spec.permissions.network；沙箱守卫拦截未声明的 fetch/net/http/dns
    - 权限必须写进 spec；不能声明未使用的网络/文件权限
 4. **调用 `create_plugin`**：传 `spec`、`files`、`install: true`。
-   - 返回 `ok:false` 时，读 `diagnostics`，修 `spec/files` 后重试
+   - 返回 `ok:false` 时，读 `diagnostics`，修 `spec/files` 后调用 `repair_plugin({requestId, spec/files})`
    - 最多 3 次；不要绕过测试
 5. **交付**：告诉用户：
    - 插件名、工具名

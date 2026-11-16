@@ -57,39 +57,9 @@ server.registerTool('create_request', {
   },
 }, async ({ brief, params, idempotency_key }) => toText(await call('POST', '/requests', { brief, params }, idempotency_key ? { 'idempotency-key': idempotency_key } : {})));
 
-server.registerTool('create_plugin', {
-  title: '对话创建并导出 portable 插件',
-  description: '一条工具完成：创建需求 → pipeline 生成/校验/导出 zip → 验收 → 可选安装。DSH 根据用户自然语言工作流编写 implSource（ESM export execute(args)），用户不需要手写代码。',
-  inputSchema: {
-    brief: z.string().min(1).max(5000).describe('用户的工作流描述'),
-    pluginId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).describe('kebab-case 插件 id'),
-    name: z.string().min(1).max(100).describe('插件显示名'),
-    toolName: z.string().optional().describe('DSH 工具名，默认由 pluginId 转下划线'),
-    version: z.string().optional().describe('语义化版本，默认 0.1.0'),
-    description: z.string().optional().describe('工具描述'),
-    fixture: z.string().optional().describe('可选 fixture 绝对路径；不传则用生成器示例数据'),
-    implSource: z.string().max(200000).optional().describe('可选 ESM 源码，必须 export async function execute(args)；不传则生成 fixture 行数统计样例'),
-    spec: z.record(z.string(), z.any()).optional().describe('可选 Plugin Spec（tools/parameters/permissions/acceptance）；推荐优先使用'),
-    files: z.array(z.object({ path: z.string(), content: z.string().max(200000) })).optional().describe('多文件：lib/*、tests/*、fixtures/*'),
-    install: z.boolean().optional().default(true).describe('生成后是否安装到当前 DSH profile'),
-    profile: z.string().optional().describe('DSH profile，默认环境 DSH_PROFILE 或 desktop'),
-  },
-}, async ({ brief, pluginId, name, toolName, version, description, fixture, implSource, spec, files, install, profile }) => {
-  const created = await call('POST', '/requests', {
-    brief,
-    params: {
-      pluginId, name, target: 'portable-host', toolName, version, description,
-      ...(fixture ? { fixture } : {}),
-      ...(implSource ? { implSource } : {}),
-      ...(spec ? { spec } : {}),
-      ...(files ? { files } : {}),
-    },
-  });
-  const requestId = created.request.id;
+async function runPortable({ requestId, pluginId, spec, toolName, version, install = true, profile, attempt = 1, parentRequestId = null }) {
   const pipeline = spawnSync(process.execPath, [path.join(ROOT, 'apps', 'generator', 'pipeline.cjs'), '--request', requestId], {
-    cwd: ROOT,
-    encoding: 'utf8',
-    timeout: 600000,
+    cwd: ROOT, encoding: 'utf8', timeout: 600000,
     env: { ...process.env, CONTROL_PLANE_TOKEN: TOKEN, CONTROL_PLANE_URL: BASE },
   });
   const output = `${pipeline.stdout || ''}\n${pipeline.stderr || ''}`;
@@ -99,12 +69,13 @@ server.registerTool('create_plugin', {
       const f = path.join(config.FACTORY_DATA_ROOT, 'generator', 'runs', requestId, 'failure.json');
       if (fs.existsSync(f)) diagnostics = JSON.parse(fs.readFileSync(f, 'utf8'));
     } catch { /* ignore */ }
-    return toText({
-      ok: false, requestId, pluginId,
-      error: output.slice(-1500),
-      diagnostics,
-      next: '根据 diagnostics 修复 spec/files 后重新调用 create_plugin；不要跳过测试',
-    });
+    return {
+      ok: false, requestId, pluginId, attempt, maxAttempts: 3, parentRequestId,
+      error: output.slice(-1500), diagnostics,
+      next: attempt >= 3
+        ? '已达到最大修复次数；把 diagnostics 交给用户或重写 spec'
+        : `调用 repair_plugin({requestId:"${requestId}", spec/files:修复后的内容}) 继续；不要跳过测试`,
+    };
   }
   const match = output.match(/\{[\s\S]*\}\s*$/);
   if (!match) throw new Error(`pipeline 未返回 JSON：${output.slice(-800)}`);
@@ -129,22 +100,86 @@ server.registerTool('create_plugin', {
     });
     installOutput = `${r.stdout || ''}${r.stderr || ''}`.slice(-1200);
     installed = r.status === 0;
-    if (!installed) {
-      return toText({ ok: false, requestId, pluginId, zip, pluginDir: summary.pluginDir, installed: false, error: installOutput });
-    }
+    if (!installed) return { ok: false, requestId, pluginId, zip, pluginDir: summary.pluginDir, installed: false, error: installOutput, attempt, parentRequestId };
   }
   const toolNames = spec?.tools?.map((t) => t.name) || [toolName || pluginId.replace(/-/g, '_')];
   const reg = registry.record({
     id: pluginId, version: version || '0.1.0', requestId, zip, pluginDir: summary.pluginDir,
     tools: toolNames, installed,
   });
-  return toText({
+  return {
     ok: true, requestId, pluginId, toolName: toolName || pluginId.replace(/-/g, '_'),
     version: version || '0.1.0', zip, pluginDir: summary.pluginDir, installed, state: 'accepted',
-    tools: toolNames, registry: reg,
+    tools: toolNames, registry: reg, attempt, parentRequestId,
     next: installed ? '重启 DSH 后工具可见（或等待 HMR）' : '用 dsh-factory 安装 zip，然后重启 DSH',
     installOutput: installOutput || undefined,
+  };
+}
+
+server.registerTool('create_plugin', {
+  title: '对话创建并导出 portable 插件',
+  description: '一条工具完成：创建需求 → pipeline 生成/校验/导出 zip → 验收 → 可选安装。DSH 根据用户自然语言工作流编写 spec/files（多文件+测试），用户不需要手写代码。',
+  inputSchema: {
+    brief: z.string().min(1).max(5000).describe('用户的工作流描述'),
+    pluginId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).describe('kebab-case 插件 id'),
+    name: z.string().min(1).max(100).describe('插件显示名'),
+    toolName: z.string().optional().describe('DSH 工具名，默认由 pluginId 转下划线'),
+    version: z.string().optional().describe('语义化版本，默认 0.1.0'),
+    description: z.string().optional().describe('工具描述'),
+    fixture: z.string().optional().describe('可选 fixture 绝对路径；不传则用生成器示例数据'),
+    implSource: z.string().max(200000).optional().describe('可选 ESM 源码，必须 export async function execute(args)；不传则生成 fixture 行数统计样例'),
+    spec: z.record(z.string(), z.any()).optional().describe('可选 Plugin Spec（tools/parameters/permissions/acceptance）；推荐优先使用'),
+    files: z.array(z.object({ path: z.string(), content: z.string().max(200000) })).optional().describe('多文件：lib/*、tests/*、fixtures/*'),
+    install: z.boolean().optional().default(true).describe('生成后是否安装到当前 DSH profile'),
+    profile: z.string().optional().describe('DSH profile，默认环境 DSH_PROFILE 或 desktop'),
+  },
+}, async ({ brief, pluginId, name, toolName, version, description, fixture, implSource, spec, files, install, profile }) => {
+  const created = await call('POST', '/requests', {
+    brief,
+    params: {
+      pluginId, name, target: 'portable-host', toolName, version, description, attempt: 1,
+      ...(fixture ? { fixture } : {}),
+      ...(implSource ? { implSource } : {}),
+      ...(spec ? { spec } : {}),
+      ...(files ? { files } : {}),
+    },
   });
+  const requestId = created.request.id;
+  return toText(await runPortable({ requestId, pluginId, spec, toolName, version, install, profile, attempt: 1 }));
+});
+
+server.registerTool('repair_plugin', {
+  title: '修复并重跑插件',
+  description: '复用失败请求的 spec/params，覆盖 files/spec 后重新生成/校验/安装；自动记录 attempt，最多 3 次。',
+  inputSchema: {
+    requestId: z.string().describe('失败的 requestId'),
+    spec: z.record(z.string(), z.any()).optional().describe('修复后的完整 spec；不传沿用原请求'),
+    files: z.array(z.object({ path: z.string(), content: z.string().max(200000) })).optional().describe('修复后的多文件；不传沿用原请求'),
+    install: z.boolean().optional().default(true),
+    profile: z.string().optional(),
+  },
+}, async ({ requestId, spec, files, install, profile }) => {
+  const got = await call('GET', `/requests/${encodeURIComponent(requestId)}`);
+  const parent = got.request;
+  let p = parent.params || {};
+  if (typeof p === 'string') { try { p = JSON.parse(p); } catch { p = {}; } }
+  if (!p || !p.pluginId) return toText({ ok: false, error: `请求缺少 portable params：${requestId}` });
+  if (p.target && p.target !== 'portable-host') return toText({ ok: false, error: `repair_plugin 只支持 portable-host：${p.target}` });
+  const attempt = Number(p.attempt || 1) + 1;
+  if (attempt > 3) return toText({ ok: false, error: `已达到最大修复次数 3：${requestId}`, attempt, maxAttempts: 3 });
+  const nextSpec = spec || p.spec;
+  const nextFiles = files || p.files;
+  if (!nextSpec && !nextFiles) return toText({ ok: false, error: 'repair_plugin 需要提供修复后的 spec 或 files' });
+  const created = await call('POST', '/requests', {
+    brief: `repair ${requestId}: ${String(parent.brief || '').slice(0, 300)}`,
+    params: {
+      ...p, spec: nextSpec, files: nextFiles, attempt, parentRequestId: requestId,
+    },
+  });
+  return toText(await runPortable({
+    requestId: created.request.id, pluginId: p.pluginId, spec: nextSpec,
+    toolName: p.toolName, version: p.version, install, profile, attempt, parentRequestId: requestId,
+  }));
 });
 
 server.registerTool('list_registry', {

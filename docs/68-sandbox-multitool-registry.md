@@ -73,6 +73,17 @@ npm install --omit=dev --ignore-scripts
 
 沙箱只传声明过的 env；`required` 缺失直接失败；不再把整个环境变量传给用户代码。
 
+### 修复循环
+
+`create_plugin` 失败返回 `requestId + diagnostics + attempt`。  
+`repair_plugin({requestId, spec/files})` 复用原请求参数重跑：
+
+- attempt 1 → 失败
+- repair → attempt 2 → 成功
+- 最多 3 次；超过返回失败
+
+实测 `repair-demo`：首次 validate 失败，repair 后 attempt=2，成功导出 zip。
+
 ### 工作流基准
 
 `benchmarks/workflows/*.json` + `npm run benchmark`：
@@ -95,7 +106,7 @@ npm install --omit=dev --ignore-scripts
 
 ## 仍未完成
 
-1. 网络/系统调用真正隔离（需服务形态或 OS sandbox）
+1. 网络/系统调用 OS 级隔离（当前是策略守卫）
 2. 20 个真实工作流基准集（当前 4 个）
-3. 自动修复循环（目前 Agent 读 diagnostics 重试）
-4. 真实外部 API/浏览器插件的凭证配置 UI
+3. 真实外部 API/浏览器插件的凭证配置 UI
+4. 工厂侧完全自主修复（当前 DSH Agent 调 repair_plugin）
