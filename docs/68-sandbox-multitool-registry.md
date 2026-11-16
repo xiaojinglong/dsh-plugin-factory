@@ -124,7 +124,15 @@ npm install --omit=dev --ignore-scripts
 
 `npm run catalog` 生成带 SHA-256 的目录；`npm run catalog:install -- --id <id> [--catalog <file|url>]` 校验后安装。
 
-远程目录格式相同：`zip` 可为相对 URL，安装器下载到临时目录、校验 SHA-256、再调用 dsh-factory。
+远程发布：
+
+```powershell
+npm run catalog:publish
+npm run catalog:serve
+npm run catalog:install -- --id weixin-xiaopang --catalog http://127.0.0.1:8788/plugins.json --dry-run
+```
+
+已实测从本地 HTTP 目录下载 zip、校验 SHA-256 成功。
 
 ### 桌面录制/回放
 

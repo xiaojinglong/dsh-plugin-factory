@@ -31,10 +31,20 @@ npm run catalog:install -- --id weixin-xiaopang
 远程目录同一格式：
 
 ```powershell
-npm run catalog:install -- --id demo --catalog https://example.com/plugins.json
+npm run catalog:publish
+npm run catalog:serve
+# 另开窗口
+npm run catalog:install -- --id weixin-xiaopang --catalog http://127.0.0.1:8788/plugins.json --dry-run
 ```
 
-远程 entry 的 `zip` 可以是相对 URL；安装器会下载到临时目录、校验 SHA-256、再安装。
+发布目录：
+
+```text
+catalog/public/plugins.json
+catalog/public/zips/*.zip
+```
+
+远程 entry 的 `zip` 是相对 URL；安装器下载到临时目录、校验 SHA-256、再安装。
 
 后续远程市场需要：
 
