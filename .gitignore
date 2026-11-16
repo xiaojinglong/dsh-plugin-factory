@@ -49,3 +49,5 @@ ops/
 bundles/
 
 platform/manifests/.bundles/
+
+data/security/
