@@ -149,7 +149,7 @@ node cli.cjs secret <id> set K=V  # 凭证加密保存（DPAPI）
 |---|---|
 | 插件 | **30 个**（12 个原有 + 9 岗位 + 1 流式日志 + 5 Wave 1 + 1 趋势选品 + 2 动作型），全部健康 |
 | MCP/Skill | 30 套，DSH patch 由 installer 注入 |
-| 测试 | **113/113** 通过（契约 + runtime + 复杂场景 + 安装器 + 控制面 + MCP + 生成/安装/发布/运维 + 岗位场景 + CSV/API + 流式 + 趋势 + 动作型 + bundle/portable 导出） |
+| 测试 | **114/114** 通过（契约 + runtime + 复杂场景 + 安装器 + 控制面 + MCP + 生成/安装/发布/运维 + 岗位场景 + CSV/API + 流式 + 趋势 + 动作型 + bundle/portable 导出） |
 | 自检 | `doctor --health` 全部通过（仅 legacy 1 条 warn） |
 | 鉴权 | v3 服务 no-token=401 / manifest token=200 |
 | 交付 | `main` + tag `v3.6.0-action-write`；岗位矩阵见 `docs/39`，动作型见 `docs/46/47/48` |

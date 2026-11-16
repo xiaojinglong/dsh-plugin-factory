@@ -1,0 +1,26 @@
+name: release-portable
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'portable-v*'
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: node scripts/export-plugin.cjs --id excel-status-mark --out dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: excel-status-mark-portable
+          path: |
+            dist/excel-status-mark-0.1.0.zip
+            dist/excel-status-mark-0.1.0.zip.sha256
+            dist/excel-status-mark-0.1.0.scan.json

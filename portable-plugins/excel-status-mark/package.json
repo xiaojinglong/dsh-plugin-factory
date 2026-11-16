@@ -1,8 +1,16 @@
 {
-  "name": "@local/excel-status-mark-portable",
+  "name": "dsh-plugin-excel-status-mark",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "type": "module",
+  "description": "DSH portable plugin: mark order statuses in an xlsx without modifying the input.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiaojinglong/dsh-plugin-factory.git",
+    "directory": "portable-plugins/excel-status-mark"
+  },
+  "keywords": ["dsh", "dsh-plugin", "excel", "xlsx", "automation"],
   "exports": { ".": "./index.js", "./locale/*.json": "./locale/*.json", "./icon": "./icon.svg" },
   "files": ["cordis.patch.yml", "index.js", "lib", "skills", "README.md", "LICENSE", "locale", "docs", "icon.svg"],
   "dependencies": { "exceljs": "^4.4.0" },

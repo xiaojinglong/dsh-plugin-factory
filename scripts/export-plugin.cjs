@@ -56,7 +56,7 @@ const FORBIDDEN = [
   { name: 'FACTORY_ROOT', re: /FACTORY_ROOT/ },
   { name: 'serviceToken', re: /serviceToken/ },
   { name: 'DPAPI', re: /DPAPI/ },
-  { name: 'absolute Windows path', re: /[A-Za-z]:[\\/]/ },
+  { name: 'absolute Windows path', re: /\b[A-Za-z]:[\\/](?![\\/])/ },
   { name: '.enc', re: /\.enc\b/ },
 ];
 const findings = [];

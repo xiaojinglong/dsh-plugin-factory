@@ -9,6 +9,8 @@
 > **2026-11-16 Task 6 结果：** `export-plugin.cjs` 生成 zip/checksum/scan；zip 8.8KB，禁止项 0；详见 `docs/56`。
 >
 > **2026-11-16 Task 7 结果：** 从工厂外临时目录安装 zip 成功（vendored deps），`excel_status_mark` 真实处理 6 行；详见 `docs/57`。
+>
+> **2026-11-16 Task 8 结果：** 包名 `dsh-plugin-excel-status-mark` 安装/调用通过；导出 zip + checksum + scan；release-portable workflow 已加；详见 `docs/58`。
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
