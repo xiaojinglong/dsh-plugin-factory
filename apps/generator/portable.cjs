@@ -14,6 +14,90 @@ function icon() {
   return '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><rect x="6" y="8" width="24" height="20" rx="3" fill="#1f7a4d"/><path d="M11 14h14M11 19h14M11 24h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>\n';
 }
 
+function sandboxSource() {
+  return `import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { spawn } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
+
+const LIB = path.dirname(fileURLToPath(import.meta.url))
+const ROOT = path.resolve(LIB, '..')
+const CHILD = path.join(LIB, 'sandbox-child.mjs')
+const BUILD = path.join(ROOT, 'build.json')
+
+function strings(value, out = []) {
+  if (typeof value === 'string') out.push(value)
+  else if (Array.isArray(value)) for (const v of value) strings(v, out)
+  else if (value && typeof value === 'object') for (const v of Object.values(value)) strings(v, out)
+  return out
+}
+function childEnv() {
+  const keep = ['PATH', 'Path', 'SystemRoot', 'SYSTEMROOT', 'TEMP', 'TMP', 'HOME', 'USERPROFILE', 'DSH_PLUGIN_DATA_DIR']
+  const env = {}
+  for (const k of keep) if (process.env[k]) env[k] = process.env[k]
+  return env
+}
+
+export async function runTool({ handler = null, args = {} } = {}) {
+  const build = JSON.parse(fs.readFileSync(BUILD, 'utf8'))
+  const spec = build.spec || {}
+  const perms = spec.permissions || { filesystem: ['read'], network: [] }
+  const dataRoot = process.env.DSH_PLUGIN_DATA_DIR || path.join(os.tmpdir(), 'dsh-portable', build.id || 'plugin')
+  fs.mkdirSync(dataRoot, { recursive: true })
+  const reqFile = path.join(dataRoot, \`req-\${process.pid}-\${Date.now()}.json\`)
+  fs.writeFileSync(reqFile, JSON.stringify({ handler, args, multi: !!handler }), 'utf8')
+
+  const read = new Set([ROOT, CHILD, reqFile])
+  for (const s of strings(args)) if (path.isAbsolute(s)) read.add(s)
+  const write = new Set()
+  if (perms.filesystem?.includes('write') && typeof args.output_path === 'string' && path.isAbsolute(args.output_path)) write.add(args.output_path)
+  const nodeArgs = [
+    '--permission',
+    ...[...read].map((p) => \`--allow-fs-read=\${p}\`),
+    ...[...write].map((p) => \`--allow-fs-write=\${p}\`),
+    CHILD, reqFile,
+  ]
+  try {
+    return await new Promise((resolve, reject) => {
+      const child = spawn(process.execPath, nodeArgs, { cwd: ROOT, env: childEnv(), stdio: ['ignore', 'pipe', 'pipe'] })
+      let out = ''
+      let err = ''
+      const timer = setTimeout(() => { try { child.kill(); } catch {} reject(new Error('sandbox timeout (30000ms)')) }, 30000)
+      child.stdout.on('data', (c) => { out += c })
+      child.stderr.on('data', (c) => { err += c })
+      child.on('error', (e) => { clearTimeout(timer); reject(e) })
+      child.on('close', (code) => {
+        clearTimeout(timer)
+        let parsed
+        try { parsed = JSON.parse(out) } catch { return reject(new Error(\`sandbox bad output (exit=\${code}): \${out.slice(-300)} \${err.slice(-300)}\`)) }
+        if (!parsed.ok) return reject(new Error(parsed.error || 'sandbox failed'))
+        resolve(parsed.result)
+      })
+    })
+  } finally {
+    try { fs.rmSync(reqFile, { force: true }) } catch {}
+  }
+}
+`;
+}
+
+function sandboxChildSource() {
+  return `import fs from 'node:fs'
+const req = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'))
+console.log = (...a) => process.stderr.write(a.join(' ') + '\\n')
+try {
+  const mod = req.multi ? await import('./handlers.js') : await import('./impl.js')
+  const fn = req.multi ? mod.handlers?.[req.handler] : mod.execute
+  if (typeof fn !== 'function') throw new Error('missing handler: ' + String(req.handler || 'execute'))
+  const result = await fn(req.args || {})
+  process.stdout.write(JSON.stringify({ ok: true, result }))
+} catch (e) {
+  process.stdout.write(JSON.stringify({ ok: false, error: String(e && e.message || e) }))
+  process.exitCode = 1
+}
+`;
+}
 function implSource(inputPathExpr) {
   return `import fs from 'node:fs'
 import path from 'node:path'
@@ -73,17 +157,19 @@ function generatePortable(opts) {
     const rel = String(f.path || '').replace(/\\/g, '/');
     if (!rel || path.posix.isAbsolute(rel) || rel.split('/').includes('..')) fail(`非法文件路径：${rel}`);
     if (!/^(lib|tests|fixtures)\//.test(rel)) fail(`文件只允许放在 lib/tests/fixtures：${rel}`);
+    if (rel === 'lib/sandbox.js' || rel === 'lib/sandbox-child.mjs') fail(`文件由工厂生成，不能覆盖：${rel}`);
     const target = path.join(out, rel);
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, String(f.content ?? ''), 'utf8');
   }
+  fs.writeFileSync(path.join(out, 'lib', 'sandbox.js'), sandboxSource(), 'utf8');
+  fs.writeFileSync(path.join(out, 'lib', 'sandbox-child.mjs'), sandboxChildSource(), 'utf8');
 
   const tools = spec.tools;
   const multi = tools.length > 1;
   if (multi && !fs.existsSync(path.join(out, 'lib', 'handlers.js'))) fail('多工具插件必须在 files 中提供 lib/handlers.js');
   if (!multi && !fs.existsSync(path.join(out, 'lib', 'impl.js'))) fail('单工具插件缺少 lib/impl.js');
 
-  const importLine = multi ? "import { handlers } from './lib/handlers.js'" : "import { execute } from './lib/impl.js'";
   const registrations = tools.map((t) => `  ctx.tools.register({
     name: ${JSON.stringify(t.name)},
     description: ${JSON.stringify(t.description)},
@@ -92,14 +178,14 @@ function generatePortable(opts) {
       schema: ${JSON.stringify(t.output)},
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
-    async execute(args) { return ${multi ? `handlers[${JSON.stringify(t.handler)}](args)` : 'execute(args)'} },
+    async execute(args) { return runTool({ handler: ${multi ? JSON.stringify(t.handler) : 'null'}, args }) },
   })`).join('\n');
   const skillFile = path.join(out, 'skills', id, 'SKILL.md');
   fs.writeFileSync(skillFile, `# ${name}\n\n${description}\n\nTools:\n${tools.map((t) => `- \`${t.name}\`: ${t.description}`).join('\n')}\n`, 'utf8');
   fs.writeFileSync(path.join(out, 'index.js'), `import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-${importLine}
+import { runTool } from './lib/sandbox.js'
 
 const SKILL_FILE = fileURLToPath(new URL('./skills/${id}/SKILL.md', import.meta.url))
 
@@ -126,7 +212,7 @@ ${registrations}
     ...(Object.keys(dependencies).length ? { dependencies } : {}),
     repository: { type: 'git', url: 'git+https://github.com/xiaojinglong/dsh-plugin-factory.git', directory: `portable-plugins/${id}` },
     exports: { '.': './index.js', './locale/*.json': './locale/*.json', './icon': './icon.svg' },
-    files: ['cordis.patch.yml', 'index.js', 'lib', 'skills', 'tests', 'fixtures', 'README.md', 'LICENSE', 'locale', 'docs', 'icon.svg'],
+    files: ['cordis.patch.yml', 'index.js', 'lib', 'skills', 'tests', 'fixtures', 'build.json', 'README.md', 'LICENSE', 'locale', 'docs', 'icon.svg'],
     engines: { node: '>=24' },
     dsh: { bundle: { patch: './cordis.patch.yml' } },
   };
@@ -171,15 +257,15 @@ async function validatePortable(dir) {
   const implRel = multi ? 'lib/handlers.js' : 'lib/impl.js';
   add('package:name', /^dsh-plugin-[a-z0-9-]+$/.test(pkg.name || ''), pkg.name || '');
   add('package:bundle', pkg.dsh && pkg.dsh.bundle && pkg.dsh.bundle.patch === './cordis.patch.yml', JSON.stringify(pkg.dsh || {}));
-  for (const f of ['cordis.patch.yml', 'index.js', implRel, 'skills', 'fixtures/data.json']) add(`exists:${f}`, fs.existsSync(path.join(out, f)), f);
-  for (const f of ['index.js', implRel]) {
+  for (const f of ['cordis.patch.yml', 'index.js', implRel, 'lib/sandbox.js', 'lib/sandbox-child.mjs', 'build.json', 'skills', 'fixtures/data.json']) add(`exists:${f}`, fs.existsSync(path.join(out, f)), f);
+  for (const f of ['index.js', implRel, 'lib/sandbox.js', 'lib/sandbox-child.mjs']) {
     if (!fs.existsSync(path.join(out, f))) continue;
     const r = await nodeCheck(path.join(out, f));
     add(`syntax:${f}`, r.ok, r.error);
   }
-  const text = ['index.js', implRel, 'package.json', 'cordis.patch.yml'].map((f) => fs.existsSync(path.join(out, f)) ? fs.readFileSync(path.join(out, f), 'utf8') : '')
-    .concat(fs.existsSync(path.join(out, 'lib')) ? fs.readdirSync(path.join(out, 'lib')).filter((f) => f.endsWith('.js')).map((f) => fs.readFileSync(path.join(out, 'lib', f), 'utf8')) : [])
-    .join('\n');
+  const allLib = fs.existsSync(path.join(out, 'lib')) ? fs.readdirSync(path.join(out, 'lib')).filter((f) => f.endsWith('.js') || f.endsWith('.mjs')) : [];
+  const userFiles = [implRel, ...allLib.filter((f) => !['sandbox.js', 'sandbox-child.mjs'].includes(f)).map((f) => `lib/${f}`)];
+  const text = ['index.js', 'package.json', 'cordis.patch.yml', ...userFiles].map((f) => fs.existsSync(path.join(out, f)) ? fs.readFileSync(path.join(out, f), 'utf8') : '').join('\n');
   add('no-factory-path', !/FACTORY_ROOT|D:[\\/]www|C:[\\/]Users/.test(text), 'forbidden path');
   add('no-token', !/serviceToken|MCP_SERVICE_TOKEN/.test(text), 'token');
 
@@ -197,7 +283,6 @@ async function validatePortable(dir) {
   if (/\b(require\(['"]node:fs|from ['"]node:fs|require\(['"]fs|from ['"]fs)/.test(text) && !perms.filesystem?.includes('read')) add('permission:fs-read', false, '代码读取文件但未声明 filesystem read');
   if (/\b(fetch\(|require\(['"](?:node:)?https?|from ['"](?:node:)?https?)/.test(text) && !perms.network?.length) add('permission:network', false, '代码访问网络但未声明 network');
   if (/\b(child_process|spawn\(|exec\()/.test(text) && !perms.process) add('permission:process', false, '代码启动子进程但未声明 process');
-
   const testsDir = path.join(out, 'tests');
   const testFiles = fs.existsSync(testsDir) ? fs.readdirSync(testsDir).filter((f) => /\.(test|spec)\.(mjs|js)$/.test(f)) : [];
   if (testFiles.length) {

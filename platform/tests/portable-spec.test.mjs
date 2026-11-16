@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const require = createRequire(import.meta.url);
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -61,6 +61,29 @@ test('portable spec：多工具 handlers', async () => {
   const v = await validatePortable(out);
   assert.equal(v.ok, true, JSON.stringify(v.errors));
   const index = fs.readFileSync(path.join(out, 'index.js'), 'utf8');
-  assert.match(index, /handlers\["sum"\]/);
+  assert.match(index, /runTool\(\{ handler: "sum"/);
   assert.match(index, /name: "count_values"/);
+});
+
+test('portable sandbox：用户代码在受限子进程执行', async () => {
+  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-sandbox-')), 'sandbox-demo');
+  generatePortable({
+    id: 'sandbox-demo', name: 'Sandbox Demo', out,
+    spec: { description: 'Sandbox demo.', permissions: { filesystem: ['read'], network: [] }, tools: [{ name: 'sandbox_demo' }] },
+    files: [{ path: 'lib/impl.js', content: "import fs from 'node:fs'\nimport path from 'node:path'\nimport { fileURLToPath } from 'node:url'\nconst F = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'fixtures', 'data.json')\nexport async function execute() { const d = JSON.parse(fs.readFileSync(F, 'utf8')); return { total: d.rows.length } }\n" }],
+  });
+  const mod = await import(`${pathToFileURL(path.join(out, 'lib', 'sandbox.js')).href}?t=${Date.now()}`);
+  const result = await mod.runTool({ args: {} });
+  assert.equal(result.total, 2);
+});
+
+test('portable sandbox：越界读取被拒绝', async () => {
+  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-sandbox-deny-')), 'sandbox-deny');
+  generatePortable({
+    id: 'sandbox-deny', name: 'Sandbox Deny', out,
+    spec: { description: 'Deny demo.', permissions: { filesystem: ['read'], network: [] }, tools: [{ name: 'sandbox_deny' }] },
+    files: [{ path: 'lib/impl.js', content: "import fs from 'node:fs'\nexport async function execute() { return { data: fs.readFileSync('C:/Windows/win.ini', 'utf8') } }\n" }],
+  });
+  const mod = await import(`${pathToFileURL(path.join(out, 'lib', 'sandbox.js')).href}?t=${Date.now()}`);
+  await assert.rejects(() => mod.runTool({ args: {} }), /sandbox|permission|EACCES|ERR_ACCESS_DENIED/i);
 });
