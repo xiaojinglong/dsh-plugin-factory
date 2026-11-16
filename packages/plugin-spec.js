@@ -2,6 +2,7 @@
 // packages/plugin-spec.js —— portable 插件 Spec 契约（无第三方依赖）
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const TOOL = /^[a-z][a-z0-9_]*$/;
+const { validateConnectors } = require('./connectors');
 
 function fail(errors) { const e = new Error(errors.join('; ')); e.errors = errors; throw e; }
 
@@ -59,12 +60,31 @@ function normalizeSpec(input = {}) {
   });
   if (new Set(credentials.map((c) => c.env)).size !== credentials.length) errors.push('credentials.env 必须唯一');
 
+  const reqIn = input.requires && typeof input.requires === 'object' ? input.requires : {};
+  const platform = String(reqIn.platform || 'any');
+  if (!['any', 'win32', 'darwin', 'linux'].includes(platform)) errors.push('requires.platform 只支持 any/win32/darwin/linux');
+  const apps = (Array.isArray(reqIn.apps) ? reqIn.apps : []).map((a, i) => {
+    const name = String(a.name || '').trim();
+    if (!name) errors.push(`requires.apps[${i}].name 不能为空`);
+    return {
+      name,
+      process: String(a.process || '').trim(),
+      paths: (Array.isArray(a.paths) ? a.paths : []).map(String).filter(Boolean),
+      window: String(a.window || '').trim(),
+      version: String(a.version || '').trim(),
+      required: a.required !== false,
+    };
+  });
+  const requires = { platform, apps, desktop: reqIn.desktop === true };
+  const connectorCheck = validateConnectors(input.connectors, { permissions, requires });
+  errors.push(...connectorCheck.errors);
+
   const acceptance = Array.isArray(input.acceptance) ? input.acceptance.map(String) : [];
   const rules = Array.isArray(input.rules) ? input.rules.map(String) : [];
   if (errors.length) fail(errors);
   return {
     schemaVersion: 1, id, name, description: String(input.description || name), target,
-    effect, tools, permissions, dependencies, credentials, acceptance, rules,
+    effect, tools, permissions, dependencies, credentials, requires, connectors: connectorCheck.names, acceptance, rules,
     outputs: Array.isArray(input.outputs) ? input.outputs.map(String) : ['dataset', 'audit'],
   };
 }

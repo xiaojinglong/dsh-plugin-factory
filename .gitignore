@@ -51,3 +51,5 @@ bundles/
 platform/manifests/.bundles/
 
 data/security/
+
+catalog/plugins.json

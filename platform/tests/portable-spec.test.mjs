@@ -65,6 +65,41 @@ test('portable spec：多工具 handlers', async () => {
   assert.match(index, /name: "count_values"/);
 });
 
+test('portable spec：环境契约缺失时校验失败', async () => {
+  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-req-')), 'req-demo');
+  generatePortable({
+    id: 'req-demo', name: 'Req Demo', out,
+    spec: {
+      permissions: { filesystem: [], network: [] },
+      requires: { platform: process.platform, apps: [{ name: 'NoSuchApp', paths: ['C:/definitely-not-installed/app.exe'], required: true }] },
+      tools: [{ name: 'req_demo' }],
+    },
+  });
+  const v = await validatePortable(out);
+  assert.equal(v.ok, false);
+  assert.ok(v.errors.some((e) => /requires:app:NoSuchApp/.test(e)));
+});
+
+test('portable spec：file 连接器注入并通过校验', async () => {
+  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-conn-')), 'conn-demo');
+  generatePortable({
+    id: 'conn-demo', name: 'Conn Demo', out,
+    spec: { permissions: { filesystem: ['read'], network: [] }, connectors: ['file'], tools: [{ name: 'conn_demo' }] },
+    files: [{ path: 'lib/impl.js', content: "import { readJson } from '../lib/connectors/file.js'\nexport async function execute(args = {}) { return readJson(args.path) }\n" }],
+  });
+  assert.ok(fs.existsSync(path.join(out, 'lib', 'connectors', 'file.js')));
+  const v = await validatePortable(out);
+  assert.equal(v.ok, true, JSON.stringify(v.errors));
+});
+
+test('portable spec：desktop 连接器要求 process 权限', () => {
+  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-conn-bad-')), 'conn-bad');
+  assert.throws(() => generatePortable({
+    id: 'conn-bad', name: 'Conn Bad', out,
+    spec: { permissions: { filesystem: [], network: [] }, connectors: ['desktop'], tools: [{ name: 'conn_bad' }] },
+  }), /desktop 连接器需要/);
+});
+
 test('portable spec：拒绝未白名单依赖', () => {
   const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-deps-')), 'dep-demo');
   assert.throws(() => generatePortable({

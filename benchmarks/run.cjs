@@ -13,9 +13,21 @@ const results = [];
 
 (async () => {
   const files = fs.readdirSync(DIR).filter((f) => f.endsWith('.json')).sort();
+  const workflows = [];
   for (const f of files) {
+    const raw = JSON.parse(fs.readFileSync(path.join(DIR, f), 'utf8'));
+    workflows.push(...(Array.isArray(raw) ? raw : [raw]));
+  }
+  const extra = path.join(__dirname, 'workflows-extra.json');
+  if (fs.existsSync(extra)) {
+    const raw = JSON.parse(fs.readFileSync(extra, 'utf8'));
+    workflows.push(...(Array.isArray(raw) ? raw : [raw]));
+  }
+  const seen = new Set();
+  for (const wf of workflows) {
+    if (seen.has(wf.id)) throw new Error(`duplicate workflow id: ${wf.id}`);
+    seen.add(wf.id);
     const started = Date.now();
-    const wf = JSON.parse(fs.readFileSync(path.join(DIR, f), 'utf8'));
     const out = path.join(tmp, wf.id);
     let ok = false;
     let errors = [];

@@ -59,9 +59,14 @@ export async function runTool({ handler = null, args = {} } = {}) {
   const read = new Set([ROOT, CHILD, GUARD, reqFile])
   for (const s of strings(args)) if (path.isAbsolute(s)) read.add(s)
   const write = new Set()
-  if (perms.filesystem?.includes('write') && typeof args.output_path === 'string' && path.isAbsolute(args.output_path)) write.add(args.output_path)
+  if (perms.filesystem?.includes('write')) {
+    write.add(dataRoot)
+    if (typeof args.output_path === 'string' && path.isAbsolute(args.output_path)) write.add(args.output_path)
+    if (typeof args.output_dir === 'string' && path.isAbsolute(args.output_dir)) write.add(args.output_dir)
+  }
   const nodeArgs = [
     '--require', GUARD,
+    ...(perms.process ? ['--allow-child-process'] : []),
     '--permission',
     ...[...read].map((p) => \`--allow-fs-read=\${p}\`),
     ...[...write].map((p) => \`--allow-fs-write=\${p}\`),
@@ -180,6 +185,12 @@ function generatePortable(opts) {
   fs.writeFileSync(path.join(out, 'lib', 'sandbox.js'), sandboxSource(), 'utf8');
   fs.writeFileSync(path.join(out, 'lib', 'sandbox-child.mjs'), sandboxChildSource(), 'utf8');
   fs.copyFileSync(NETWORK_GUARD, path.join(out, 'lib', 'sandbox-network.cjs'));
+  for (const name of spec.connectors || []) {
+    const src = path.join(__dirname, 'templates', 'connectors', `${name}.js`);
+    if (!fs.existsSync(src)) fail(`连接器模板不存在：${name}`);
+    fs.mkdirSync(path.join(out, 'lib', 'connectors'), { recursive: true });
+    fs.copyFileSync(src, path.join(out, 'lib', 'connectors', `${name}.js`));
+  }
 
   const tools = spec.tools;
   const multi = tools.length > 1;
@@ -231,7 +242,7 @@ ${registrations}
     exports: { '.': './index.js', './locale/*.json': './locale/*.json', './icon': './icon.svg' },
     files: ['cordis.patch.yml', 'index.js', 'lib', 'skills', 'tests', 'fixtures', 'build.json', 'README.md', 'LICENSE', 'locale', 'docs', 'icon.svg'],
     engines: { node: '>=24' },
-    dsh: { bundle: { patch: './cordis.patch.yml' } },
+    dsh: { bundle: { patch: './cordis.patch.yml' }, requires: spec.requires || { platform: 'any', apps: [], desktop: false } },
   };
   fs.writeFileSync(path.join(out, 'package.json'), JSON.stringify(pkg, null, 2) + '\n', 'utf8');
   fs.writeFileSync(path.join(out, 'cordis.patch.yml'), `- insert:\n    - id: ${id}\n      name: "${pkgName}"\n`, 'utf8');
@@ -288,6 +299,14 @@ async function validatePortable(dir) {
   add('no-token', !/serviceToken|MCP_SERVICE_TOKEN/.test(text), 'token');
 
   const deps = Object.keys(pkg.dependencies || {});
+  if (spec?.requires?.platform && spec.requires.platform !== 'any' && spec.requires.platform !== process.platform) {
+    add('requires:platform', false, `需要 ${spec.requires.platform}，当前 ${process.platform}`);
+  }
+  for (const app of spec?.requires?.apps || []) {
+    if (!app.required) continue;
+    const found = app.paths.some((p) => fs.existsSync(p));
+    if (!found) add(`requires:app:${app.name}`, false, `未找到应用路径：${app.paths.join(' | ') || '(未声明)'}`);
+  }
   const allowFile = path.join(ROOT, 'config', 'plugin-deps-allowlist.json');
   if (deps.length && fs.existsSync(allowFile)) {
     const allowed = JSON.parse(fs.readFileSync(allowFile, 'utf8')).allowed || [];

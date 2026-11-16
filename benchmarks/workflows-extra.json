@@ -1,0 +1,932 @@
+[
+  {
+    "id": "case-add",
+    "name": "Add two numbers",
+    "spec": {
+      "description": "Add two numbers",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_add",
+          "description": "Add two numbers",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: Number(args.a) + Number(args.b) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Add two numbers', async () => { assert.equal((await execute({ a: 2, b: 3 })).value, 5) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-sub",
+    "name": "Subtract numbers",
+    "spec": {
+      "description": "Subtract numbers",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_sub",
+          "description": "Subtract numbers",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: Number(args.a) - Number(args.b) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Subtract numbers', async () => { assert.equal((await execute({ a: 5, b: 3 })).value, 2) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-mul",
+    "name": "Multiply numbers",
+    "spec": {
+      "description": "Multiply numbers",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_mul",
+          "description": "Multiply numbers",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: Number(args.a) * Number(args.b) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Multiply numbers', async () => { assert.equal((await execute({ a: 4, b: 3 })).value, 12) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-div",
+    "name": "Divide numbers",
+    "spec": {
+      "description": "Divide numbers",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_div",
+          "description": "Divide numbers",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: Number(args.a) / Number(args.b) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Divide numbers', async () => { assert.equal((await execute({ a: 8, b: 2 })).value, 4) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-mod",
+    "name": "Modulo numbers",
+    "spec": {
+      "description": "Modulo numbers",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_mod",
+          "description": "Modulo numbers",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: Number(args.a) % Number(args.b) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Modulo numbers', async () => { assert.equal((await execute({ a: 7, b: 3 })).value, 1) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-max",
+    "name": "Maximum value",
+    "spec": {
+      "description": "Maximum value",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_max",
+          "description": "Maximum value",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: Math.max(...(args.list || []).map(Number)) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Maximum value', async () => { assert.equal((await execute({ list: [1, 9, 3] })).value, 9) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-min",
+    "name": "Minimum value",
+    "spec": {
+      "description": "Minimum value",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_min",
+          "description": "Minimum value",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: Math.min(...(args.list || []).map(Number)) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Minimum value', async () => { assert.equal((await execute({ list: [1, 9, 3] })).value, 1) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-avg",
+    "name": "Average value",
+    "spec": {
+      "description": "Average value",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_avg",
+          "description": "Average value",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  const v=(args.list||[]).map(Number); return { value: v.reduce((a,b)=>a+b,0)/v.length }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Average value', async () => { assert.equal((await execute({ list: [2, 4, 6] })).value, 4) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-median",
+    "name": "Median value",
+    "spec": {
+      "description": "Median value",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_median",
+          "description": "Median value",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  const v=(args.list||[]).map(Number).sort((a,b)=>a-b); const m=Math.floor(v.length/2); return { value: v.length%2?v[m]:(v[m-1]+v[m])/2 }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Median value', async () => { assert.equal((await execute({ list: [1, 3, 2] })).value, 2) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-round",
+    "name": "Round number",
+    "spec": {
+      "description": "Round number",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_round",
+          "description": "Round number",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: Math.round(Number(args.a)) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Round number', async () => { assert.equal((await execute({ a: 2.6 })).value, 3) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-ceil",
+    "name": "Ceil number",
+    "spec": {
+      "description": "Ceil number",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_ceil",
+          "description": "Ceil number",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: Math.ceil(Number(args.a)) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Ceil number', async () => { assert.equal((await execute({ a: 2.1 })).value, 3) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-floor",
+    "name": "Floor number",
+    "spec": {
+      "description": "Floor number",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_floor",
+          "description": "Floor number",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: Math.floor(Number(args.a)) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Floor number', async () => { assert.equal((await execute({ a: 2.9 })).value, 2) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-abs",
+    "name": "Absolute number",
+    "spec": {
+      "description": "Absolute number",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_abs",
+          "description": "Absolute number",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: Math.abs(Number(args.a)) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Absolute number', async () => { assert.equal((await execute({ a: -4 })).value, 4) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-clamp",
+    "name": "Clamp number",
+    "spec": {
+      "description": "Clamp number",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_clamp",
+          "description": "Clamp number",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  const n=Number(args.a); return { value: Math.min(Number(args.max), Math.max(Number(args.min), n)) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Clamp number', async () => { assert.equal((await execute({ a: 12, min: 0, max: 10 })).value, 10) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-percent",
+    "name": "Percent of number",
+    "spec": {
+      "description": "Percent of number",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_percent",
+          "description": "Percent of number",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: Number(args.a) * Number(args.b) / 100 }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Percent of number', async () => { assert.equal((await execute({ a: 200, b: 15 })).value, 30) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-upper",
+    "name": "Uppercase text",
+    "spec": {
+      "description": "Uppercase text",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_upper",
+          "description": "Uppercase text",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { text: String(args.text || \"\").toUpperCase() }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Uppercase text', async () => { assert.equal((await execute({ text: \"abc\" })).text, \"ABC\") })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-lower",
+    "name": "Lowercase text",
+    "spec": {
+      "description": "Lowercase text",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_lower",
+          "description": "Lowercase text",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { text: String(args.text || \"\").toLowerCase() }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Lowercase text', async () => { assert.equal((await execute({ text: \"ABC\" })).text, \"abc\") })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-title",
+    "name": "Title case text",
+    "spec": {
+      "description": "Title case text",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_title",
+          "description": "Title case text",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { text: String(args.text || \"\").replace(/\\b\\w/g, (c) => c.toUpperCase()) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Title case text', async () => { assert.equal((await execute({ text: \"hello world\" })).text, \"Hello World\") })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-trim",
+    "name": "Trim text",
+    "spec": {
+      "description": "Trim text",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_trim",
+          "description": "Trim text",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { text: String(args.text || \"\").trim() }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Trim text', async () => { assert.equal((await execute({ text: \"  a  \" })).text, \"a\") })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-reverse",
+    "name": "Reverse text",
+    "spec": {
+      "description": "Reverse text",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_reverse",
+          "description": "Reverse text",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { text: String(args.text || \"\").split(\"\").reverse().join(\"\") }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Reverse text', async () => { assert.equal((await execute({ text: \"abc\" })).text, \"cba\") })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-length",
+    "name": "Text length",
+    "spec": {
+      "description": "Text length",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_length",
+          "description": "Text length",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: String(args.text || \"\").length }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Text length', async () => { assert.equal((await execute({ text: \"abc\" })).value, 3) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-contains",
+    "name": "Contains text",
+    "spec": {
+      "description": "Contains text",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_contains",
+          "description": "Contains text",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: String(args.text || \"\").includes(String(args.needle || \"\")) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Contains text', async () => { assert.equal((await execute({ text: \"abc\", needle: \"b\" })).value, true) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-startswith",
+    "name": "Starts with",
+    "spec": {
+      "description": "Starts with",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_startswith",
+          "description": "Starts with",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: String(args.text || \"\").startsWith(String(args.needle || \"\")) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Starts with', async () => { assert.equal((await execute({ text: \"abc\", needle: \"a\" })).value, true) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-endswith",
+    "name": "Ends with",
+    "spec": {
+      "description": "Ends with",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_endswith",
+          "description": "Ends with",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { value: String(args.text || \"\").endsWith(String(args.needle || \"\")) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Ends with', async () => { assert.equal((await execute({ text: \"abc\", needle: \"c\" })).value, true) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-replace",
+    "name": "Replace text",
+    "spec": {
+      "description": "Replace text",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_replace",
+          "description": "Replace text",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { text: String(args.text || \"\").split(String(args.from || \"\")).join(String(args.to || \"\")) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Replace text', async () => { assert.equal((await execute({ text: \"a-b\", from: \"-\", to: \"_\" })).text, \"a_b\") })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-join",
+    "name": "Join list",
+    "spec": {
+      "description": "Join list",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_join",
+          "description": "Join list",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { text: (args.list || []).map(String).join(String(args.sep ?? \",\")) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Join list', async () => { assert.equal((await execute({ list: [\"a\", \"b\"], sep: \"-\" })).text, \"a-b\") })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-split",
+    "name": "Split text",
+    "spec": {
+      "description": "Split text",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_split",
+          "description": "Split text",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { list: String(args.text || \"\").split(String(args.sep ?? \",\")) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Split text', async () => { assert.deepEqual((await execute({ text: \"a,b\", sep: \",\" })).list, [\"a\", \"b\"]) })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-repeat",
+    "name": "Repeat text",
+    "spec": {
+      "description": "Repeat text",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_repeat",
+          "description": "Repeat text",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { text: String(args.text || \"\").repeat(Number(args.n || 1)) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Repeat text', async () => { assert.equal((await execute({ text: \"a\", n: 3 })).text, \"aaa\") })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-padstart",
+    "name": "Pad start",
+    "spec": {
+      "description": "Pad start",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_padstart",
+          "description": "Pad start",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { text: String(args.text || \"\").padStart(Number(args.n || 0), String(args.ch || \"0\")) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Pad start', async () => { assert.equal((await execute({ text: \"7\", n: 3, ch: \"0\" })).text, \"007\") })\n"
+      }
+    ]
+  },
+  {
+    "id": "case-padend",
+    "name": "Pad end",
+    "spec": {
+      "description": "Pad end",
+      "permissions": {
+        "filesystem": [],
+        "network": []
+      },
+      "tools": [
+        {
+          "name": "case_padend",
+          "description": "Pad end",
+          "parameters": {}
+        }
+      ],
+      "acceptance": [
+        "computed result is correct"
+      ]
+    },
+    "files": [
+      {
+        "path": "lib/impl.js",
+        "content": "export async function execute(args = {}) {\n  return { text: String(args.text || \"\").padEnd(Number(args.n || 0), String(args.ch || \"0\")) }\n}\n"
+      },
+      {
+        "path": "tests/impl.test.mjs",
+        "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('Pad end', async () => { assert.equal((await execute({ text: \"7\", n: 3, ch: \"0\" })).text, \"700\") })\n"
+      }
+    ]
+  }
+]

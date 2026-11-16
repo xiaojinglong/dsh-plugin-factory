@@ -12,6 +12,8 @@
     "render": "node platform/factory/cli.cjs render",
     "check": "node scripts/check-syntax.mjs",
     "benchmark": "node benchmarks/run.cjs",
+    "verify:clean": "node scripts/verify-clean-install.cjs",
+    "catalog": "node scripts/plugin-catalog.cjs build",
     "setup": "node install.cjs",
     "start": "node scripts/start-factory.cjs",
     "stop": "node scripts/stop-factory.cjs",

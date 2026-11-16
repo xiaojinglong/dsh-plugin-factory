@@ -86,11 +86,51 @@ npm install --omit=dev --ignore-scripts
 
 ### 工作流基准
 
-`benchmarks/workflows/*.json` + `npm run benchmark`：
+`benchmarks/workflows/*.json` + `benchmarks/workflows-extra.json` + `npm run benchmark`：
 
-- 20 个工作流：JSON/CSV、文本、排序、去重、统计、正则、日期、错误契约、多文件、多工具、写入、渲染等
+- 20 个基础工作流 + 30 个数据/文本工作流
+- 当前 **50/50 通过**
 
-当前 **20/20 通过**。
+### 环境契约
+
+`spec.requires` 声明目标环境：
+
+```json
+"requires": {
+  "platform": "win32",
+  "desktop": true,
+  "apps": [
+    { "name": "WeChat", "process": "Weixin", "paths": ["C:/Program Files/Tencent/Weixin/Weixin.exe"], "required": true }
+  ]
+}
+```
+
+- 生成到 package.json `dsh.requires`
+- 校验阶段检查平台和必需应用路径
+- UI 自动化插件必须声明 desktop/apps
+
+### 连接器
+
+`spec.connectors` 支持：
+
+- `file`：JSON/文本/CSV 读写
+- `http`：JSON 请求 + host allowlist + 凭证
+- `browser`：Playwright 页面入口
+- `desktop`：PowerShell 桌面自动化入口
+
+生成器注入到 `lib/connectors/`；`desktop` 强制要求 `permissions.process`。
+
+### 干净安装验证
+
+`npm run verify:clean`：
+
+- 创建临时 DSH 根目录
+- 执行 installer install ×2
+- 验证 patch 只含 factory-control、无 30 个测试插件
+- 验证 state/registry/链接、`.cmd`/`.sh`
+- 验证幂等
+
+注意：这是干净 profile 模拟，不等同于一台全新物理机。
 
 ## 验证
 

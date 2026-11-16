@@ -41,6 +41,8 @@ description: 插件工厂 Agent（单机版）：用户在 DSH 对话里描述�
     "effect": "read",
     "permissions": { "filesystem": ["read"], "network": [] },
     "credentials": [{ "env": "API_KEY", "required": true }],
+    "requires": { "platform": "win32", "desktop": false, "apps": [] },
+    "connectors": ["file"],
     "tools": [{ "name": "snake_case_tool", "parameters": {} }],
     "acceptance": ["可验收条件"]
   },
