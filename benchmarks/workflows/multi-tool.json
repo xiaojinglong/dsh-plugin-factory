@@ -1,0 +1,23 @@
+{
+  "id": "multi-tool",
+  "name": "Multi Tool",
+  "spec": {
+    "description": "Two independent tools in one plugin.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [
+      { "name": "sum_values", "handler": "sum", "description": "Sum.", "parameters": {} },
+      { "name": "count_values", "handler": "count", "description": "Count.", "parameters": {} }
+    ],
+    "acceptance": ["two tools work"]
+  },
+  "files": [
+    {
+      "path": "lib/handlers.js",
+      "content": "export const handlers = {\n  async sum() { return { total: 30 } },\n  async count() { return { total: 2 } },\n}\n"
+    },
+    {
+      "path": "tests/handlers.test.mjs",
+      "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { handlers } from '../lib/handlers.js'\ntest('handlers', async () => {\n  assert.equal((await handlers.sum()).total, 30)\n  assert.equal((await handlers.count()).total, 2)\n})\n"
+    }
+  ]
+}

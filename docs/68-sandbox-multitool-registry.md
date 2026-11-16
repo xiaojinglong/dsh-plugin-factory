@@ -58,6 +58,27 @@ npm install --omit=dev --ignore-scripts
 
 `config/plugin-deps-allowlist.json`：未列出的依赖在生成阶段拒绝；当前允许 exceljs/xlsx/zod/csv-parse/fast-xml-parser/playwright。
 
+### 凭证契约
+
+`spec.credentials` 声明需要注入的环境变量：
+
+```json
+"credentials": [{ "env": "API_KEY", "required": true }]
+```
+
+沙箱只传声明过的 env；`required` 缺失直接失败；不再把整个环境变量传给用户代码。
+
+### 工作流基准
+
+`benchmarks/workflows/*.json` + `npm run benchmark`：
+
+- sum-json
+- csv-filter
+- multi-tool
+- write-report
+
+当前 4/4 通过。
+
 ## 验证
 
 - 测试：**124/124**
@@ -70,6 +91,6 @@ npm install --omit=dev --ignore-scripts
 ## 仍未完成
 
 1. 网络/系统调用真正隔离（需服务形态或 OS sandbox）
-2. 基准工作流集
+2. 20 个真实工作流基准集（当前 4 个）
 3. 自动修复循环（目前 Agent 读 diagnostics 重试）
-4. 真实外部 API/浏览器插件的凭证注入契约
+4. 真实外部 API/浏览器插件的凭证配置 UI

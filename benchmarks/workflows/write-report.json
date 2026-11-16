@@ -1,0 +1,22 @@
+{
+  "id": "write-report",
+  "name": "Write Report",
+  "spec": {
+    "description": "Write a small report file.",
+    "permissions": { "filesystem": ["read", "write"], "network": [] },
+    "tools": [
+      { "name": "write_report", "description": "Write report.", "parameters": { "output_path": { "type": "string", "required": true } } }
+    ],
+    "acceptance": ["creates output file"]
+  },
+  "files": [
+    {
+      "path": "lib/impl.js",
+      "content": "import fs from 'node:fs'\nexport async function execute(args = {}) {\n  if (!args.output_path) throw new Error('output_path required')\n  fs.writeFileSync(args.output_path, 'ok\\n')\n  return { output_path: args.output_path, bytes: 3 }\n}\n"
+    },
+    {
+      "path": "tests/impl.test.mjs",
+      "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport fs from 'node:fs'\nimport os from 'node:os'\nimport path from 'node:path'\nimport { execute } from '../lib/impl.js'\ntest('write', async () => {\n  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'bench-write-')), 'out.txt')\n  const r = await execute({ output_path: out })\n  assert.equal(r.bytes, 3)\n  assert.equal(fs.readFileSync(out, 'utf8'), 'ok\\n')\n})\n"
+    }
+  ]
+}

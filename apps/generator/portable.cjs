@@ -33,10 +33,11 @@ function strings(value, out = []) {
   else if (value && typeof value === 'object') for (const v of Object.values(value)) strings(v, out)
   return out
 }
-function childEnv() {
+function childEnv(spec = {}) {
   const keep = ['PATH', 'Path', 'SystemRoot', 'SYSTEMROOT', 'TEMP', 'TMP', 'HOME', 'USERPROFILE', 'DSH_PLUGIN_DATA_DIR']
   const env = {}
   for (const k of keep) if (process.env[k]) env[k] = process.env[k]
+  for (const c of spec.credentials || []) if (c.env && process.env[c.env]) env[c.env] = process.env[c.env]
   return env
 }
 
@@ -44,6 +45,9 @@ export async function runTool({ handler = null, args = {} } = {}) {
   const build = JSON.parse(fs.readFileSync(BUILD, 'utf8'))
   const spec = build.spec || {}
   const perms = spec.permissions || { filesystem: ['read'], network: [] }
+  for (const c of spec.credentials || []) {
+    if (c.required && !process.env[c.env]) throw new Error('缺少凭证环境变量：' + c.env)
+  }
   const dataRoot = process.env.DSH_PLUGIN_DATA_DIR || path.join(os.tmpdir(), 'dsh-portable', build.id || 'plugin')
   fs.mkdirSync(dataRoot, { recursive: true })
   const reqFile = path.join(dataRoot, \`req-\${process.pid}-\${Date.now()}.json\`)
@@ -61,7 +65,7 @@ export async function runTool({ handler = null, args = {} } = {}) {
   ]
   try {
     return await new Promise((resolve, reject) => {
-      const child = spawn(NODE, nodeArgs, { cwd: ROOT, env: childEnv(), stdio: ['ignore', 'pipe', 'pipe'] })
+      const child = spawn(NODE, nodeArgs, { cwd: ROOT, env: childEnv(spec), stdio: ['ignore', 'pipe', 'pipe'] })
       let out = ''
       let err = ''
       const timer = setTimeout(() => { try { child.kill(); } catch {} reject(new Error('sandbox timeout (30000ms)')) }, 30000)
@@ -174,6 +178,7 @@ function generatePortable(opts) {
 
   const tools = spec.tools;
   const multi = tools.length > 1;
+  if (multi) fs.rmSync(path.join(out, 'lib', 'impl.js'), { force: true });
   if (multi && !fs.existsSync(path.join(out, 'lib', 'handlers.js'))) fail('多工具插件必须在 files 中提供 lib/handlers.js');
   if (!multi && !fs.existsSync(path.join(out, 'lib', 'impl.js'))) fail('单工具插件缺少 lib/impl.js');
 

@@ -1,0 +1,22 @@
+{
+  "id": "sum-json",
+  "name": "Sum JSON",
+  "spec": {
+    "description": "Sum numeric values from a JSON file.",
+    "permissions": { "filesystem": ["read"], "network": [] },
+    "tools": [
+      { "name": "sum_json", "description": "Sum rows[].value.", "parameters": { "input_path": { "type": "string", "required": false } } }
+    ],
+    "acceptance": ["returns the sum of fixture values"]
+  },
+  "files": [
+    {
+      "path": "lib/impl.js",
+      "content": "import fs from 'node:fs'\nimport path from 'node:path'\nimport { fileURLToPath } from 'node:url'\nconst F = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'fixtures', 'data.json')\nexport async function execute(args = {}) {\n  const d = JSON.parse(fs.readFileSync(args.input_path || F, 'utf8'))\n  const rows = Array.isArray(d) ? d : d.rows\n  return { total: rows.reduce((s, r) => s + Number(r.value || 0), 0) }\n}\n"
+    },
+    {
+      "path": "tests/impl.test.mjs",
+      "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('sum', async () => { assert.equal((await execute({})).total, 30) })\n"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "csv-filter",
+  "name": "CSV Filter",
+  "spec": {
+    "description": "Filter CSV rows by a minimum numeric column.",
+    "permissions": { "filesystem": [], "network": [] },
+    "tools": [
+      { "name": "csv_filter", "description": "Filter CSV rows.", "parameters": { "csv": { "type": "string", "required": true }, "min": { "type": "number", "required": true } } }
+    ],
+    "acceptance": ["filters rows below min"]
+  },
+  "files": [
+    {
+      "path": "lib/impl.js",
+      "content": "export async function execute(args = {}) {\n  const lines = String(args.csv || '').trim().split(/\\r?\\n/).slice(1)\n  const min = Number(args.min)\n  const rows = lines.map((l) => l.split(',').map((x) => x.trim())).filter((r) => Number(r[1]) >= min)\n  return { rows, count: rows.length }\n}\n"
+    },
+    {
+      "path": "tests/impl.test.mjs",
+      "content": "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('filter', async () => {\n  const r = await execute({ csv: 'name,value\\na,1\\nb,5\\nc,3', min: 3 })\n  assert.equal(r.count, 2)\n})\n"
+    }
+  ]
+}

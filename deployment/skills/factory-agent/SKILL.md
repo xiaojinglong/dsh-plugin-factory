@@ -39,6 +39,7 @@ description: 插件工厂 Agent（单机版）：用户在 DSH 对话里描述�
     "description": "工具描述",
     "effect": "read",
     "permissions": { "filesystem": ["read"], "network": [] },
+    "credentials": [{ "env": "API_KEY", "required": true }],
     "tools": [{ "name": "snake_case_tool", "parameters": {} }],
     "acceptance": ["可验收条件"]
   },
@@ -88,6 +89,7 @@ test('acceptance', async () => {
    - 不访问网络/凭证时最简单
    - 需要 API/文件时，从 `args` 拿参数，失败给出明确错误
    - 不把 token/密码写进源码
+   - 外部凭据只能通过 spec.credentials 声明 env；沙箱只注入声明的 env，缺失 required 会失败
    - 权限必须写进 spec；不能声明未使用的网络/文件权限
 4. **调用 `create_plugin`**：传 `spec`、`files`、`install: true`。
    - 返回 `ok:false` 时，读 `diagnostics`，修 `spec/files` 后重试

@@ -52,12 +52,19 @@ function normalizeSpec(input = {}) {
     if (!/^[a-z0-9@][a-z0-9@/._-]*$/i.test(k) || typeof v !== 'string') errors.push(`dependencies.${k} 非法`);
   }
 
+  const credentials = (Array.isArray(input.credentials) ? input.credentials : []).map((c, i) => {
+    const env = String(c.env || '').trim();
+    if (!/^[A-Z_][A-Z0-9_]*$/.test(env)) errors.push(`credentials[${i}].env 非法`);
+    return { env, name: String(c.name || env), required: c.required === true, description: String(c.description || '') };
+  });
+  if (new Set(credentials.map((c) => c.env)).size !== credentials.length) errors.push('credentials.env 必须唯一');
+
   const acceptance = Array.isArray(input.acceptance) ? input.acceptance.map(String) : [];
   const rules = Array.isArray(input.rules) ? input.rules.map(String) : [];
   if (errors.length) fail(errors);
   return {
     schemaVersion: 1, id, name, description: String(input.description || name), target,
-    effect, tools, permissions, dependencies, acceptance, rules,
+    effect, tools, permissions, dependencies, credentials, acceptance, rules,
     outputs: Array.isArray(input.outputs) ? input.outputs.map(String) : ['dataset', 'audit'],
   };
 }

@@ -95,3 +95,21 @@ test('portable sandbox：越界读取被拒绝', async () => {
   const mod = await import(`${pathToFileURL(path.join(out, 'lib', 'sandbox.js')).href}?t=${Date.now()}`);
   await assert.rejects(() => mod.runTool({ args: {} }), /sandbox|permission|EACCES|ERR_ACCESS_DENIED/i);
 });
+
+test('portable sandbox：只注入声明凭证', async () => {
+  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-cred-')), 'cred-demo');
+  generatePortable({
+    id: 'cred-demo', name: 'Cred Demo', out,
+    spec: {
+      description: 'Credential demo.', permissions: { filesystem: [], network: [] },
+      credentials: [{ env: 'DSH_TEST_KEY', required: true }],
+      tools: [{ name: 'cred_demo' }],
+    },
+    files: [{ path: 'lib/impl.js', content: "export async function execute() { return { key: process.env.DSH_TEST_KEY || null } }\n" }],
+  });
+  const mod = await import(`${pathToFileURL(path.join(out, 'lib', 'sandbox.js')).href}?t=${Date.now()}`);
+  process.env.DSH_TEST_KEY = 'secret-value';
+  assert.equal((await mod.runTool({ args: {} })).key, 'secret-value');
+  delete process.env.DSH_TEST_KEY;
+  await assert.rejects(() => mod.runTool({ args: {} }), /缺少凭证/);
+});
