@@ -18,10 +18,15 @@ const config = require('../../packages/config');
 
 const ROOT = config.FACTORY_ROOT;
 const PLUGIN_DIR = config.MANIFEST_DIR;
+const BUNDLE_MARKER_DIR = path.join(PLUGIN_DIR, '.bundles');
 const RUN_DIR = config.RUN_DIR;
 const PATCH = config.DSH_PATCH;
 const DSH_TOOLS = config.DSH_TOOLS;
 const DSH_SKILLS = config.DSH_SKILLS;
+
+function bundleManaged(id) {
+  return fs.existsSync(path.join(BUNDLE_MARKER_DIR, `${id}.json`));
+}
 
 const C = { reset: '\x1b[0m', red: '\x1b[31m', green: '\x1b[32m', yellow: '\x1b[33m', cyan: '\x1b[36m', dim: '\x1b[2m' };
 let fails = 0;
@@ -132,7 +137,8 @@ function stripMcpBlocks(text) {
   return kept.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
 }
 function renderPatch() {
-  const list = rawManifests().filter((m) => !m.legacy);
+  const all = rawManifests().filter((m) => !m.legacy);
+  const list = all.filter((m) => !bundleManaged(m.id));
   // YAML 双引号内反斜杠是转义符；Windows 路径必须用正斜杠，否则 DSH 解析失败并重置 patch
   const dshToolsYaml = DSH_TOOLS.replace(/\\/g, '/');
   let text = fs.existsSync(PATCH) ? fs.readFileSync(PATCH, 'utf8') : '';
@@ -155,8 +161,8 @@ ${m.runtime?.serviceToken ? `          MCP_SERVICE_TOKEN: "${m.runtime.serviceTo
   fs.mkdirSync(path.dirname(PATCH), { recursive: true });
   if (fs.existsSync(PATCH)) fs.copyFileSync(PATCH, `${PATCH}.bak.${Date.now()}`);
   fs.writeFileSync(PATCH, next, 'utf8');
-  writeRegistry(list);
-  ok(`patch 与 registry 已由 manifest 重新生成（${list.length} 个 MCP 条目）`);
+  writeRegistry(all);
+  ok(`patch 与 registry 已由 manifest 重新生成（${list.length} 个 MCP 条目，${all.length - list.length} 个 bundle-managed）`);
 }
 
 /* ------------------------------ doctor ------------------------------ */
@@ -212,10 +218,14 @@ async function doctor(withHealth) {
     if (servers.has(m.serverName)) bad(`serverName 重复：${m.serverName}`); else servers.set(m.serverName, m.id);
     checkManifest(m);
   }
-  // patch 一致性
+  // patch 一致性（bundle-managed 插件由 DSH plugin manager 注册，不要求 patch 条目）
   if (fs.existsSync(PATCH)) {
     const text = fs.readFileSync(PATCH, 'utf8');
     for (const m of list.filter((x) => !x.legacy)) {
+      if (bundleManaged(m.id)) {
+        info(`${m.id}：bundle-managed（跳过 patch 校验）`);
+        continue;
+      }
       if (!text.includes(`- id: mcp-${m.id}`)) bad(`patch 缺条目 mcp-${m.id}（运行 factory render）`);
       if (!text.includes(`"http://127.0.0.1:${m.port}"`)) bad(`patch 缺端口 ${m.port}`);
       if (m.runtime?.serviceToken && !text.includes(m.runtime.serviceToken)) bad(`${m.id}：patch 中 MCP_SERVICE_TOKEN 与 manifest 不一致（运行 factory render）`);

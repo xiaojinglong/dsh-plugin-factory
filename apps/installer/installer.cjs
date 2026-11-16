@@ -40,6 +40,10 @@ function parse(argv) {
   return args;
 }
 
+function bundleManaged(id) {
+  return fs.existsSync(path.join(ROOT, 'platform', 'manifests', '.bundles', `${id}.json`));
+}
+
 function options(args) {
   const dataRoot = path.resolve(args['data-root'] || process.env.FACTORY_DATA_ROOT || path.join(ROOT, 'data'));
   const dshRoot = path.resolve(args['dsh-root'] || process.env.FACTORY_DSH_ROOT || path.resolve(ROOT, '..', 'dshskills'));
@@ -179,6 +183,7 @@ function backupFile(file, dir, name) {
 function verifyPatch(patchFile, manifests) {
   const text = fs.readFileSync(patchFile, 'utf8');
   for (const m of manifests) {
+    if (bundleManaged(m.id)) continue; // DSH plugin manager 负责注册
     if (!text.includes(`- id: mcp-${m.id}`)) throw new Error(`patch 缺少条目 mcp-${m.id}`);
     if (!text.includes(`"http://127.0.0.1:${m.port}"`)) throw new Error(`patch 缺少端口 ${m.port}`);
     if (m.runtime && m.runtime.serviceToken && !text.includes(m.runtime.serviceToken)) throw new Error(`patch 缺少 ${m.id} token`);
