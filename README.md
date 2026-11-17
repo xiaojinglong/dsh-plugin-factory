@@ -81,7 +81,7 @@ D:\www\dsh-plugin-factory\
 ├── apps\control-plane\        ★ 本地控制面（8780；需求单/步骤/审计/指标/备份/accept；M2/M4 代码完成）
 ├── apps\factory-control-mcp\  ★ factory-control MCP（stdio 薄壳，9 工具）
 ├── apps\generator\            ★ M3 生成流水线（probe HTTP/浏览器、业务 runner 注入、staging/沙箱/编排）
-├── skills\factory-agent\      ★ DSH 工厂 Agent 技能（已复制到 deployment/skills）
+├── .dsh\skills\factory-agent\ ★ DSH 工厂 Agent 技能（deployment 为发布副本）
 ├── templates\plugin\          ★ 插件脚手架模板（M3 fixture 垂直切片）
 ├── PLAN-A.md / PROMPT-A.md    A 单机版路线 / 生产级冲刺指令
 │
@@ -101,8 +101,7 @@ D:\www\dsh-plugin-factory\
 │
 ├── factory-kit\               ← 报告工具库（report-kit / dataset）
 ├── data\sessions\             ← 登录态（storageState）
-├── experiments\               ← 场景验证脚本（haina-test / gsmp-test）
-└── archive\                   ← 历史产物（旧 reports/analysis/docs 等）
+└── data\generator\            ← 插件生成产物（zip 在 runs/<requestId>/dist）
 ```
 
 > `D:\www\dshskills` 现为指向 `deployment` 的 junction，因此 DSH 配置里的
