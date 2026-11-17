@@ -240,7 +240,7 @@ export function apply(ctx) {
     source: 'runtime',
     content: fs.readFileSync(SKILL_FILE, 'utf8'),
     resourceBase: { kind: 'directory', path: path.dirname(SKILL_FILE) },
-    invocation: { modelInvocable: true, userInvocable: false },
+    invocation: { modelInvocable: true, userInvocable: true },
   })
 ${registrations}
 }
