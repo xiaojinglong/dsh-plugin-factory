@@ -26,7 +26,7 @@ const { applyBusinessRunner } = require('./business.cjs');
 const ROOT = config.FACTORY_ROOT;
 const TEMPLATE_DIR = path.join(ROOT, 'templates', 'plugin');
 const DEFAULT_OUT_ROOT = path.join(config.FACTORY_DATA_ROOT, 'generator', 'staging');
-const MCP_SHELL = path.join(ROOT, 'deployment', 'tools', 'listing-list-mcp', 'index.js');
+const MCP_SHELL = path.join(ROOT, 'templates', 'plugin', 'mcp', 'index.js');
 const FREE_PORT_START = 20000;
 
 function log(msg) { console.log(`[generator] ${msg}`); }

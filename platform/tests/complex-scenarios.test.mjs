@@ -12,7 +12,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { createService } = require('../runtime/index.js');
 const { JobStore } = require('../runtime/store.js');
-const { startMockUpstream } = require('../../plugins/bulk-sync/service/mock-upstream.js');
+const { startMockUpstream } = require('../../fixtures/mock-upstream.js');
 const { runApiTask } = require('../runtime/runner-api.js');
 
 process.env.TEST_API_KEY = process.env.TEST_API_KEY || 'complex-test-key';

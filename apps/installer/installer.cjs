@@ -127,7 +127,7 @@ async function check(opts) {
   add('node>=24', 'error', nodeMajor >= 24, `node ${process.versions.node}`);
   add('deployment 目录', 'error', fs.existsSync(DEPLOY), DEPLOY);
   const manifests = readManifests();
-  add('manifest 可读', 'error', manifests.length > 0, `${manifests.length} 个`);
+  add('manifest 可读', 'warn', manifests.length > 0, `${manifests.length} 个（可为空，portable 工厂不依赖旧产品清单）`);
   add('核心依赖 fastify', 'error', (() => { try { require.resolve('fastify', { paths: [ROOT] }); return true; } catch { return false; } })(), '根 node_modules');
   add('Playwright 依赖', 'warn', (() => { try { require.resolve('playwright', { paths: [ROOT] }); return true; } catch { return false; } })(), '浏览器类插件需要');
 

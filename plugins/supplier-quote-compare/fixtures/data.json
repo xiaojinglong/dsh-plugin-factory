@@ -1,9 +1,0 @@
-{
-  "target_qty": 500,
-  "rows": [
-    { "supplier": "义乌A厂", "unit_price": 6.2, "moq": 500, "shipping": 800, "tax_included": false, "lead_time_days": 15, "sample_supported": true, "rating": 4.6 },
-    { "supplier": "深圳B厂", "unit_price": 6.8, "moq": 300, "shipping": 500, "tax_included": true, "lead_time_days": 10, "sample_supported": true, "rating": 4.8 },
-    { "supplier": "广州C厂", "unit_price": 5.9, "moq": 1000, "shipping": 1200, "tax_included": false, "lead_time_days": 25, "sample_supported": false, "rating": 4.2 },
-    { "supplier": "东莞D厂", "unit_price": 7.1, "moq": 500, "shipping": 300, "tax_included": true, "lead_time_days": 8, "sample_supported": false, "rating": 4.9 }
-  ]
-}

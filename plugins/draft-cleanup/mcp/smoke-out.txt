@@ -1,7 +1,0 @@
-[config] baseUrl = http://127.0.0.1:8794 | done→ succeeded
-[submit] {"jobId":"20261113-184427-2749","status":"queued"}
-[wait] status = succeeded | progress = 完成，共 1 个文件
-[result] main = draft_cleanup_dataset.json | details = 0 | missing = 0
-[read] type = json | pages = 2 | rows = 40 | total = 1021
-[read] main.path = D:\www\dshspirder\draft-cleanup\service\data\jobs\20261113-184427-2749\draft_cleanup_dataset.json
-[ok] MCP 五连通过
