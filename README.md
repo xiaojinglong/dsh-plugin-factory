@@ -101,7 +101,7 @@ D:\www\dsh-plugin-factory\
 │
 ├── factory-kit\               ← 报告工具库（report-kit / dataset）
 ├── data\sessions\             ← 登录态（storageState）
-└── data\generator\            ← 插件生成产物（zip 在 runs/<requestId>/dist）
+├── data\generator\            ← 运行产物（不提交；zip 在 runs/<requestId>/dist）
 ```
 
 > `D:\www\dshskills` 现为指向 `deployment` 的 junction，因此 DSH 配置里的
