@@ -14,6 +14,7 @@
     "benchmark": "node benchmarks/run.cjs",
     "verify:clean": "node scripts/verify-clean-install.cjs",
     "catalog": "node scripts/plugin-catalog.cjs build",
+    "plugin:info": "node scripts/plugin-package-info.cjs",
     "catalog:publish": "node scripts/catalog-publish.cjs",
     "catalog:serve": "node scripts/catalog-serve.cjs",
     "catalog:install": "node scripts/catalog-install.cjs",
