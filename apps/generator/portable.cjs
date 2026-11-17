@@ -58,6 +58,7 @@ export async function runTool({ handler = null, args = {} } = {}) {
   fs.writeFileSync(reqFile, JSON.stringify({ handler, args, multi: !!handler }), 'utf8')
 
   const read = new Set([ROOT, CHILD, GUARD, reqFile])
+  if (perms.filesystem?.includes('read')) read.add(dataRoot)
   for (const s of strings(args)) if (path.isAbsolute(s)) read.add(s)
   const write = new Set()
   if (perms.filesystem?.includes('write')) {
@@ -75,7 +76,7 @@ export async function runTool({ handler = null, args = {} } = {}) {
   ]
   try {
     return await new Promise((resolve, reject) => {
-      const child = spawn(NODE, nodeArgs, { cwd: ROOT, env: childEnv(spec), stdio: ['ignore', 'pipe', 'pipe'] })
+      const child = spawn(NODE, nodeArgs, { cwd: ROOT, env: { ...childEnv(spec), DSH_PLUGIN_DATA_DIR: dataRoot }, stdio: ['ignore', 'pipe', 'pipe'] })
       let out = ''
       let err = ''
       const timer = setTimeout(() => { try { child.kill(); } catch {} reject(new Error('sandbox timeout (30000ms)')) }, 30000)
