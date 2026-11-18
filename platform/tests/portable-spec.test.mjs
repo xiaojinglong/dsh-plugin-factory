@@ -92,7 +92,7 @@ test('portable spec：file 连接器注入并通过校验', async () => {
   assert.equal(v.ok, true, JSON.stringify(v.errors));
 });
 
-test('portable spec：desktop 录制注入插件', async () => {
+test('portable spec：desktop 录制注入插件', { skip: process.platform !== 'win32' ? 'desktop 录制仅支持 win32' : false }, async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'portable-rec-'));
   const rec = path.join(dir, 'rec.json');
   fs.writeFileSync(rec, JSON.stringify({ name: 'demo', durationMs: 100, events: [{ t: 0, type: 'mouse_move', x: 1, y: 2 }] }), 'utf8');
@@ -145,7 +145,7 @@ test('portable sandbox：越界读取被拒绝', async () => {
   generatePortable({
     id: 'sandbox-deny', name: 'Sandbox Deny', out,
     spec: { description: 'Deny demo.', permissions: { filesystem: ['read'], network: [] }, tools: [{ name: 'sandbox_deny' }] },
-    files: [{ path: 'lib/impl.js', content: "import fs from 'node:fs'\nexport async function execute() { return { data: fs.readFileSync('C:/Windows/win.ini', 'utf8') } }\n" }],
+    files: [{ path: 'lib/impl.js', content: "import fs from 'node:fs'\nexport async function execute() { const p = process.platform === 'win32' ? 'C:/Windows/win.ini' : '/etc/shadow'; return { data: fs.readFileSync(p, 'utf8') } }\n" }],
   });
   const mod = await import(`${pathToFileURL(path.join(out, 'lib', 'sandbox.js')).href}?t=${Date.now()}`);
   await assert.rejects(() => mod.runTool({ args: {} }), /sandbox|permission|EACCES|ERR_ACCESS_DENIED/i);
