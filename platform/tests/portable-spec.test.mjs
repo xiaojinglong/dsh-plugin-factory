@@ -9,6 +9,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const require = createRequire(import.meta.url);
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const { generatePortable, validatePortable } = require(path.join(ROOT, 'apps', 'generator', 'portable.cjs'));
+const { cleanEnv } = require(path.join(ROOT, 'apps', 'generator', 'sandbox.cjs'));
 
 test('portable spec：多文件 + 权限 + 测试通过', async () => {
   const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-spec-')), 'sum-demo');
@@ -138,6 +139,28 @@ test('portable sandbox：用户代码在受限子进程执行', async () => {
   const mod = await import(`${pathToFileURL(path.join(out, 'lib', 'sandbox.js')).href}?t=${Date.now()}`);
   const result = await mod.runTool({ args: {} });
   assert.equal(result.total, 2);
+});
+
+test('portable sandbox：写新父目录不被误拒', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'portable-write-'));
+  const out = path.join(root, 'write-demo');
+  generatePortable({
+    id: 'write-demo', name: 'Write Demo', out,
+    spec: { description: 'Write demo.', permissions: { filesystem: ['write'], network: [] }, tools: [{ name: 'write_demo' }] },
+    files: [{ path: 'lib/impl.js', content: "import fs from 'node:fs'\nimport path from 'node:path'\nexport async function execute(args = {}) { const f = path.join(args.output_path, 'nested', 'out.txt'); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, 'ok'); return { file: f } }\n" }],
+  });
+  const target = path.join(root, 'new-parent', 'result');
+  const mod = await import(`${pathToFileURL(path.join(out, 'lib', 'sandbox.js')).href}?t=${Date.now()}`);
+  const result = await mod.runTool({ args: { output_path: target } });
+  assert.equal(fs.readFileSync(result.file, 'utf8'), 'ok');
+});
+
+test('legacy sandbox：清理 NODE_OPTIONS/DEBUG', () => {
+  const env = cleanEnv({ NODE_OPTIONS: '--require=x', NODE_REPL_EXTERNAL_MODULE: 'x', DEBUG: '*', KEEP: '1' });
+  assert.equal(env.NODE_OPTIONS, undefined);
+  assert.equal(env.NODE_REPL_EXTERNAL_MODULE, undefined);
+  assert.equal(env.DEBUG, undefined);
+  assert.equal(env.KEEP, '1');
 });
 
 test('portable sandbox：越界读取被拒绝', async () => {

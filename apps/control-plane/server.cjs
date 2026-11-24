@@ -71,7 +71,7 @@ function createControlPlane(opts = {}) {
   const token = opts.token ? String(opts.token) : ensureToken(dataRoot);
   const logger = opts.logger || createLogger({ dir: path.join(dataRoot, 'control-plane', 'logs') });
   const store = new ControlPlaneStore(path.join(dataRoot, 'control-plane', 'state.db'));
-  const app = Fastify({ logger: false, bodyLimit: 256 * 1024 });
+  const app = Fastify({ logger: false, bodyLimit: 4 * 1024 * 1024 });
 
   const auth = async (req, reply) => {
     const raw = String(req.headers.authorization || '');

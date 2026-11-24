@@ -58,13 +58,24 @@ export async function runTool({ handler = null, args = {} } = {}) {
   fs.writeFileSync(reqFile, JSON.stringify({ handler, args, multi: !!handler }), 'utf8')
 
   const read = new Set([ROOT, CHILD, GUARD, reqFile])
-  if (perms.filesystem?.includes('read')) read.add(dataRoot)
-  for (const s of strings(args)) if (path.isAbsolute(s)) read.add(s)
+  if (perms.filesystem?.includes('read')) {
+    read.add(dataRoot)
+    for (const s of strings(args)) if (path.isAbsolute(s)) read.add(s)
+  }
   const write = new Set()
   if (perms.filesystem?.includes('write')) {
     write.add(dataRoot)
-    if (typeof args.output_path === 'string' && path.isAbsolute(args.output_path)) write.add(args.output_path)
-    if (typeof args.output_dir === 'string' && path.isAbsolute(args.output_dir)) write.add(args.output_dir)
+    const addWrite = (value) => {
+      if (typeof value !== 'string' || !path.isAbsolute(value)) return
+      let dir = value
+      while (dir && dir !== path.dirname(dir)) {
+        write.add(dir)
+        if (fs.existsSync(dir)) break
+        dir = path.dirname(dir)
+      }
+    }
+    addWrite(args.output_path)
+    addWrite(args.output_dir)
   }
   const nodeArgs = [
     '--require', GUARD,

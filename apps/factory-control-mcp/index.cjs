@@ -95,12 +95,23 @@ async function runPortable({ requestId, pluginId, spec, toolName, version, insta
   if (install) {
     if (!zip || !fs.existsSync(zip)) throw new Error(`导出 zip 不存在：${zip || '(empty)'}`);
     const profileName = profile || process.env.DSH_PROFILE || 'desktop';
+    await call('POST', `/requests/${encodeURIComponent(requestId)}/steps`, {
+      step: 'install', status: 'running', evidence: zip,
+    });
     const r = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'dsh-factory.cjs'), 'install', zip, '--profile', profileName], {
       cwd: ROOT, encoding: 'utf8', timeout: 300000, env: { ...process.env },
     });
     installOutput = `${r.stdout || ''}${r.stderr || ''}`.slice(-1200);
     installed = r.status === 0;
-    if (!installed) return { ok: false, requestId, pluginId, zip, pluginDir: summary.pluginDir, installed: false, error: installOutput, attempt, parentRequestId };
+    if (!installed) {
+      await call('POST', `/requests/${encodeURIComponent(requestId)}/steps`, {
+        step: 'install', status: 'failed', evidence: zip, error: installOutput,
+      }).catch(() => {});
+      return { ok: false, requestId, pluginId, zip, pluginDir: summary.pluginDir, installed: false, error: installOutput, attempt, parentRequestId };
+    }
+    await call('POST', `/requests/${encodeURIComponent(requestId)}/steps`, {
+      step: 'install', status: 'succeeded', evidence: `${zip}${profileName ? ` (${profileName})` : ''}`,
+    });
   }
   const toolNames = spec?.tools?.map((t) => t.name) || [toolName || pluginId.replace(/-/g, '_')];
   const reg = registry.record({
@@ -135,6 +146,12 @@ server.registerTool('create_plugin', {
     profile: z.string().optional().describe('DSH profile，默认环境 DSH_PROFILE 或 desktop'),
   },
 }, async ({ brief, pluginId, name, toolName, version, description, fixture, implSource, spec, files, recording, install, profile }) => {
+  if (files) {
+    const total = files.reduce((sum, f) => sum + Buffer.byteLength(String(f.content || ''), 'utf8'), 0);
+    if (total > 3.5 * 1024 * 1024) {
+      return toText({ ok: false, error: 'files 总大小超过 3.5MB；请拆分文件或改用 implSource/fixture 引用' });
+    }
+  }
   const created = await call('POST', '/requests', {
     brief,
     params: {

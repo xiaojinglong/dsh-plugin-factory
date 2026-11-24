@@ -29,11 +29,17 @@ function buildArgs({ readDirs = [], writeDirs = [], scriptArgs = [] } = {}) {
   return [...args, ...scriptArgs];
 }
 
+function cleanEnv(env = {}) {
+  const next = { ...env };
+  for (const key of ['NODE_OPTIONS', 'NODE_REPL_EXTERNAL_MODULE', 'DEBUG']) delete next[key];
+  return next;
+}
+
 function spawnSandboxed(scriptArgs, opts = {}) {
   const args = buildArgs({ readDirs: opts.readDirs, writeDirs: opts.writeDirs, scriptArgs });
   return spawn(process.execPath, args, {
-    cwd: opts.cwd, env: opts.env, stdio: opts.stdio || ['ignore', 'ignore', 'pipe'],
+    cwd: opts.cwd, env: cleanEnv(opts.env), stdio: opts.stdio || ['ignore', 'ignore', 'pipe'],
   });
 }
 
-module.exports = { supportsPermissionModel, buildArgs, spawnSandboxed };
+module.exports = { supportsPermissionModel, buildArgs, spawnSandboxed, cleanEnv };
