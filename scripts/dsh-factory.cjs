@@ -76,7 +76,17 @@ function findPackageDir(root) {
 }
 function resolveTarget(input) {
   const abs = path.resolve(input);
-  if (!fs.existsSync(abs) || !fs.statSync(abs).isFile()) return { target: input, extracted: null };
+  if (!fs.existsSync(abs)) return { target: input, extracted: null };
+  if (!fs.statSync(abs).isFile()) {
+    // 目录安装先复制到本地缓存，避免在仓库内写成相对 link:data/... 的坏依赖。
+    const cacheRoot = path.join(process.env.LOCALAPPDATA || os.tmpdir(), 'dsh-factory', 'bundles');
+    if (abs.startsWith(cacheRoot)) return { target: abs, extracted: abs };
+    const cache = path.join(cacheRoot, path.basename(abs));
+    fs.rmSync(cache, { recursive: true, force: true });
+    fs.mkdirSync(path.dirname(cache), { recursive: true });
+    fs.cpSync(abs, cache, { recursive: true });
+    return { target: cache, extracted: cache };
+  }
   if (!/\.zip$/i.test(abs)) return { target: abs, extracted: null };
   const cache = path.join(process.env.LOCALAPPDATA || os.tmpdir(), 'dsh-factory', 'bundles', path.basename(abs, '.zip'));
   fs.rmSync(cache, { recursive: true, force: true });
