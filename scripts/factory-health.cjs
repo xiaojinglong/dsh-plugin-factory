@@ -91,5 +91,5 @@ async function get(pathname, auth = true) {
     if (alerts.length) { console.log('  告警：'); for (const a of alerts) console.log(`  - ${a}`); }
     else console.log('  告警：无');
   }
-  process.exit(health ? (alerts.length ? 2 : 0) : 1);
-})().catch((e) => { console.error(`[factory-health] ${e.message}`); process.exit(1); });
+  process.exitCode = health ? (alerts.length ? 2 : 0) : 1;
+})().catch((e) => { console.error(`[factory-health] ${e.message}`); process.exitCode = 1; });
