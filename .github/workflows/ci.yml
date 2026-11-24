@@ -32,3 +32,11 @@ jobs:
         run: npm run check
       - name: Tests
         run: npm test
+      - name: Package factory
+        run: npm run factory:package
+      - name: Upload factory package
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-plugin-factory-${{ runner.os }}
+          path: release/*.zip*
+          if-no-files-found: error
