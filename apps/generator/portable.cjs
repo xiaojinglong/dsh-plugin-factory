@@ -363,6 +363,8 @@ async function validatePortable(dir) {
   if (/\b(child_process|spawn\(|exec\()/.test(userText) && !perms.process) add('permission:process', false, '代码启动子进程但未声明 process');
   const testsDir = path.join(out, 'tests');
   const testFiles = fs.existsSync(testsDir) ? fs.readdirSync(testsDir).filter((f) => /\.(test|spec)\.(mjs|js)$/.test(f)) : [];
+  const requiresConformance = Array.isArray(spec?.acceptance) && spec.acceptance.length > 0;
+  add('target-conformance', !requiresConformance || testFiles.includes('target-conformance.test.mjs'), requiresConformance ? '缺少 tests/target-conformance.test.mjs' : '');
   if (testFiles.length) {
     const r = spawnSync(process.execPath, ['--test', ...testFiles.map((f) => path.join('tests', f))], {
       cwd: out, encoding: 'utf8', timeout: 120000, env: { ...process.env, FACTORY_ROOT: ROOT },

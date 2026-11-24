@@ -25,6 +25,7 @@ test('portable spec：多文件 + 权限 + 测试通过', async () => {
     files: [
       { path: 'lib/impl.js', content: "import fs from 'node:fs'\nimport path from 'node:path'\nimport { fileURLToPath } from 'node:url'\nconst F = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'fixtures', 'data.json')\nexport async function execute(args = {}) {\n  const d = JSON.parse(fs.readFileSync(args.input_path || F, 'utf8'))\n  const rows = Array.isArray(d) ? d : d.rows\n  return { total: rows.reduce((s, r) => s + Number(r.value || 0), 0) }\n}\n" },
       { path: 'tests/impl.test.mjs', content: "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('sum', async () => { const r = await execute({}); assert.equal(r.total, 30) })\n" },
+      { path: 'tests/target-conformance.test.mjs', content: "import test from 'node:test'\nimport assert from 'node:assert'\nimport { execute } from '../lib/impl.js'\ntest('target', async () => { assert.equal((await execute({})).total, 30) })\n" },
     ],
   });
   const v = await validatePortable(out);
@@ -63,6 +64,18 @@ test('portable spec：拒绝明文密钥和非法网络权限', async () => {
   assert.ok(netCheck.errors.some((e) => /permission:network-format/.test(e)));
 });
 
+test('portable spec：有验收标准但缺少目标一致性测试时失败', async () => {
+  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-conformance-miss-')), 'conformance-miss');
+  generatePortable({
+    id: 'conformance-miss', name: 'Conformance Miss', out,
+    spec: { description: 'Conformance miss.', permissions: { filesystem: [], network: [] }, acceptance: ['target'], tools: [{ name: 'conformance_miss' }] },
+    files: [{ path: 'tests/impl.test.mjs', content: "import test from 'node:test'\ntest('ok', () => {})\n" }],
+  });
+  const v = await validatePortable(out);
+  assert.equal(v.ok, false);
+  assert.ok(v.errors.some((e) => /target-conformance/.test(e)));
+});
+
 test('portable spec：多工具 handlers', async () => {
   const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-multi-')), 'multi-demo');
   generatePortable({
@@ -79,6 +92,7 @@ test('portable spec：多工具 handlers', async () => {
     files: [
       { path: 'lib/handlers.js', content: "export const handlers = { async sum() { return { total: 30 } }, async count() { return { total: 2 } } }\n" },
       { path: 'tests/handlers.test.mjs', content: "import test from 'node:test'\nimport assert from 'node:assert'\nimport { handlers } from '../lib/handlers.js'\ntest('handlers', async () => { assert.equal((await handlers.sum()).total, 30); assert.equal((await handlers.count()).total, 2) })\n" },
+      { path: 'tests/target-conformance.test.mjs', content: "import test from 'node:test'\nimport assert from 'node:assert'\nimport { handlers } from '../lib/handlers.js'\ntest('target', async () => { assert.equal((await handlers.sum()).total, 30); assert.equal((await handlers.count()).total, 2) })\n" },
     ],
   });
   const v = await validatePortable(out);
