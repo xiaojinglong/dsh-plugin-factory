@@ -198,6 +198,23 @@ test('portable sandbox：未声明 read 时不能读外部绝对路径', async (
   await assert.rejects(() => mod.runTool({ args: { input_path: input } }), /sandbox|permission|EACCES|ERR_ACCESS_DENIED/i);
 });
 
+test('portable sandbox：输出文件已存在时仍可覆盖', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'portable-overwrite-'));
+  const out = path.join(root, 'overwrite-demo');
+  generatePortable({
+    id: 'overwrite-demo', name: 'Overwrite Demo', out,
+    spec: { description: 'Overwrite demo.', permissions: { filesystem: ['write'], network: [] }, tools: [{ name: 'overwrite_demo' }] },
+    files: [{ path: 'lib/impl.js', content: "import fs from 'node:fs'\nexport async function execute(args = {}) { fs.writeFileSync(args.output_path, 'new'); return { ok: true } }\n" }],
+  });
+  const target = path.join(root, 'existing', 'out.txt');
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, 'old');
+  const mod = await import(`${pathToFileURL(path.join(out, 'lib', 'sandbox.js')).href}?t=${Date.now()}`);
+  const result = await mod.runTool({ args: { output_path: target } });
+  assert.equal(result.ok, true);
+  assert.equal(fs.readFileSync(target, 'utf8'), 'new');
+});
+
 test('portable sandbox：越界读取被拒绝', async () => {
   const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-sandbox-deny-')), 'sandbox-deny');
   generatePortable({

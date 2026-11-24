@@ -67,7 +67,8 @@ export async function runTool({ handler = null, args = {} } = {}) {
     write.add(dataRoot)
     const addWrite = (value) => {
       if (typeof value !== 'string' || !path.isAbsolute(value)) return
-      let dir = value
+      write.add(value)
+      let dir = path.dirname(value)
       while (dir && dir !== path.dirname(dir)) {
         write.add(dir)
         if (fs.existsSync(dir)) break
