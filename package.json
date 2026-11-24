@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-factory",
-  "version": "3.25.2",
+  "version": "3.25.6",
   "private": true,
   "description": "DSH Plugin Factory A: single-machine plugin factory. Business description -> runnable DSH plugin (service + MCP + skill + report).",
   "engines": {

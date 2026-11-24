@@ -19,6 +19,7 @@ const out = path.join(outDir, name);
 const includeDirs = [
   'apps', 'packages', 'platform', 'scripts', 'config',
   'docs', 'deployment', 'templates', 'factory-kit', 'catalog', 'fixtures',
+  'portable-plugins', 'scenarios', 'spikes',
 ];
 const includeFiles = [
   'package.json', 'pnpm-lock.yaml', 'README.md', 'CHANGELOG.md',
