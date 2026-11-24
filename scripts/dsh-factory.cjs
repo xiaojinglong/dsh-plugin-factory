@@ -98,6 +98,26 @@ function profileFile(profileName) {
   return path.join(process.env.USERPROFILE || os.homedir(), '.dsh', 'profiles', profileName, 'package.json');
 }
 
+function profileData(profileName) {
+  const file = profileFile(profileName);
+  if (!fs.existsSync(file)) return null;
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function profileDependency(profileName, pkgName) {
+  const data = profileData(profileName);
+  return data?.dependencies?.[pkgName] || null;
+}
+
+function installedVersion(profileName, pkgName) {
+  const spec = profileDependency(profileName, pkgName);
+  if (!spec || !spec.startsWith('link:')) return null;
+  try {
+    const dir = path.resolve(path.dirname(profileFile(profileName)), spec.slice('link:'.length));
+    return JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8')).version || null;
+  } catch { return null; }
+}
+
 function assertProfileHealthy(profileName) {
   const file = profileFile(profileName);
   if (!fs.existsSync(file)) return;
@@ -126,6 +146,19 @@ try {
   const resolved = resolveTarget(targetArg);
   const pkg = fs.existsSync(resolved.target) && fs.statSync(resolved.target).isDirectory() ? readPkg(resolved.target) : null;
   console.log(`[dsh-factory] profile=${profile} target=${resolved.target}`);
+  if (pkg?.name) {
+    const oldSpec = profileDependency(profile, pkg.name);
+    const oldVersion = installedVersion(profile, pkg.name);
+    const changed = oldSpec && (oldVersion !== (pkg.version || '0.1.0') || oldSpec !== `link:${path.resolve(resolved.target).replace(/\\/g, '/')}`);
+    if (changed) {
+      console.log(`[dsh-factory] 升级 ${pkg.name}: ${oldVersion || '?'} -> ${pkg.version || '0.1.0'}，先移除旧 link`);
+      const removed = runDsh(['plugin', '--profile', profile, 'remove', pkg.name]);
+      if (removed.status !== 0) {
+        console.error((removed.stderr || removed.stdout).slice(-1200));
+        throw new Error(`移除旧版本失败（exit=${removed.status}）`);
+      }
+    }
+  }
   const install = runDsh(['plugin', '--profile', profile, 'add', '-w', resolved.target]);
   if (install.status !== 0) {
     console.error((install.stderr || install.stdout).slice(-1500));

@@ -64,7 +64,7 @@ test('异步 create/finalize：默认不代签验收', { timeout: 120000 }, asyn
       if (request?.state === 'staging' || request?.state === 'failed') break;
       await new Promise((r) => setTimeout(r, 500));
     }
-    assert.equal(request?.state, 'staging');
+    assert.equal(request?.state, 'staging', JSON.stringify(request));
 
     const staged = textOf(await client.callTool({
       name: 'finalize_plugin',
