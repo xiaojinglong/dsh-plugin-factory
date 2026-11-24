@@ -41,6 +41,28 @@ test('portable spec：拒绝越界文件路径', () => {
   }), /非法文件路径/);
 });
 
+test('portable spec：拒绝明文密钥和非法网络权限', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'portable-security-'));
+  const secretOut = path.join(root, 'secret-demo');
+  generatePortable({
+    id: 'secret-demo', name: 'Secret Demo', out: secretOut,
+    spec: { description: 'Secret demo.', permissions: { filesystem: [], network: [] }, tools: [{ name: 'secret_demo' }] },
+    files: [{ path: 'lib/impl.js', content: "const token = 'sk-123456789012345678901234'\nexport async function execute() { return { token } }\n" }],
+  });
+  const secretCheck = await validatePortable(secretOut);
+  assert.equal(secretCheck.ok, false);
+  assert.ok(secretCheck.errors.some((e) => /no-secret-literal/.test(e)));
+
+  const netOut = path.join(root, 'net-demo');
+  generatePortable({
+    id: 'net-demo', name: 'Net Demo', out: netOut,
+    spec: { description: 'Net demo.', permissions: { filesystem: [], network: ['https://example.com/path'] }, tools: [{ name: 'net_demo' }] },
+  });
+  const netCheck = await validatePortable(netOut);
+  assert.equal(netCheck.ok, false);
+  assert.ok(netCheck.errors.some((e) => /permission:network-format/.test(e)));
+});
+
 test('portable spec：多工具 handlers', async () => {
   const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-multi-')), 'multi-demo');
   generatePortable({

@@ -320,6 +320,17 @@ async function validatePortable(dir) {
   const text = ['index.js', 'package.json', 'cordis.patch.yml', ...userFiles].map((f) => fs.existsSync(path.join(out, f)) ? fs.readFileSync(path.join(out, f), 'utf8') : '').join('\n');
   add('no-factory-path', !/FACTORY_ROOT|D:[\\/]www|C:[\\/]Users/.test(text), 'forbidden path');
   add('no-token', !/serviceToken|MCP_SERVICE_TOKEN/.test(text), 'token');
+  const literalSecret = /(?:sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}|-----BEGIN (?:RSA |EC )?PRIVATE KEY-----|Bearer\s+[A-Za-z0-9._-]{20,}|(?:password|passwd|secret|api[_-]?key)\s*[:=]\s*['"][^'"]{8,}['"])/i;
+  add('no-secret-literal', !literalSecret.test(text), '源码疑似包含明文密钥');
+
+  const credentials = Array.isArray(spec?.credentials) ? spec.credentials : [];
+  for (const c of credentials) {
+    add(`credential:${c.env || 'missing'}`, /^[A-Z][A-Z0-9_]*$/.test(String(c.env || '')), 'credential.env 必须是大写环境变量名');
+  }
+  const fsPerms = spec?.permissions?.filesystem || [];
+  add('permission:filesystem', fsPerms.every((p) => p === 'read' || p === 'write'), JSON.stringify(fsPerms));
+  const netPerms = spec?.permissions?.network || [];
+  add('permission:network-format', netPerms.every((h) => /^[a-z0-9.-]+$/i.test(String(h)) && !String(h).includes('/')), JSON.stringify(netPerms));
 
   const deps = Object.keys(pkg.dependencies || {});
   if (spec?.requires?.platform && spec.requires.platform !== 'any' && spec.requires.platform !== process.platform) {
