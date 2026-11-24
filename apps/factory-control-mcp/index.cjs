@@ -15,7 +15,7 @@ const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio
 const { z } = require('zod');
 const fs = require('node:fs');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+const { spawnSync, spawn } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const config = require(path.join(ROOT, 'packages', 'config'));
@@ -57,8 +57,87 @@ server.registerTool('create_request', {
   },
 }, async ({ brief, params, idempotency_key }) => toText(await call('POST', '/requests', { brief, params }, idempotency_key ? { 'idempotency-key': idempotency_key } : {})));
 
-async function runPortable({ requestId, pluginId, spec, toolName, version, install = true, profile, attempt = 1, parentRequestId = null }) {
-  const pipeline = spawnSync(process.execPath, [path.join(ROOT, 'apps', 'generator', 'pipeline.cjs'), '--request', requestId], {
+function portableZip(requestId) {
+  const dist = path.join(config.FACTORY_DATA_ROOT, 'generator', 'runs', requestId, 'dist');
+  const found = fs.existsSync(dist) ? fs.readdirSync(dist).find((f) => f.endsWith('.zip')) : '';
+  return found ? path.join(dist, found) : '';
+}
+
+function startPortablePipeline(requestId) {
+  const child = spawn(process.execPath, [path.join(ROOT, 'apps', 'generator', 'pipeline.cjs'), '--request', requestId], {
+    cwd: ROOT,
+    detached: true,
+    windowsHide: true,
+    stdio: 'ignore',
+    env: { ...process.env, CONTROL_PLANE_TOKEN: TOKEN, CONTROL_PLANE_URL: BASE },
+  });
+  child.unref();
+}
+
+async function waitPortable(requestId, timeoutMs = 600000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const got = await call('GET', `/requests/${encodeURIComponent(requestId)}`);
+    const state = String(got.request?.state || '');
+    if (['staging', 'failed', 'installed'].includes(state)) return got;
+    await new Promise((r) => setTimeout(r, 1500));
+  }
+  throw new Error(`pipeline 等待超时（600秒）：${requestId}`);
+}
+
+async function finalizePortable({ requestId, install = true, profile }) {
+  const got = await call('GET', `/requests/${encodeURIComponent(requestId)}`);
+  const request = got.request;
+  let p = request?.params || {};
+  if (typeof p === 'string') { try { p = JSON.parse(p); } catch { p = {}; } }
+  if (request?.state === 'failed') {
+    return {
+      ok: false, requestId, pluginId: p.pluginId, error: request.error || 'pipeline failed',
+      diagnostics: request.steps || null, next: '读取失败步骤，修复 spec/files 后调用 repair_plugin',
+    };
+  }
+  if (request?.state !== 'staging' && request?.state !== 'installed') {
+    return { ok: false, requestId, state: request?.state, next: '任务尚未到达 staging；用 get_request 查看进度' };
+  }
+  const zip = portableZip(requestId);
+  const pluginDir = path.join(config.FACTORY_DATA_ROOT, 'generator', 'runs', requestId, String(p.pluginId || ''));
+  const toolNames = p.spec?.tools?.map((t) => t.name) || [p.toolName || String(p.pluginId || '').replace(/-/g, '_')];
+  let installed = false;
+  let installOutput = '';
+  if (request.state === 'staging') {
+    await call('POST', `/requests/${encodeURIComponent(requestId)}/accept`, {
+      acceptedBy: 'dsh-agent', note: 'portable-host created via DSH natural language',
+    });
+  }
+  if (install) {
+    if (!zip || !fs.existsSync(zip)) return { ok: false, requestId, error: `导出 zip 不存在：${zip || '(empty)'}` };
+    const profileName = profile || process.env.DSH_PROFILE || 'desktop';
+    await call('POST', `/requests/${encodeURIComponent(requestId)}/steps`, { step: 'install', status: 'running', evidence: zip });
+    const r = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'dsh-factory.cjs'), 'install', zip, '--profile', profileName], {
+      cwd: ROOT, encoding: 'utf8', timeout: 300000, env: { ...process.env },
+    });
+    installOutput = `${r.stdout || ''}${r.stderr || ''}`.slice(-1200);
+    installed = r.status === 0;
+    if (!installed) {
+      await call('POST', `/requests/${encodeURIComponent(requestId)}/steps`, { step: 'install', status: 'failed', evidence: zip, error: installOutput }).catch(() => {});
+      return { ok: false, requestId, pluginId: p.pluginId, zip, pluginDir, installed: false, error: installOutput };
+    }
+    await call('POST', `/requests/${encodeURIComponent(requestId)}/steps`, { step: 'install', status: 'succeeded', evidence: `${zip} (${profileName})` });
+  }
+  const reg = registry.record({
+    id: p.pluginId, version: p.version || '0.1.0', requestId, zip, pluginDir,
+    tools: toolNames, installed,
+  });
+  return {
+    ok: true, requestId, pluginId: p.pluginId, toolName: p.toolName || String(p.pluginId || '').replace(/-/g, '_'),
+    version: p.version || '0.1.0', zip, pluginDir, installed, state: 'accepted',
+    tools: toolNames, registry: reg,
+    next: installed ? '重启 DSH 后工具可见（或等待 HMR）' : '用 dsh-factory 安装 zip，然后重启 DSH',
+    installOutput: installOutput || undefined,
+  };
+}
+
+async function runPortable({ requestId, pluginId, spec, toolName, version, install = true, profile, attempt = 1, parentRequestId = null }) {  const pipeline = spawnSync(process.execPath, [path.join(ROOT, 'apps', 'generator', 'pipeline.cjs'), '--request', requestId], {
     cwd: ROOT, encoding: 'utf8', timeout: 600000,
     env: { ...process.env, CONTROL_PLANE_TOKEN: TOKEN, CONTROL_PLANE_URL: BASE },
   });
@@ -143,9 +222,10 @@ server.registerTool('create_plugin', {
     files: z.array(z.object({ path: z.string(), content: z.string().max(200000) })).optional().describe('多文件：lib/*、tests/*、fixtures/*'),
     recording: z.string().optional().describe('可选桌面录制 JSON 路径；需要 spec.connectors=["desktop"]'),
     install: z.boolean().optional().default(true).describe('生成后是否安装到当前 DSH profile'),
+    wait: z.boolean().optional().default(true).describe('true 等待完成；false 立即返回 requestId，用 get_request/finalize_plugin 继续'),
     profile: z.string().optional().describe('DSH profile，默认环境 DSH_PROFILE 或 desktop'),
   },
-}, async ({ brief, pluginId, name, toolName, version, description, fixture, implSource, spec, files, recording, install, profile }) => {
+}, async ({ brief, pluginId, name, toolName, version, description, fixture, implSource, spec, files, recording, install, wait, profile }) => {
   if (files) {
     const total = files.reduce((sum, f) => sum + Buffer.byteLength(String(f.content || ''), 'utf8'), 0);
     if (total > 3.5 * 1024 * 1024) {
@@ -164,8 +244,26 @@ server.registerTool('create_plugin', {
     },
   });
   const requestId = created.request.id;
-  return toText(await runPortable({ requestId, pluginId, spec, toolName, version, install, profile, attempt: 1 }));
+  startPortablePipeline(requestId);
+  if (!wait) {
+    return toText({
+      ok: true, requestId, pluginId, state: 'queued',
+      next: '用 get_request 查看生成/校验/导出进度；到 staging 后调用 finalize_plugin 安装',
+    });
+  }
+  await waitPortable(requestId);
+  return toText(await finalizePortable({ requestId, install, profile }));
 });
+
+server.registerTool('finalize_plugin', {
+  title: '完成异步插件生成',
+  description: '对 create_plugin(wait:false) 或 staging 请求执行验收/安装，并写注册表。',
+  inputSchema: {
+    requestId: z.string().describe('create_plugin 返回的 requestId'),
+    install: z.boolean().optional().default(true),
+    profile: z.string().optional(),
+  },
+}, async ({ requestId, install, profile }) => toText(await finalizePortable({ requestId, install, profile })));
 
 server.registerTool('repair_plugin', {
   title: '修复并重跑插件',

@@ -73,7 +73,8 @@ description: 插件工厂 Agent（单机版）：用户在 DSH 对话里描述�
 | 工具 | 用途 |
 |---|---|
 | `list_plugins` | 先查已有插件，能复用就复用 |
-| `create_plugin` | **主入口**：建需求 → pipeline 生成/校验/导出 zip → 验收 → 可选安装 |
+| `create_plugin` | **主入口**：建需求 → pipeline 生成/校验/导出 zip → 验收 → 可选安装；`wait:false` 时异步启动 |
+| `finalize_plugin` | 异步任务到 staging 后验收/安装，并写注册表 |
 | `repair_plugin` | 复用失败 requestId，覆盖 spec/files 重跑；attempt 最多 3 次 |
 | `list_registry` | 查看已生成/安装插件的版本、工具、zip |
 | `rollback_plugin` | 回滚到上一个已安装版本，或指定历史 version |
@@ -142,6 +143,9 @@ description: 插件工厂 Agent（单机版）：用户在 DSH 对话里描述�
    - 目标不一致：定位根因并修复，最多 3 轮；禁止修改验收测试掩盖差异。
    - 失败时读 `diagnostics`，用 `repair_plugin` 修复，最多 3 次。
 7. **节点 10/11：打包与安装**：`create_plugin` 的 `install: true`。
+   - 生成耗时较长时用 `create_plugin({..., wait:false})`，立即拿 `requestId`。
+   - 用 `get_request` 展示生成/校验/导出进度；到 `staging` 后调用 `finalize_plugin` 验收/安装。
+   - 用户可见进度使用业务语言，不显示 requestId；内部排查才说明。
 8. **节点 12：小规模试点**：3 条 → 10 条 → 30 条。
    - 记录成功率、风控/验证、页面/接口异常、停止/恢复、数据完整性。
    - 任一级失败，退回节点 2 或 5，不得放大。

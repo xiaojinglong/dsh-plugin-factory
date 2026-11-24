@@ -75,16 +75,35 @@ function readPkg(dir) {
   return pkg;
 }
 
+function profileFile(profileName) {
+  return path.join(process.env.USERPROFILE || os.homedir(), '.dsh', 'profiles', profileName, 'package.json');
+}
+
+function assertProfileHealthy(profileName) {
+  const file = profileFile(profileName);
+  if (!fs.existsSync(file)) return;
+  const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const deps = data.dependencies || {};
+  for (const [name, spec] of Object.entries(deps)) {
+    if (typeof spec !== 'string' || !spec.startsWith('link:')) continue;
+    const target = path.resolve(path.dirname(file), spec.slice('link:'.length));
+    if (!fs.existsSync(target)) {
+      throw new Error(`profile 依赖损坏：${name} -> ${target} 不存在。先移除该 bundle（plugin_manager remove_bundle "${name}"）再安装。`);
+    }
+  }
+}
+
 function profileComposed(profileName, pkgName) {
   if (!pkgName) return false;
   try {
-    const file = path.join(process.env.USERPROFILE || os.homedir(), '.dsh', 'profiles', profileName, 'package.json');
+    const file = profileFile(profileName);
     const data = JSON.parse(fs.readFileSync(file, 'utf8'));
     return !!(data.dependencies || {})[pkgName] && (data.dsh?.profile?.bundles || []).includes(pkgName);
   } catch { return false; }
 }
 
 try {
+  assertProfileHealthy(profile);
   const resolved = resolveTarget(targetArg);
   const pkg = fs.existsSync(resolved.target) && fs.statSync(resolved.target).isDirectory() ? readPkg(resolved.target) : null;
   console.log(`[dsh-factory] profile=${profile} target=${resolved.target}`);
