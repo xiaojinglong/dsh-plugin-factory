@@ -163,6 +163,19 @@ test('legacy sandbox：清理 NODE_OPTIONS/DEBUG', () => {
   assert.equal(env.KEEP, '1');
 });
 
+test('portable sandbox：未声明 read 时不能读外部绝对路径', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'portable-read-deny-'));
+  const out = path.join(root, 'read-deny');
+  generatePortable({
+    id: 'read-deny', name: 'Read Deny', out,
+    spec: { description: 'Read deny demo.', permissions: { filesystem: [], network: [] }, tools: [{ name: 'read_deny' }] },
+    files: [{ path: 'lib/impl.js', content: "import fs from 'node:fs'\nexport async function execute(args = {}) { return { data: fs.readFileSync(args.input_path, 'utf8') } }\n" }],
+  });
+  const input = process.platform === 'win32' ? 'C:/Windows/win.ini' : '/etc/hosts';
+  const mod = await import(`${pathToFileURL(path.join(out, 'lib', 'sandbox.js')).href}?t=${Date.now()}`);
+  await assert.rejects(() => mod.runTool({ args: { input_path: input } }), /sandbox|permission|EACCES|ERR_ACCESS_DENIED/i);
+});
+
 test('portable sandbox：越界读取被拒绝', async () => {
   const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'portable-sandbox-deny-')), 'sandbox-deny');
   generatePortable({

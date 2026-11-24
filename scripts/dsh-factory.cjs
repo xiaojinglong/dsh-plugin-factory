@@ -21,10 +21,29 @@ for (let i = 2; i < process.argv.length; i += 1) {
   } else positional.push(process.argv[i]);
 }
 const cmd = positional[0] || 'install';
-const targetArg = positional[1];
+let targetArg = positional[1];
 const profile = args.profile || 'desktop';
-if (cmd !== 'install' || !targetArg) {
+if (cmd === 'rollback') {
+  const registry = require(path.join(__dirname, '..', 'packages', 'plugin-registry.js'));
+  const id = positional[1];
+  if (!id) {
+    console.error('用法：node scripts/dsh-factory.cjs rollback <plugin-id> [--version x.y.z] [--profile desktop] [--dry-run]');
+    process.exit(1);
+  }
+  const target = registry.previous(id, args.version);
+  if (!target) {
+    console.error(`[dsh-factory] 没有可回滚的已安装版本：${id}${args.version ? `@${args.version}` : ''}`);
+    process.exit(1);
+  }
+  targetArg = target.zip;
+  if (args['dry-run'] === 'true') {
+    console.log(JSON.stringify({ ok: true, dryRun: true, id, version: target.version, zip: target.zip }, null, 2));
+    process.exit(0);
+  }
+}
+if ((cmd !== 'install' && cmd !== 'rollback') || !targetArg) {
   console.error('用法：node scripts/dsh-factory.cjs install <zip|目录|npm-spec> [--profile desktop]');
+  console.error('      node scripts/dsh-factory.cjs rollback <plugin-id> [--version x.y.z] [--profile desktop] [--dry-run]');
   process.exit(1);
 }
 
