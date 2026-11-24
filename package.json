@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-factory",
-  "version": "3.13.2",
+  "version": "3.24.0",
   "private": true,
   "description": "DSH Plugin Factory A: single-machine plugin factory. Business description -> runnable DSH plugin (service + MCP + skill + report).",
   "engines": {
@@ -43,7 +43,8 @@
     "release:package": "node scripts/package-release.cjs",
     "release:verify": "node scripts/verify-release.cjs",
     "release:install": "node scripts/install-from-release.cjs",
-    "factory:health": "node scripts/factory-health.cjs"
+    "factory:health": "node scripts/factory-health.cjs",
+    "factory:package": "node scripts/package-factory.cjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",
