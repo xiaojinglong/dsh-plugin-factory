@@ -166,6 +166,19 @@ try {
   }
   console.log((install.stdout || '').trim().split('\n').slice(-4).join('\n'));
   const hit = profileComposed(profile, pkg?.name);
+  if (pkg?.name) {
+    try {
+      const registry = require(path.join(__dirname, '..', 'packages', 'plugin-registry.js'));
+      const id = pkg.name.replace(/^dsh-plugin-/, '');
+      const zipPath = /\.zip$/i.test(String(targetArg)) ? path.resolve(targetArg) : null;
+      registry.record({
+        id, version: pkg.version || '0.1.0', requestId: null, zip: zipPath,
+        pluginDir: resolved.target, tools: [], installed: true,
+      });
+    } catch (e) {
+      console.error(`[dsh-factory] 写入注册表失败（不影响安装）：${e.message}`);
+    }
+  }
   console.log(JSON.stringify({ ok: true, profile, target: resolved.target, package: pkg?.name || null, extracted: resolved.extracted, composed: !!hit }, null, 2));
   console.log('[dsh-factory] 完成。请重开 DSH 使 bundle 生效。');
 } catch (err) {
