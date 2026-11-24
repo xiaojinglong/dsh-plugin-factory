@@ -85,7 +85,7 @@ async function waitPortable(requestId, timeoutMs = 600000) {
   throw new Error(`pipeline 等待超时（600秒）：${requestId}`);
 }
 
-async function finalizePortable({ requestId, install = true, profile }) {
+async function finalizePortable({ requestId, install = true, profile, autoAccept = false }) {
   const got = await call('GET', `/requests/${encodeURIComponent(requestId)}`);
   const request = got.request;
   let p = request?.params || {};
@@ -102,11 +102,18 @@ async function finalizePortable({ requestId, install = true, profile }) {
   const zip = portableZip(requestId);
   const pluginDir = path.join(config.FACTORY_DATA_ROOT, 'generator', 'runs', requestId, String(p.pluginId || ''));
   const toolNames = p.spec?.tools?.map((t) => t.name) || [p.toolName || String(p.pluginId || '').replace(/-/g, '_')];
+  if (request.state === 'staging' && !autoAccept) {
+    return {
+      ok: true, requestId, pluginId: p.pluginId, version: p.version || '0.1.0',
+      zip, pluginDir, state: 'staging', accepted: false, installed: false, tools: toolNames,
+      next: '等待用户确认目标/结果；确认后调用 finalize_plugin({requestId, autoAccept:true}) 验收并安装',
+    };
+  }
   let installed = false;
   let installOutput = '';
   if (request.state === 'staging') {
     await call('POST', `/requests/${encodeURIComponent(requestId)}/accept`, {
-      acceptedBy: 'dsh-agent', note: 'portable-host created via DSH natural language',
+      acceptedBy: 'dsh-agent', note: 'portable-host accepted explicitly by factory',
     });
   }
   if (install) {
@@ -223,9 +230,10 @@ server.registerTool('create_plugin', {
     recording: z.string().optional().describe('可选桌面录制 JSON 路径；需要 spec.connectors=["desktop"]'),
     install: z.boolean().optional().default(true).describe('生成后是否安装到当前 DSH profile'),
     wait: z.boolean().optional().default(true).describe('true 等待完成；false 立即返回 requestId，用 get_request/finalize_plugin 继续'),
+    autoAccept: z.boolean().optional().default(false).describe('是否自动验收；默认 false，必须用户确认后 finalize_plugin({autoAccept:true})'),
     profile: z.string().optional().describe('DSH profile，默认环境 DSH_PROFILE 或 desktop'),
   },
-}, async ({ brief, pluginId, name, toolName, version, description, fixture, implSource, spec, files, recording, install, wait, profile }) => {
+}, async ({ brief, pluginId, name, toolName, version, description, fixture, implSource, spec, files, recording, install, wait, autoAccept, profile }) => {
   if (files) {
     const total = files.reduce((sum, f) => sum + Buffer.byteLength(String(f.content || ''), 'utf8'), 0);
     if (total > 3.5 * 1024 * 1024) {
@@ -252,18 +260,19 @@ server.registerTool('create_plugin', {
     });
   }
   await waitPortable(requestId);
-  return toText(await finalizePortable({ requestId, install, profile }));
+  return toText(await finalizePortable({ requestId, install, profile, autoAccept }));
 });
 
 server.registerTool('finalize_plugin', {
   title: '完成异步插件生成',
-  description: '对 create_plugin(wait:false) 或 staging 请求执行验收/安装，并写注册表。',
+  description: '对 create_plugin(wait:false) 或 staging 请求执行验收/安装；默认只返回 staging，autoAccept:true 才验收安装。',
   inputSchema: {
     requestId: z.string().describe('create_plugin 返回的 requestId'),
     install: z.boolean().optional().default(true),
+    autoAccept: z.boolean().optional().default(false),
     profile: z.string().optional(),
   },
-}, async ({ requestId, install, profile }) => toText(await finalizePortable({ requestId, install, profile })));
+}, async ({ requestId, install, autoAccept, profile }) => toText(await finalizePortable({ requestId, install, autoAccept, profile })));
 
 server.registerTool('repair_plugin', {
   title: '修复并重跑插件',
