@@ -51,6 +51,7 @@ description: 插件工厂 Agent（单机版）：用户在 DSH 对话里描述�
 - **爬虫目标一致性必须包含真实目标 1/3/10 页、关键词编码、分页 URL、字段、缺页；目标 URL/关键词不一致不得发布。**
 - **爬虫项目禁止反检测规避：不得抹平 webdriver、伪造指纹/UA、使用 playwright-stealth、代理池轮换、验证码破解或 TLS 伪造；遇到验证/风控只能暂停、人工处理、降频或走官方接口。**
 - **插件源码禁止明文密钥；凭证只通过 spec.credentials 声明 env；filesystem 只允许 read/write；network 只写 host，不能写 URL/路径。**
+- **新爬虫默认 CDP 连接用户自己的 Chrome（CDP_URL=http://127.0.0.1:9222）；禁止再引入 Playwright/Puppeteer 启动新浏览器；复用现有标签，不创建 about:blank，不关闭用户网页。**
 - **无法拆成独立服务 + 薄插件时，停止需求，不写插件。**
 
 风险分级：
